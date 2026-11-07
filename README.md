@@ -1,5 +1,11 @@
 # Paw Motion AI
 
+**Problem:** Pet owners struggle to maintain consistent physical activity routines with their pets. Existing fitness tools primarily focus on humans, leaving pet owners without a simple, engaging way to track shared activities, understand progress, and stay motivated.
+
+**Solution:** PawMotion AI is an AI-powered pet wellness companion that transforms walks, runs, and playtime into measurable, personalized, and rewarding experiences. Through activity tracking, intelligent insights, and gamified challenges, we help pets and their owners build healthier habits together.
+
+**Our mission:** Make every step count — for pets and the people who love them.
+
 AI-powered activity companion for pets and their owners
 
 An intelligent activity tracker that helps pet owners record walks, understand exercise routines, and build healthier habits together with their pets.
