@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { BrandLogo } from './ui';
 import { useAuth } from '../auth';
 
 export type PageKey = 'dashboard' | 'pets' | 'activities' | 'insights' | 'challenges' | 'rewards' | 'partner';
@@ -18,18 +19,18 @@ export function Layout({ page, setPage, children }: { page: PageKey; setPage: (p
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white">
+      <header className="border-b border-cream-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
           <div>
-            <p className="text-xl font-bold text-emerald-700">PawMotion AI</p>
-            <p className="text-sm text-slate-500">Every step counts</p>
+            <BrandLogo className="text-xl" />
+            <p className="text-sm text-cream-500">Every step counts</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-medium text-slate-900">{owner?.displayName}</p>
-              <p className="text-xs text-slate-500">{owner?.email}</p>
+              <p className="text-sm font-medium text-cream-900">{owner?.displayName}</p>
+              <p className="text-xs text-cream-500">{owner?.email}</p>
             </div>
-            <button type="button" onClick={logout} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <button type="button" onClick={logout} className="rounded-lg border border-cream-300 px-3 py-2 text-sm font-medium text-cream-700 hover:bg-cream-50">
               Logout
             </button>
           </div>
@@ -41,7 +42,7 @@ export function Layout({ page, setPage, children }: { page: PageKey; setPage: (p
               type="button"
               onClick={() => setPage(item.key)}
               className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
-                page === item.key ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                page === item.key ? 'bg-primary text-white' : 'bg-cream-100 text-cream-700 hover:bg-cream-200'
               }`}
             >
               {item.label}
