@@ -1,12 +1,21 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { AuthResponse, Owner } from './types';
-import { clearSession, getCurrentOwner, getStoredOwner, getStoredToken, loginOwner, registerOwner, storeSession } from './api/client';
+import {
+  clearOwnerSession,
+  getCurrentOwner,
+  getStoredOwner,
+  getStoredOwnerToken,
+  loginOwner,
+  registerOwner,
+  storeOwnerSession,
+} from './api/client';
 
 interface AuthContextValue {
   owner: Owner | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName: string) => Promise<void>;
+  refreshProfile: () => Promise<void>;
   logout: () => void;
 }
 
@@ -14,17 +23,17 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [owner, setOwner] = useState<Owner | null>(() => getStoredOwner());
-  const [loading, setLoading] = useState(() => getStoredToken() !== null);
+  const [loading, setLoading] = useState(() => getStoredOwnerToken() !== null);
 
   useEffect(() => {
-    if (!getStoredToken()) {
+    if (!getStoredOwnerToken()) {
       setLoading(false);
       return;
     }
     getCurrentOwner()
       .then(setOwner)
       .catch(() => {
-        clearSession();
+        clearOwnerSession();
         setOwner(null);
       })
       .finally(() => setLoading(false));
@@ -35,16 +44,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     async login(email: string, password: string) {
       const response: AuthResponse = await loginOwner(email, password);
-      storeSession(response);
+      storeOwnerSession(response);
       setOwner(response.owner);
     },
     async register(email: string, password: string, displayName: string) {
       const response: AuthResponse = await registerOwner(email, password, displayName);
-      storeSession(response);
+      storeOwnerSession(response);
       setOwner(response.owner);
     },
+    async refreshProfile() {
+      setOwner(await getCurrentOwner());
+    },
     logout() {
-      clearSession();
+      clearOwnerSession();
       setOwner(null);
     },
   }), [owner, loading]);

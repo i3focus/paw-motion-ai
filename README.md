@@ -34,21 +34,21 @@ The regulations explicitly include physical activity and wellness projects. PawM
 
 - `docs/`: requirements, traceability, DDD design, ADRs, API/event contracts, backlog, and implementation plan.
 - `backend/`: Spring Boot 4 modular monolith using hexagonal architecture per bounded context.
-- `frontend/`: React 19 + TypeScript + Vite + Tailwind CSS application.
+- `frontend/`: React 19 + TypeScript + Vite + Tailwind CSS pet-owner web app and separate partner web portal under `/partner`.
+- `mobile/`: Expo React Native app for pet owners only.
 - `docker-compose.yml`: local PostgreSQL/PostGIS, backend, and frontend stack.
 
 ## Current implementation slice
 
-Implemented foundation for the first vertical slice:
+Implemented platform slice:
 
-- Owner registration and JWT login.
-- Pet profile creation and listing.
-- Activity recording and history.
-- Dashboard summary with recent activities and streak.
-- AI insight endpoint with deterministic local fallback and safety validation.
+- Separate owner and partner account roles sharing the same identity store and JWT issuer.
+- Owner registration/login, profile management, pet profiles, activity tracking, dashboard summary, AI insights, and AI-analyzed partner recommendations.
+- Partner registration/login at `/partner`, profile management, campaign creation, and AI campaign topic analysis.
+- Expo mobile app for pet owners covering auth, dashboard, pets, activities, insights, recommendations, and profile.
 - OpenAPI contract and event schema under `docs/api/`.
 
-Challenges, rewards, partner analytics, GPS routes, and external AI provider adapters are planned in the backlog and are not part of the first runnable slice.
+Challenges, rewards, partner analytics dashboards, GPS routes, and external AI provider adapters are planned in the backlog and are not part of the current runnable slice.
 
 ## Local development
 
@@ -82,9 +82,13 @@ cd backend
 cd ../frontend
 npm install
 npm run build
+
+cd ../mobile
+npm install
+npm run typecheck
 ```
 
-CI runs backend Gradle build/tests and frontend install/build on pushes and pull requests.
+CI runs backend Gradle build/tests, frontend install/build, and mobile install/typecheck on pushes and pull requests. Mobile defaults to `http://localhost:8080` on iOS/web and `http://10.0.2.2:8080` on Android emulators; set `EXPO_PUBLIC_API_BASE_URL` for physical devices or remote backends.
 
 ## Architecture notes
 

@@ -14,6 +14,9 @@ tags:
   - name: Activities
   - name: Dashboard
   - name: AI Insights
+  - name: Profiles
+  - name: Partner Portal
+  - name: Recommendations
 paths:
   /api/auth/register:
     post:
@@ -57,6 +60,145 @@ paths:
                 $ref: '#/components/schemas/AuthResponse'
         '401':
           $ref: '#/components/responses/Problem'
+  /api/partner/auth/register:
+    post:
+      tags: [Partner Portal]
+      summary: Register a partner account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterPartnerRequest'
+      responses:
+        '201':
+          description: Partner registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          $ref: '#/components/responses/Problem'
+        '422':
+          $ref: '#/components/responses/Problem'
+  /api/partner/auth/login:
+    post:
+      tags: [Partner Portal]
+      summary: Authenticate a partner
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authentication token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Problem'
+  /api/me:
+    get:
+      tags: [Profiles]
+      summary: Get the authenticated owner or partner profile
+      responses:
+        '200':
+          description: Account profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerResponse'
+    patch:
+      tags: [Profiles]
+      summary: Update the authenticated owner or partner profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Updated account profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerResponse'
+        '422':
+          $ref: '#/components/responses/Problem'
+  /api/partner/campaigns:
+    get:
+      tags: [Partner Portal]
+      summary: List campaigns for the authenticated partner
+      responses:
+        '200':
+          description: Campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CampaignResponse'
+    post:
+      tags: [Partner Portal]
+      summary: Create an advertisement or campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCampaignRequest'
+      responses:
+        '201':
+          description: Created campaign
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignResponse'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '422':
+          $ref: '#/components/responses/Problem'
+  /api/partner/campaigns/{campaignId}/analyze:
+    post:
+      tags: [Partner Portal]
+      summary: Analyze a campaign and generate owner-facing topics
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Analyzed campaign
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignResponse'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
+  /api/recommendations:
+    get:
+      tags: [Recommendations]
+      summary: List AI-analyzed partner recommendations for pet owners
+      responses:
+        '200':
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OwnerRecommendationResponse'
   /api/pets:
     get:
       tags: [Pets]
@@ -238,11 +380,76 @@ components:
           $ref: '#/components/schemas/OwnerResponse'
     OwnerResponse:
       type: object
-      required: [id, email, displayName]
+      required: [id, email, displayName, role]
       properties:
         id: { type: string, format: uuid }
         email: { type: string, format: email }
         displayName: { type: string }
+        role: { type: string, enum: [OWNER, PARTNER] }
+        bio: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        businessName: { type: string, nullable: true }
+        website: { type: string, nullable: true }
+        partnerDescription: { type: string, nullable: true }
+    RegisterPartnerRequest:
+      type: object
+      required: [email, password, displayName, businessName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+        displayName: { type: string, minLength: 1, maxLength: 120 }
+        businessName: { type: string, minLength: 1, maxLength: 160 }
+        website: { type: string, maxLength: 300 }
+        partnerDescription: { type: string, maxLength: 1000 }
+    UpdateProfileRequest:
+      type: object
+      properties:
+        displayName: { type: string, minLength: 1, maxLength: 120 }
+        bio: { type: string, maxLength: 500 }
+        phone: { type: string, maxLength: 40 }
+        avatarUrl: { type: string, maxLength: 500 }
+        businessName: { type: string, maxLength: 160 }
+        website: { type: string, maxLength: 300 }
+        partnerDescription: { type: string, maxLength: 1000 }
+    CreateCampaignRequest:
+      type: object
+      required: [title, description, targetAudience, callToAction]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 160 }
+        description: { type: string, minLength: 10, maxLength: 2000 }
+        targetAudience: { type: string, minLength: 2, maxLength: 160 }
+        callToAction: { type: string, minLength: 2, maxLength: 160 }
+    CampaignResponse:
+      type: object
+      required: [id, partnerId, title, description, targetAudience, callToAction, status, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        partnerId: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        targetAudience: { type: string }
+        callToAction: { type: string }
+        status: { type: string, enum: [DRAFT, ACTIVE, PAUSED, ARCHIVED] }
+        aiTopics:
+          type: array
+          items: { type: string }
+        analyzedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    OwnerRecommendationResponse:
+      type: object
+      required: [campaignId, campaignTitle, partnerName, description, callToAction, recommendedTopics, analyzedAt]
+      properties:
+        campaignId: { type: string, format: uuid }
+        campaignTitle: { type: string }
+        partnerName: { type: string }
+        description: { type: string }
+        callToAction: { type: string }
+        recommendedTopics:
+          type: array
+          items: { type: string }
+        analyzedAt: { type: string, format: date-time, nullable: true }
     CreatePetRequest:
       type: object
       required: [name, species, size]

@@ -1,0 +1,33 @@
+import { useState } from 'react';
+import { PartnerAuthProvider, usePartnerAuth } from '../partnerAuth';
+import { PartnerAuthPage } from './PartnerAuthPage';
+import { PartnerCampaignsPage } from './PartnerCampaignsPage';
+import { PartnerLayout, type PartnerPageKey } from './PartnerLayout';
+import { PartnerProfilePage } from './PartnerProfilePage';
+
+function PartnerShell() {
+  const { partner, loading } = usePartnerAuth();
+  const [page, setPage] = useState<PartnerPageKey>('campaigns');
+
+  if (loading) {
+    return <main className="flex min-h-screen items-center justify-center text-cream-500">Loading Partner Portal…</main>;
+  }
+  if (!partner) {
+    return <PartnerAuthPage />;
+  }
+
+  return (
+    <PartnerLayout page={page} setPage={setPage}>
+      {page === 'campaigns' ? <PartnerCampaignsPage /> : null}
+      {page === 'profile' ? <PartnerProfilePage /> : null}
+    </PartnerLayout>
+  );
+}
+
+export function PartnerPortal() {
+  return (
+    <PartnerAuthProvider>
+      <PartnerShell />
+    </PartnerAuthProvider>
+  );
+}

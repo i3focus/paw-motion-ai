@@ -6,9 +6,8 @@ import { DashboardPage } from './pages/DashboardPage';
 import { PetsPage } from './pages/PetsPage';
 import { ActivitiesPage } from './pages/ActivitiesPage';
 import { InsightsPage } from './pages/InsightsPage';
-import { ChallengesPage } from './pages/ChallengesPage';
-import { RewardsPage } from './pages/RewardsPage';
-import { PartnerPage } from './pages/PartnerPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { PartnerPortal } from './partner/PartnerPortal';
 
 function AppShell() {
   const { owner, loading } = useAuth();
@@ -20,6 +19,9 @@ function AppShell() {
   if (!owner) {
     return <AuthPage />;
   }
+  if (owner.role === 'PARTNER') {
+    return <PartnerPortal />;
+  }
 
   return (
     <Layout page={page} setPage={setPage}>
@@ -27,14 +29,18 @@ function AppShell() {
       {page === 'pets' ? <PetsPage /> : null}
       {page === 'activities' ? <ActivitiesPage /> : null}
       {page === 'insights' ? <InsightsPage /> : null}
-      {page === 'challenges' ? <ChallengesPage /> : null}
-      {page === 'rewards' ? <RewardsPage /> : null}
-      {page === 'partner' ? <PartnerPage /> : null}
+      {page === 'profile' ? <ProfilePage /> : null}
     </Layout>
   );
 }
 
 export default function App() {
+  const isPartnerPortal = window.location.pathname.startsWith('/partner');
+
+  if (isPartnerPortal) {
+    return <PartnerPortal />;
+  }
+
   return (
     <AuthProvider>
       <AppShell />

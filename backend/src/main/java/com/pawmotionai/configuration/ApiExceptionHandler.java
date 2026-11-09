@@ -18,6 +18,8 @@ import com.pawmotionai.identity.domain.exception.OwnerAlreadyExistsException;
 import com.pawmotionai.identity.domain.exception.OwnerNotFoundException;
 import com.pawmotionai.pet.domain.exception.InvalidPetException;
 import com.pawmotionai.pet.domain.exception.PetNotFoundException;
+import com.pawmotionai.partner.domain.exception.CampaignAccessDeniedException;
+import com.pawmotionai.partner.domain.exception.CampaignNotFoundException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -40,17 +42,23 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.UNAUTHORIZED, "Authentication failed", "Invalid credentials");
     }
 
+    @ExceptionHandler(CampaignAccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleCampaignAccessDenied(CampaignAccessDeniedException exception) {
+        return problem(HttpStatus.FORBIDDEN, "Access denied", exception.getMessage());
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedException exception) {
         return problem(HttpStatus.FORBIDDEN, "Access denied", exception.getMessage());
     }
 
-    @ExceptionHandler({OwnerNotFoundException.class, PetNotFoundException.class, ActivityNotFoundException.class})
+    @ExceptionHandler({OwnerNotFoundException.class, PetNotFoundException.class, ActivityNotFoundException.class,
+        CampaignNotFoundException.class})
     public ResponseEntity<ProblemDetail> handleNotFound(RuntimeException exception) {
         return problem(HttpStatus.NOT_FOUND, "Resource not found", exception.getMessage());
     }
 
-    @ExceptionHandler({InvalidPetException.class, InvalidActivityException.class})
+    @ExceptionHandler({InvalidPetException.class, InvalidActivityException.class, IllegalArgumentException.class})
     public ResponseEntity<ProblemDetail> handleInvalidDomain(RuntimeException exception) {
         return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Invalid request", exception.getMessage());
     }

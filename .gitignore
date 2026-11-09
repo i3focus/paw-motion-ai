@@ -7,6 +7,9 @@ backend/build/
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
 
 # Env and local state
 .env

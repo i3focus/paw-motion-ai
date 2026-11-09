@@ -2,6 +2,13 @@ export interface Owner {
   id: string;
   email: string;
   displayName: string;
+  role: 'OWNER' | 'PARTNER' | string;
+  bio: string | null;
+  phone: string | null;
+  avatarUrl: string | null;
+  businessName: string | null;
+  website: string | null;
+  partnerDescription: string | null;
 }
 
 export interface AuthResponse {
@@ -55,4 +62,28 @@ export interface Insight {
   model: string | null;
   fallbackUsed: boolean;
   generatedAt: string;
+}
+
+export interface Campaign {
+  id: string;
+  partnerId: string;
+  title: string;
+  description: string;
+  targetAudience: string;
+  callToAction: string;
+  status: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'ARCHIVED' | string;
+  aiTopics: string[];
+  analyzedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OwnerRecommendation {
+  campaignId: string;
+  partnerName: string;
+  campaignTitle: string;
+  description: string;
+  callToAction: string;
+  recommendedTopics: string[];
+  analyzedAt: string | null;
 }
