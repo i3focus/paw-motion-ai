@@ -38,11 +38,11 @@ export function PartnerProfilePage() {
       await updateProfile({
         displayName,
         businessName,
-        website: website || undefined,
-        partnerDescription: partnerDescription || undefined,
-        bio: bio || undefined,
-        phone: phone || undefined,
-        avatarUrl: avatarUrl || undefined,
+        website,
+        partnerDescription,
+        bio,
+        phone,
+        avatarUrl,
       }, getStoredPartnerToken());
       await refreshProfile();
       setSaved(true);

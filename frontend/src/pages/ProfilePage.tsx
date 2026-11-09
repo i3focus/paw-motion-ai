@@ -31,9 +31,9 @@ export function ProfilePage() {
     try {
       await updateProfile({
         displayName,
-        bio: bio || undefined,
-        phone: phone || undefined,
-        avatarUrl: avatarUrl || undefined,
+        bio,
+        phone,
+        avatarUrl,
       });
       await refreshProfile();
       setSaved(true);

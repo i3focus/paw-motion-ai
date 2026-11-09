@@ -30,7 +30,7 @@ export function ProfileScreen() {
     setSaved(false);
     setLoading(true);
     try {
-      await updateProfile({ displayName, bio: bio || undefined, phone: phone || undefined, avatarUrl: avatarUrl || undefined });
+      await updateProfile({ displayName, bio, phone, avatarUrl });
       await refreshProfile();
       setSaved(true);
     } catch (caught) {
