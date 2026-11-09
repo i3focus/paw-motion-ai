@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { isNotFutureDate, isValidDateInput } from '../lib/validation';
+import { currentDateInputValue, isNotFutureDate, isValidDateInput } from '../lib/validation';
 import { Button, DateInput, ErrorMessage, SelectInput, TextInput } from './ui';
 import type { Pet } from '../types';
 
@@ -102,7 +102,7 @@ export function PetForm({ initialPet, submitLabel, submitting, error, onSubmit, 
         value={birthDate}
         onChange={(event) => setBirthDate(event.target.value)}
         error={fieldErrors.birthDate}
-        max={new Date().toISOString().slice(0, 10)}
+        max={currentDateInputValue()}
       />
       <TextInput
         label="Activity preference"
