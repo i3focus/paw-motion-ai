@@ -65,13 +65,31 @@ public class Owner {
 
     public void updateProfile(String displayName, String bio, String phone, String avatarUrl,
                               String businessName, String website, String partnerDescription) {
-        this.displayName = displayName == null ? this.displayName : displayName.trim();
-        this.bio = trimToNull(bio);
-        this.phone = trimToNull(phone);
-        this.avatarUrl = trimToNull(avatarUrl);
-        this.businessName = trimToNull(businessName);
-        this.website = trimToNull(website);
-        this.partnerDescription = trimToNull(partnerDescription);
+        if (displayName != null) {
+            String trimmedName = displayName.trim();
+            if (trimmedName.isEmpty()) {
+                throw new IllegalArgumentException("Display name cannot be blank");
+            }
+            this.displayName = trimmedName;
+        }
+        if (bio != null) {
+            this.bio = trimToNull(bio);
+        }
+        if (phone != null) {
+            this.phone = trimToNull(phone);
+        }
+        if (avatarUrl != null) {
+            this.avatarUrl = trimToNull(avatarUrl);
+        }
+        if (businessName != null) {
+            this.businessName = trimToNull(businessName);
+        }
+        if (website != null) {
+            this.website = trimToNull(website);
+        }
+        if (partnerDescription != null) {
+            this.partnerDescription = trimToNull(partnerDescription);
+        }
     }
 
     private static String trimToNull(String value) {

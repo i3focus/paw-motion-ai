@@ -36,4 +36,24 @@ class OwnerProfileTest {
         assertEquals("https://avatar.example", owner.getAvatarUrl());
         assertFalse(owner.isPartner());
     }
+
+    @Test
+    void keepsOmittedProfileFieldsUnchanged() {
+        Owner owner = Owner.register(UUID.randomUUID(), "owner@example.com", "hash", "Owner", Instant.now());
+        owner.updateProfile(null, "Bio", "+55 11 99999-9999", null, null, null, null);
+
+        owner.updateProfile(null, "Updated bio", null, null, null, null, null);
+
+        assertEquals("Owner", owner.getDisplayName());
+        assertEquals("Updated bio", owner.getBio());
+        assertEquals("+55 11 99999-9999", owner.getPhone());
+    }
+
+    @Test
+    void rejectsBlankDisplayName() {
+        Owner owner = Owner.register(UUID.randomUUID(), "owner@example.com", "hash", "Owner", Instant.now());
+
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+            () -> owner.updateProfile("   ", null, null, null, null, null, null));
+    }
 }
