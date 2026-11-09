@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ApiError, getDashboardSummary } from '../api/client';
-import { Badge, Card, EmptyState, ErrorMessage, ListRow, SectionHeader, StatCard } from '../components/ui';
+import { ActivityCard } from '../components/petVisuals';
+import { Card, EmptyState, ErrorMessage, SectionHeader, StatCard } from '../components/ui';
 import type { DashboardSummary } from '../types';
 
 export function DashboardPage() {
@@ -26,18 +27,13 @@ export function DashboardPage() {
             <StatCard label="Duration" value={`${Math.round(summary.totalDurationSecondsLast7Days / 60)} min`} />
             <StatCard label="Streak" value={`${summary.currentStreakDays} days`} hint="Consecutive active days" />
           </div>
-          <Card title="Recent activities">
+          <Card title="Recent activities" description="Latest sessions across your pets.">
             {summary.recentActivities.length === 0 ? (
               <EmptyState title="No activities yet" description="Create a pet and record your first walk to see insights here." />
             ) : (
-              <div className="space-y-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {summary.recentActivities.map((activity) => (
-                  <ListRow
-                    key={activity.id}
-                    leading={<Badge tone="accent">{activity.type.replace('_', ' ')}</Badge>}
-                    title={new Date(activity.startedAt).toLocaleString()}
-                    subtitle={`${Math.round(activity.durationSeconds / 60)} min${activity.distanceMeters ? ` · ${(activity.distanceMeters / 1000).toFixed(2)} km` : ''}`}
-                  />
+                  <ActivityCard key={activity.id} activity={activity} compact />
                 ))}
               </div>
             )}

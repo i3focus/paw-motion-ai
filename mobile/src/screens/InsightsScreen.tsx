@@ -25,10 +25,15 @@ export function InsightsScreen() {
   }, []);
 
   const generate = useCallback(async () => {
+    const period = Number(periodDays);
+    if (!Number.isInteger(period) || period < 1 || period > 90) {
+      setError('Period must be a whole number between 1 and 90 days');
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
-      setInsight(await generateInsight({ petId: petId || undefined, periodDays: Number(periodDays) }));
+      setInsight(await generateInsight({ petId: petId || undefined, periodDays: period }));
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to generate insight');
     } finally {
@@ -41,7 +46,14 @@ export function InsightsScreen() {
       <Text style={styles.title}>AI Insights</Text>
       <Text style={styles.subtitle}>Non-medical activity summaries based on recorded data.</Text>
       <Card title="Generate insight">
-        <Field label="Pet ID"><Input value={petId} onChangeText={setPetId} placeholder="Leave empty for all pets" /></Field>
+        <Field label="Pet">
+          <View style={styles.petPicker}>
+            <Button label="All pets" variant={!petId ? 'primary' : 'secondary'} onPress={() => setPetId('')} />
+            {pets.map((pet) => (
+              <Button key={pet.id} label={pet.name} variant={petId === pet.id ? 'primary' : 'secondary'} onPress={() => setPetId(pet.id)} />
+            ))}
+          </View>
+        </Field>
         <Field label="Period (days)"><Input value={periodDays} onChangeText={setPeriodDays} keyboardType="numeric" /></Field>
         <ErrorText message={error} />
         <Button label={loading ? 'Generating…' : 'Generate'} onPress={generate} disabled={loading} />
@@ -67,6 +79,7 @@ const styles = StyleSheet.create({
   content: { padding: 20, gap: 16 },
   title: { color: colors.cream900, fontSize: 30, fontWeight: '900' },
   subtitle: { color: colors.cream600, marginTop: -10, marginBottom: 4 },
+  petPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   insightText: { color: colors.cream800, fontSize: 16, lineHeight: 24 },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
 });

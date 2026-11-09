@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { ApiError, updateProfile } from '../api/client';
 import { useAuth } from '../auth';
-import { Avatar, Badge, Button, Card, ErrorMessage, Field, SectionHeader, TextArea, TextInput } from '../components/ui';
+import { Avatar, Badge, Button, Card, ErrorMessage, PhoneInput, SectionHeader, TextArea, TextInput, UrlInput } from '../components/ui';
+import { isValidHttpUrl, isValidPhone, normalizeUrl } from '../lib/validation';
 
 export function ProfilePage() {
   const { owner, refreshProfile } = useAuth();
@@ -12,6 +13,7 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!owner) {
@@ -25,15 +27,30 @@ export function ProfilePage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!displayName.trim()) {
+      errors.displayName = 'Display name is required';
+    }
+    if (phone.trim() && !isValidPhone(phone)) {
+      errors.phone = 'Enter a valid phone number with area code';
+    }
+    if (avatarUrl.trim() && !isValidHttpUrl(avatarUrl)) {
+      errors.avatarUrl = 'Enter a valid http(s) URL';
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     setError(null);
     setSaved(false);
     setSubmitting(true);
     try {
       await updateProfile({
-        displayName,
-        bio,
-        phone,
-        avatarUrl,
+        displayName: displayName.trim(),
+        bio: bio.trim(),
+        phone: phone.trim(),
+        avatarUrl: normalizeUrl(avatarUrl),
       });
       await refreshProfile();
       setSaved(true);
@@ -61,13 +78,33 @@ export function ProfilePage() {
           </div>
         </Card>
 
-        <Card title="Account details">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Field label="Display name"><TextInput value={displayName} onChange={(event) => setDisplayName(event.target.value)} required /></Field>
-            <Field label="Bio"><TextArea value={bio} onChange={(event) => setBio(event.target.value)} rows={4} maxLength={500} placeholder="Tell us about you and your pets" /></Field>
+        <Card title="Account details" description="Keep your contact details current for pet activity updates.">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            <TextInput
+              label="Display name"
+              required
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              error={fieldErrors.displayName}
+              maxLength={120}
+            />
+            <TextArea label="Bio" value={bio} onChange={(event) => setBio(event.target.value)} rows={4} maxLength={500} placeholder="Tell us about you and your pets" />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Phone"><TextInput value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={40} placeholder="+55 11 99999-9999" /></Field>
-              <Field label="Avatar URL"><TextInput value={avatarUrl} onChange={(event) => setAvatarUrl(event.target.value)} maxLength={500} placeholder="https://…" /></Field>
+              <PhoneInput
+                label="Phone"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                error={fieldErrors.phone}
+                placeholder="(11) 99999-9999"
+              />
+              <UrlInput
+                label="Avatar URL"
+                value={avatarUrl}
+                onChange={(event) => setAvatarUrl(event.target.value)}
+                error={fieldErrors.avatarUrl}
+                maxLength={500}
+                placeholder="https://…"
+              />
             </div>
             <ErrorMessage message={error} />
             {saved ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Profile updated.</p> : null}

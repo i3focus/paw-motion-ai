@@ -16,3 +16,4 @@ The following ADRs record the initial architecture baseline. They are proposed p
 | [0010](0010-frontend-architecture.md) | React SPA with typed API client |
 | [0011](0011-testing-strategy.md) | Unit, integration, contract, security, E2E tests |
 | [0012](0012-deployment-operational-simplicity.md) | Docker Compose and simple deployment |
+| [0013](0013-client-input-validation-and-pet-editing.md) | Client input validation and pet profile editing |

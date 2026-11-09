@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import { useAuth } from '../auth';
-import { BrandLogo, Button, ErrorMessage, Field, TextInput } from '../components/ui';
+import { BrandLogo, Button, EmailInput, ErrorMessage, PasswordInput, TextInput } from '../components/ui';
+import { isValidEmail, normalizeEmail } from '../lib/validation';
 
 export function AuthPage() {
   const { login, register } = useAuth();
@@ -11,16 +12,33 @@ export function AuthPage() {
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const errors: Record<string, string> = {};
+    const normalizedEmail = normalizeEmail(email);
+    if (!isValidEmail(normalizedEmail)) {
+      errors.email = 'Enter a valid email address';
+    }
+    if (password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
+    }
+    if (mode === 'register' && !displayName.trim()) {
+      errors.displayName = 'Display name is required';
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     setError(null);
     setSubmitting(true);
     try {
       if (mode === 'login') {
-        await login(email, password);
+        await login(normalizedEmail, password);
       } else {
-        await register(email, password, displayName);
+        await register(normalizedEmail, password, displayName.trim());
       }
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to authenticate');
@@ -41,12 +59,33 @@ export function AuthPage() {
           <button type="button" onClick={() => setMode('register')} className={`rounded-xl py-2 transition ${mode === 'register' ? 'bg-white shadow-sm text-cream-900' : 'text-cream-600'}`}>Register</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
           {mode === 'register' ? (
-            <Field label="Display name"><TextInput value={displayName} onChange={(event) => setDisplayName(event.target.value)} required /></Field>
+            <TextInput
+              label="Display name"
+              required
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              error={fieldErrors.displayName}
+              maxLength={120}
+            />
           ) : null}
-          <Field label="Email"><TextInput type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></Field>
-          <Field label="Password"><TextInput type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} /></Field>
+          <EmailInput
+            label="Email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            error={fieldErrors.email}
+          />
+          <PasswordInput
+            label="Password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            error={fieldErrors.password}
+            minLength={8}
+            autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+          />
           <ErrorMessage message={error} />
           <Button type="submit" disabled={submitting} className="w-full">{submitting ? 'Please wait…' : mode === 'login' ? 'Login' : 'Create account'}</Button>
         </form>

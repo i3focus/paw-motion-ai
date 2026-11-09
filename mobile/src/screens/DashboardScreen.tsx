@@ -1,22 +1,29 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ApiError, getDashboardSummary, listRecommendations } from '../api/client';
+import { ApiError, getDashboardSummary, listPets, listRecommendations } from '../api/client';
 import { Badge, Card, EmptyState, ErrorText } from '../components';
-import type { DashboardSummary, OwnerRecommendation } from '../types';
+import { ActivityCard } from '../petVisuals';
+import type { DashboardSummary, OwnerRecommendation, Pet } from '../types';
 import { colors } from '../theme';
 
 export function DashboardScreen() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [recommendations, setRecommendations] = useState<OwnerRecommendation[]>([]);
+  const [pets, setPets] = useState<Pet[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [dashboard, recs] = await Promise.all([getDashboardSummary(), listRecommendations().catch(() => [])]);
+      const [dashboard, recs, petList] = await Promise.all([
+        getDashboardSummary(),
+        listRecommendations().catch(() => []),
+        listPets().catch(() => []),
+      ]);
       setSummary(dashboard);
       setRecommendations(recs);
+      setPets(petList);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to load dashboard');
     }
@@ -41,15 +48,14 @@ export function DashboardScreen() {
         </View>
       ) : null}
       <Card title="Recent activities">
-        {summary?.recentActivities.length ? summary.recentActivities.map((activity) => (
-          <View key={activity.id} style={styles.row}>
-            <Badge label={activity.type.replace('_', ' ')} tone="accent" />
-            <View style={styles.rowBody}>
-              <Text style={styles.rowTitle}>{new Date(activity.startedAt).toLocaleString()}</Text>
-              <Text style={styles.rowSubtitle}>{Math.round(activity.durationSeconds / 60)} min{activity.distanceMeters ? ` · ${(activity.distanceMeters / 1000).toFixed(2)} km` : ''}</Text>
-            </View>
+        {summary?.recentActivities.length ? (
+          <View style={styles.activityList}>
+            {summary.recentActivities.map((activity) => {
+              const pet = pets.find((candidate) => candidate.id === activity.petId);
+              return <ActivityCard key={activity.id} activity={activity} petName={pet?.name} compact />;
+            })}
           </View>
-        )) : <EmptyState title="No activities yet" description="Record a walk to see recent activity here." />}
+        ) : <EmptyState title="No activities yet" description="Record a walk to see recent activity here." />}
       </Card>
       <Card title="Partner recommendations">
         {recommendations.length ? recommendations.map((recommendation) => (
@@ -83,9 +89,8 @@ const styles = StyleSheet.create({
   stat: { flexGrow: 1, flexBasis: '30%', backgroundColor: colors.white, borderColor: colors.cream200, borderWidth: 1, borderRadius: 22, padding: 14 },
   statLabel: { color: colors.cream500, fontSize: 12, fontWeight: '700' },
   statValue: { color: colors.cream900, fontSize: 24, fontWeight: '900', marginTop: 6 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
+  activityList: { gap: 10 },
   rowHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
-  rowBody: { flex: 1 },
   rowTitle: { color: colors.cream900, fontWeight: '800' },
   rowSubtitle: { color: colors.cream500, fontSize: 13, marginTop: 3 },
   recommendation: { borderTopColor: colors.cream200, borderTopWidth: 1, paddingTop: 12, marginTop: 4 },
