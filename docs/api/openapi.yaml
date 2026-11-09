@@ -1,0 +1,315 @@
+openapi: 3.1.0
+info:
+  title: PawMotion AI API
+  version: 0.1.0
+  description: Initial contract for the modular monolith MVP. Errors use RFC 9457 Problem Details.
+servers:
+  - url: http://localhost:8080
+    description: Local backend
+security:
+  - bearerAuth: []
+tags:
+  - name: Identity
+  - name: Pets
+  - name: Activities
+  - name: Dashboard
+  - name: AI Insights
+paths:
+  /api/auth/register:
+    post:
+      tags: [Identity]
+      summary: Register an owner
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterOwnerRequest'
+      responses:
+        '201':
+          description: Owner registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          $ref: '#/components/responses/Problem'
+        '422':
+          $ref: '#/components/responses/Problem'
+  /api/auth/login:
+    post:
+      tags: [Identity]
+      summary: Authenticate an owner
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authentication token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Problem'
+  /api/pets:
+    get:
+      tags: [Pets]
+      summary: List pets owned by the authenticated owner
+      responses:
+        '200':
+          description: Pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PetResponse'
+    post:
+      tags: [Pets]
+      summary: Create a pet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePetRequest'
+      responses:
+        '201':
+          description: Created pet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetResponse'
+        '422':
+          $ref: '#/components/responses/Problem'
+  /api/pets/{petId}:
+    get:
+      tags: [Pets]
+      summary: Get an owned pet
+      parameters:
+        - $ref: '#/components/parameters/PetId'
+      responses:
+        '200':
+          description: Pet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetResponse'
+        '404':
+          $ref: '#/components/responses/Problem'
+  /api/activities:
+    get:
+      tags: [Activities]
+      summary: List activities for the authenticated owner
+      parameters:
+        - name: petId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityResponse'
+    post:
+      tags: [Activities]
+      summary: Record an activity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActivityRequest'
+      responses:
+        '201':
+          description: Recorded activity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '422':
+          $ref: '#/components/responses/Problem'
+  /api/dashboard/summary:
+    get:
+      tags: [Dashboard]
+      summary: Get owner dashboard statistics
+      responses:
+        '200':
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummaryResponse'
+  /api/insights:
+    post:
+      tags: [AI Insights]
+      summary: Generate an activity insight
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateInsightRequest'
+      responses:
+        '200':
+          description: Insight
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightResponse'
+        '503':
+          $ref: '#/components/responses/Problem'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PetId:
+      name: petId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Problem:
+      description: RFC 9457 Problem Details
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  schemas:
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        correlationId: { type: string }
+    RegisterOwnerRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+        displayName: { type: string, minLength: 1, maxLength: 120 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    AuthResponse:
+      type: object
+      required: [accessToken, tokenType, expiresInSeconds, owner]
+      properties:
+        accessToken: { type: string }
+        tokenType: { type: string, example: Bearer }
+        expiresInSeconds: { type: integer }
+        owner:
+          $ref: '#/components/schemas/OwnerResponse'
+    OwnerResponse:
+      type: object
+      required: [id, email, displayName]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+    CreatePetRequest:
+      type: object
+      required: [name, species, size]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        species: { type: string, enum: [dog, cat, bird, rabbit, other] }
+        breed: { type: string, maxLength: 80 }
+        birthDate: { type: string, format: date }
+        size: { type: string, enum: [small, medium, large] }
+        activityPreference: { type: string, maxLength: 120 }
+    PetResponse:
+      allOf:
+        - $ref: '#/components/schemas/CreatePetRequest'
+        - type: object
+          required: [id, ownerId, status, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            ownerId: { type: string, format: uuid }
+            status: { type: string, enum: [active, inactive] }
+            createdAt: { type: string, format: date-time }
+    CreateActivityRequest:
+      type: object
+      required: [petId, type, startedAt, durationSeconds]
+      properties:
+        petId: { type: string, format: uuid }
+        type: { type: string, enum: [walk, run, hike, bike_ride, swim, play] }
+        startedAt: { type: string, format: date-time }
+        durationSeconds: { type: integer, minimum: 1 }
+        distanceMeters: { type: number, minimum: 0 }
+        notes: { type: string, maxLength: 500 }
+    ActivityResponse:
+      allOf:
+        - $ref: '#/components/schemas/CreateActivityRequest'
+        - type: object
+          required: [id, ownerId, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            ownerId: { type: string, format: uuid }
+            createdAt: { type: string, format: date-time }
+    DashboardSummaryResponse:
+      type: object
+      required: [ownerId, petCount, activityCountLast7Days, totalDistanceMetersLast7Days, totalDurationSecondsLast7Days, currentStreakDays]
+      properties:
+        ownerId: { type: string, format: uuid }
+        petCount: { type: integer }
+        activityCountLast7Days: { type: integer }
+        totalDistanceMetersLast7Days: { type: number }
+        totalDurationSecondsLast7Days: { type: integer }
+        currentStreakDays: { type: integer }
+        recentActivities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityResponse'
+    GenerateInsightRequest:
+      type: object
+      properties:
+        petId: { type: string, format: uuid }
+        periodDays: { type: integer, minimum: 1, maximum: 90, default: 7 }
+    InsightResponse:
+      type: object
+      required: [id, ownerId, text, provider, fallbackUsed, generatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        ownerId: { type: string, format: uuid }
+        petId: { type: string, format: uuid, nullable: true }
+        text: { type: string }
+        provider: { type: string }
+        model: { type: string, nullable: true }
+        fallbackUsed: { type: boolean }
+        generatedAt: { type: string, format: date-time }
