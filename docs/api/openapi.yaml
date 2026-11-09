@@ -430,7 +430,7 @@ components:
         description: { type: string }
         targetAudience: { type: string }
         callToAction: { type: string }
-        status: { type: string, enum: [draft, active, paused] }
+        status: { type: string, enum: [DRAFT, ACTIVE, PAUSED, ARCHIVED] }
         aiTopics:
           type: array
           items: { type: string }
@@ -439,15 +439,17 @@ components:
         updatedAt: { type: string, format: date-time }
     OwnerRecommendationResponse:
       type: object
-      required: [campaignId, campaignTitle, partnerName, description, recommendedTopics]
+      required: [campaignId, campaignTitle, partnerName, description, callToAction, recommendedTopics, analyzedAt]
       properties:
         campaignId: { type: string, format: uuid }
         campaignTitle: { type: string }
         partnerName: { type: string }
         description: { type: string }
+        callToAction: { type: string }
         recommendedTopics:
           type: array
           items: { type: string }
+        analyzedAt: { type: string, format: date-time, nullable: true }
     CreatePetRequest:
       type: object
       required: [name, species, size]
