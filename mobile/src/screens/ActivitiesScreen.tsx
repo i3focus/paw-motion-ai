@@ -58,7 +58,17 @@ export function ActivitiesScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Activities</Text>
       <Card title="Record activity">
-        <Field label="Pet ID"><Input value={petId} onChangeText={setPetId} placeholder={pets[0]?.id ?? 'Select/create a pet first'} /></Field>
+        <Field label="Pet">
+          {pets.length ? (
+            <View style={styles.petPicker}>
+              {pets.map((pet) => (
+                <Button key={pet.id} label={pet.name} variant={petId === pet.id ? 'primary' : 'secondary'} onPress={() => setPetId(pet.id)} />
+              ))}
+            </View>
+          ) : (
+            <ErrorText message="Create a pet profile before recording activities." />
+          )}
+        </Field>
         <Field label="Activity type"><Input value={type} onChangeText={setType} placeholder={activityTypes.join(', ')} /></Field>
         <Field label="Started at (ISO)"><Input value={startedAt} onChangeText={setStartedAt} autoCapitalize="none" /></Field>
         <Field label="Duration (minutes)"><Input value={durationMinutes} onChangeText={setDurationMinutes} keyboardType="numeric" /></Field>
@@ -90,6 +100,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.cream50 },
   content: { padding: 20, gap: 16 },
   title: { color: colors.cream900, fontSize: 30, fontWeight: '900' },
+  petPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   activity: { borderTopColor: colors.cream200, borderTopWidth: 1, paddingVertical: 12 },
   activityHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
   activityTitle: { color: colors.cream900, fontSize: 16, fontWeight: '800', textTransform: 'capitalize' },

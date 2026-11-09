@@ -1,9 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import type { Activity, AuthResponse, DashboardSummary, Insight, Owner, OwnerRecommendation, Pet } from '../types';
 
 const TOKEN_KEY = 'pawmotion.mobile.accessToken';
 const OWNER_KEY = 'pawmotion.mobile.owner';
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL
+  ?? (Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080');
 
 export class ApiError extends Error {
   constructor(public readonly status: number, message: string) {

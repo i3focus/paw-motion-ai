@@ -88,7 +88,7 @@ npm install
 npm run typecheck
 ```
 
-CI runs backend Gradle build/tests, frontend install/build, and mobile install/typecheck on pushes and pull requests. Mobile uses `EXPO_PUBLIC_API_BASE_URL` to target the backend; it defaults to `http://localhost:8080`.
+CI runs backend Gradle build/tests, frontend install/build, and mobile install/typecheck on pushes and pull requests. Mobile defaults to `http://localhost:8080` on iOS/web and `http://10.0.2.2:8080` on Android emulators; set `EXPO_PUBLIC_API_BASE_URL` for physical devices or remote backends.
 
 ## Architecture notes
 
