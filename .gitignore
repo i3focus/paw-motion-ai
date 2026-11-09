@@ -1,0 +1,19 @@
+# Java / Gradle
+backend/.gradle/
+backend/build/
+*.class
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Env and local state
+.env
+.env.local
+*.local
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
