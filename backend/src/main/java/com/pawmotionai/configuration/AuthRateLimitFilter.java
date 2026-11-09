@@ -78,10 +78,6 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
                 return hops.get(0);
             }
         }
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
-        }
         return remoteAddr;
     }
 

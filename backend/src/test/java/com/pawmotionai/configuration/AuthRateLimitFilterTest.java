@@ -44,10 +44,10 @@ class AuthRateLimitFilterTest {
     }
 
     @Test
-    void usesRealIpOnlyAfterTrustedIngressWithoutForwardedFor() {
+    void ignoresRealIpWithoutForwardedForToPreventSpoofing() {
         HttpServletRequest request = request("10.1.0.5", null, "203.0.113.8");
 
-        assertEquals("203.0.113.8", filter.clientKey(request));
+        assertEquals("10.1.0.5", filter.clientKey(request));
     }
 
     private HttpServletRequest request(String remoteAddr, String forwardedFor, String realIp) {
