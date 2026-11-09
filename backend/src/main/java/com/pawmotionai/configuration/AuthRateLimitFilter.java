@@ -49,11 +49,40 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     }
 
     private String clientKey(HttpServletRequest request) {
+        String remoteAddr = request.getRemoteAddr();
+        if (!isTrustedProxy(remoteAddr)) {
+            return remoteAddr;
+        }
         String forwardedFor = request.getHeader("X-Forwarded-For");
         if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
+            String[] hops = forwardedFor.split(",");
+            return hops[hops.length - 1].trim();
         }
-        return request.getRemoteAddr();
+        return remoteAddr;
+    }
+
+    private boolean isTrustedProxy(String remoteAddr) {
+        if (remoteAddr == null || remoteAddr.isBlank()) {
+            return false;
+        }
+        if ("127.0.0.1".equals(remoteAddr) || "::1".equals(remoteAddr) || "0:0:0:0:0:0:0:1".equals(remoteAddr)) {
+            return true;
+        }
+        if (remoteAddr.startsWith("10.") || remoteAddr.startsWith("192.168.") || remoteAddr.startsWith("169.254.")) {
+            return true;
+        }
+        if (remoteAddr.startsWith("172.")) {
+            String[] parts = remoteAddr.split("\\.");
+            if (parts.length == 4) {
+                try {
+                    int secondOctet = Integer.parseInt(parts[1]);
+                    return secondOctet >= 16 && secondOctet <= 31;
+                } catch (NumberFormatException ignored) {
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 
     private record Window(long startedAtEpochMilli, int count) {
