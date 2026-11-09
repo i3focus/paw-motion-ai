@@ -21,4 +21,4 @@ Every integration event uses the envelope in `event-envelope.schema.json`:
 
 ## Initial events
 
-See `docs/design/domain-events.md` for producer/consumer mapping. The first implementation slice publishes `PetCreated.v1` and `ActivityRecorded.v1` through the event port. Messaging may be disabled locally until RabbitMQ is enabled.
+See `docs/design/domain-events.md` for producer/consumer mapping. `PetCreated.v1` and `ActivityRecorded.v1` are the initial planned integration events. The current implementation slice only persists Pet and Activity records; publication through the outbox/event port is scheduled for a later integration slice and is not enabled yet.
