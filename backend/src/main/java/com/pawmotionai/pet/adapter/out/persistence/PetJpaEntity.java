@@ -76,6 +76,17 @@ public class PetJpaEntity {
         this.updatedAt = updatedAt;
     }
 
+    public void updateDetails(String name, PetSpecies species, String breed, LocalDate birthDate,
+                              PetSize size, String activityPreference, Instant updatedAt) {
+        this.name = name;
+        this.species = species;
+        this.breed = breed;
+        this.birthDate = birthDate;
+        this.size = size;
+        this.activityPreference = activityPreference;
+        this.updatedAt = updatedAt;
+    }
+
     public UUID getId() { return id; }
     public UUID getOwnerId() { return ownerId; }
     public String getName() { return name; }

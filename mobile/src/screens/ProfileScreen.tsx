@@ -4,6 +4,7 @@ import { ApiError, updateProfile } from '../api/client';
 import { useAuth } from '../auth';
 import { Badge, Button, Card, ErrorText, Field, Input } from '../components';
 import { colors } from '../theme';
+import { formatPhoneInput, isValidHttpUrl, isValidPhone, normalizeUrl } from '../validation';
 
 export function ProfileScreen() {
   const { owner, refreshProfile, logout } = useAuth();
@@ -14,6 +15,7 @@ export function ProfileScreen() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!owner) {
@@ -26,11 +28,31 @@ export function ProfileScreen() {
   }, [owner]);
 
   async function submit() {
+    const errors: Record<string, string> = {};
+    if (!displayName.trim()) {
+      errors.displayName = 'Display name is required';
+    }
+    if (phone.trim() && !isValidPhone(phone)) {
+      errors.phone = 'Enter a valid phone number with area code';
+    }
+    if (avatarUrl.trim() && !isValidHttpUrl(avatarUrl)) {
+      errors.avatarUrl = 'Enter a valid http(s) URL';
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     setError(null);
     setSaved(false);
     setLoading(true);
     try {
-      await updateProfile({ displayName, bio, phone, avatarUrl });
+      await updateProfile({
+        displayName: displayName.trim(),
+        bio: bio.trim(),
+        phone: phone.trim(),
+        avatarUrl: normalizeUrl(avatarUrl),
+      });
       await refreshProfile();
       setSaved(true);
     } catch (caught) {
@@ -49,10 +71,13 @@ export function ProfileScreen() {
         <View style={styles.badgeRow}><Badge label="Pet owner" tone="accent" /></View>
       </Card>
       <Card title="Account details">
-        <Field label="Display name"><Input value={displayName} onChangeText={setDisplayName} /></Field>
+        <Field label="Display name"><Input value={displayName} onChangeText={setDisplayName} maxLength={120} /></Field>
+        <ErrorText message={fieldErrors.displayName ?? null} />
         <Field label="Bio"><Input value={bio} onChangeText={setBio} multiline /></Field>
-        <Field label="Phone"><Input value={phone} onChangeText={setPhone} keyboardType="phone-pad" /></Field>
-        <Field label="Avatar URL"><Input value={avatarUrl} onChangeText={setAvatarUrl} autoCapitalize="none" /></Field>
+        <Field label="Phone"><Input value={phone} onChangeText={(value) => setPhone(formatPhoneInput(value))} keyboardType="phone-pad" placeholder="(11) 99999-9999" /></Field>
+        <ErrorText message={fieldErrors.phone ?? null} />
+        <Field label="Avatar URL"><Input value={avatarUrl} onChangeText={setAvatarUrl} autoCapitalize="none" placeholder="https://…" /></Field>
+        <ErrorText message={fieldErrors.avatarUrl ?? null} />
         <ErrorText message={error} />
         {saved ? <Text style={styles.saved}>Profile updated.</Text> : null}
         <Button label={loading ? 'Saving…' : 'Save profile'} onPress={submit} disabled={loading} />

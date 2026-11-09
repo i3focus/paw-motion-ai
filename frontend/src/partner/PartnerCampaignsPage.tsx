@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { analyzeCampaign, ApiError, createCampaign, listCampaigns } from '../api/client';
-import { Badge, Button, Card, EmptyState, ErrorMessage, Field, SectionHeader, TextArea, TextInput } from '../components/ui';
+import { Badge, Button, Card, EmptyState, ErrorMessage, SectionHeader, TextArea, TextInput } from '../components/ui';
 import type { Campaign } from '../types';
 
 export function PartnerCampaignsPage() {
@@ -12,6 +12,7 @@ export function PartnerCampaignsPage() {
   const [callToAction, setCallToAction] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function refresh() {
     setCampaigns(await listCampaigns());
@@ -23,10 +24,45 @@ export function PartnerCampaignsPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const errors: Record<string, string> = {};
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+    const trimmedAudience = targetAudience.trim();
+    const trimmedCta = callToAction.trim();
+    if (!trimmedTitle) {
+      errors.title = 'Campaign title is required';
+    } else if (trimmedTitle.length > 160) {
+      errors.title = 'Title must be 160 characters or fewer';
+    }
+    if (!trimmedDescription) {
+      errors.description = 'Description is required';
+    } else if (trimmedDescription.length > 2000) {
+      errors.description = 'Description must be 2000 characters or fewer';
+    }
+    if (!trimmedAudience) {
+      errors.targetAudience = 'Target audience is required';
+    } else if (trimmedAudience.length > 160) {
+      errors.targetAudience = 'Target audience must be 160 characters or fewer';
+    }
+    if (!trimmedCta) {
+      errors.callToAction = 'Call to action is required';
+    } else if (trimmedCta.length > 160) {
+      errors.callToAction = 'Call to action must be 160 characters or fewer';
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     setError(null);
     setSubmitting(true);
     try {
-      await createCampaign({ title, description, targetAudience, callToAction });
+      await createCampaign({
+        title: trimmedTitle,
+        description: trimmedDescription,
+        targetAudience: trimmedAudience,
+        callToAction: trimmedCta,
+      });
       setTitle('');
       setDescription('');
       setTargetAudience('');
@@ -56,18 +92,49 @@ export function PartnerCampaignsPage() {
     <div className="space-y-6">
       <SectionHeader title="Campaigns" subtitle="Create advertisements and campaigns, then run AI analysis to generate owner-facing topics." />
       <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
-        <Card title="Create campaign">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Field label="Campaign title"><TextInput value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={160} /></Field>
-            <Field label="Description"><TextArea value={description} onChange={(event) => setDescription(event.target.value)} required rows={4} maxLength={2000} /></Field>
-            <Field label="Target audience"><TextInput value={targetAudience} onChange={(event) => setTargetAudience(event.target.value)} required maxLength={160} placeholder="Active dog owners" /></Field>
-            <Field label="Call to action"><TextInput value={callToAction} onChange={(event) => setCallToAction(event.target.value)} required maxLength={160} placeholder="Try the 7-day walk challenge" /></Field>
+        <Card title="Create campaign" description="Clear campaign details help the AI recommend relevant topics.">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            <TextInput
+              label="Campaign title"
+              required
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              error={fieldErrors.title}
+              maxLength={160}
+            />
+            <TextArea
+              label="Description"
+              required
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              error={fieldErrors.description}
+              rows={4}
+              maxLength={2000}
+            />
+            <TextInput
+              label="Target audience"
+              required
+              value={targetAudience}
+              onChange={(event) => setTargetAudience(event.target.value)}
+              error={fieldErrors.targetAudience}
+              maxLength={160}
+              placeholder="Active dog owners"
+            />
+            <TextInput
+              label="Call to action"
+              required
+              value={callToAction}
+              onChange={(event) => setCallToAction(event.target.value)}
+              error={fieldErrors.callToAction}
+              maxLength={160}
+              placeholder="Try the 7-day walk challenge"
+            />
             <ErrorMessage message={error} />
             <Button type="submit" disabled={submitting} className="w-full">{submitting ? 'Saving…' : 'Create campaign'}</Button>
           </form>
         </Card>
 
-        <Card title="Your campaigns">
+        <Card title="Your campaigns" description="Analyzed campaigns feed owner recommendations.">
           {campaigns.length === 0 ? (
             <EmptyState title="No campaigns yet" description="Create a campaign and analyze it to recommend topics to pet owners." />
           ) : (

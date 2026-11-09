@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import { usePartnerAuth } from '../partnerAuth';
-import { BrandLogo, Button, ErrorMessage, Field, TextArea, TextInput } from '../components/ui';
+import { BrandLogo, Button, EmailInput, ErrorMessage, PasswordInput, TextArea, TextInput, UrlInput } from '../components/ui';
+import { isValidEmail, isValidHttpUrl, normalizeEmail, normalizeUrl } from '../lib/validation';
 
 export function PartnerAuthPage() {
   const { login, register } = usePartnerAuth();
@@ -14,22 +15,47 @@ export function PartnerAuthPage() {
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const errors: Record<string, string> = {};
+    const normalizedEmail = normalizeEmail(email);
+    if (!isValidEmail(normalizedEmail)) {
+      errors.email = 'Enter a valid email address';
+    }
+    if (password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
+    }
+    if (mode === 'register') {
+      if (!displayName.trim()) {
+        errors.displayName = 'Contact name is required';
+      }
+      if (!businessName.trim()) {
+        errors.businessName = 'Business name is required';
+      }
+      if (website.trim() && !isValidHttpUrl(website)) {
+        errors.website = 'Enter a valid http(s) website URL';
+      }
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     setError(null);
     setSubmitting(true);
     try {
       if (mode === 'login') {
-        await login(email, password);
+        await login(normalizedEmail, password);
       } else {
         await register({
-          email,
+          email: normalizedEmail,
           password,
-          displayName,
-          businessName,
-          website: website || undefined,
-          description: description || undefined,
+          displayName: displayName.trim(),
+          businessName: businessName.trim(),
+          website: normalizeUrl(website) || undefined,
+          description: description.trim() || undefined,
         });
       }
     } catch (caught) {
@@ -51,17 +77,52 @@ export function PartnerAuthPage() {
           <button type="button" onClick={() => setMode('register')} className={`rounded-xl py-2 transition ${mode === 'register' ? 'bg-white shadow-sm text-cream-900' : 'text-cream-600'}`}>Register</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
           {mode === 'register' ? (
             <>
-              <Field label="Contact name"><TextInput value={displayName} onChange={(event) => setDisplayName(event.target.value)} required /></Field>
-              <Field label="Business name"><TextInput value={businessName} onChange={(event) => setBusinessName(event.target.value)} required /></Field>
-              <Field label="Website"><TextInput type="url" value={website} onChange={(event) => setWebsite(event.target.value)} placeholder="https://…" /></Field>
-              <Field label="Business description"><TextArea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} maxLength={1000} /></Field>
+              <TextInput
+                label="Contact name"
+                required
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                error={fieldErrors.displayName}
+                maxLength={120}
+              />
+              <TextInput
+                label="Business name"
+                required
+                value={businessName}
+                onChange={(event) => setBusinessName(event.target.value)}
+                error={fieldErrors.businessName}
+                maxLength={160}
+              />
+              <UrlInput
+                label="Website"
+                value={website}
+                onChange={(event) => setWebsite(event.target.value)}
+                error={fieldErrors.website}
+                maxLength={300}
+                placeholder="https://…"
+              />
+              <TextArea label="Business description" value={description} onChange={(event) => setDescription(event.target.value)} rows={3} maxLength={1000} />
             </>
           ) : null}
-          <Field label="Email"><TextInput type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></Field>
-          <Field label="Password"><TextInput type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} /></Field>
+          <EmailInput
+            label="Email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            error={fieldErrors.email}
+          />
+          <PasswordInput
+            label="Password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            error={fieldErrors.password}
+            minLength={8}
+            autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+          />
           <ErrorMessage message={error} />
           <Button type="submit" disabled={submitting} className="w-full">{submitting ? 'Please wait…' : mode === 'login' ? 'Login' : 'Register partner'}</Button>
         </form>

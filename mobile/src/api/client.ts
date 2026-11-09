@@ -113,6 +113,20 @@ export function createPet(input: {
   });
 }
 
+export function updatePet(petId: string, input: {
+  name: string;
+  species: string;
+  breed?: string;
+  birthDate?: string;
+  size: string;
+  activityPreference?: string;
+}): Promise<Pet> {
+  return request<Pet>(`/api/pets/${petId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
 export function listActivities(): Promise<Activity[]> {
   return request<Activity[]>('/api/activities');
 }

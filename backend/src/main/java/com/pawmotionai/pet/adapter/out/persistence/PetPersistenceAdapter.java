@@ -21,10 +21,17 @@ public class PetPersistenceAdapter implements PetRepository {
 
     @Override
     public Pet save(Pet pet) {
-        PetJpaEntity entity = repository.findById(pet.getId())
-            .orElseGet(() -> new PetJpaEntity(
+        Instant now = Instant.now();
+        PetJpaEntity entity = repository.findById(pet.getId()).orElse(null);
+        if (entity == null) {
+            entity = new PetJpaEntity(
                 pet.getId(), pet.getOwnerId(), pet.getName(), pet.getSpecies(), pet.getBreed(), pet.getBirthDate(),
-                pet.getSize(), pet.getActivityPreference(), pet.getStatus(), pet.getCreatedAt(), Instant.now()));
+                pet.getSize(), pet.getActivityPreference(), pet.getStatus(), pet.getCreatedAt(), now);
+        } else {
+            entity.updateDetails(
+                pet.getName(), pet.getSpecies(), pet.getBreed(), pet.getBirthDate(), pet.getSize(),
+                pet.getActivityPreference(), now);
+        }
         return toDomain(repository.save(entity));
     }
 

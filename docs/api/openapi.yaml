@@ -245,6 +245,28 @@ paths:
                 $ref: '#/components/schemas/PetResponse'
         '404':
           $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Pets]
+      summary: Update an owned pet profile
+      parameters:
+        - $ref: '#/components/parameters/PetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePetRequest'
+      responses:
+        '200':
+          description: Updated pet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetResponse'
+        '404':
+          $ref: '#/components/responses/Problem'
+        '422':
+          $ref: '#/components/responses/Problem'
   /api/activities:
     get:
       tags: [Activities]

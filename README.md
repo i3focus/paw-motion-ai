@@ -32,7 +32,7 @@ The regulations explicitly include physical activity and wellness projects. PawM
 
 ## Repository structure
 
-- `docs/`: requirements, traceability, DDD design, ADRs, API/event contracts, backlog, and implementation plan.
+- `docs/`: requirements, traceability, DDD design, ADRs, API/event contracts, backlog, implementation plan, and the [run-all-projects guide](docs/run-all-projects.md).
 - `backend/`: Spring Boot 4 modular monolith using hexagonal architecture per bounded context.
 - `frontend/`: React 19 + TypeScript + Vite + Tailwind CSS pet-owner web app and separate partner web portal under `/partner`.
 - `mobile/`: Expo React Native app for pet owners only.
@@ -43,7 +43,8 @@ The regulations explicitly include physical activity and wellness projects. PawM
 Implemented platform slice:
 
 - Separate owner and partner account roles sharing the same identity store and JWT issuer.
-- Owner registration/login, profile management, pet profiles, activity tracking, dashboard summary, AI insights, and AI-analyzed partner recommendations.
+- Owner registration/login, profile management, pet profiles with add/edit flows, activity tracking, dashboard summary, AI insights, and AI-analyzed partner recommendations.
+- Validated web/mobile inputs for email, password, phone, URLs, dates, and numeric activity fields, plus warm PawMotion visual cards using local dog imagery.
 - Partner registration/login at `/partner`, profile management, campaign creation, and AI campaign topic analysis.
 - Expo mobile app for pet owners covering auth, dashboard, pets, activities, insights, recommendations, and profile.
 - OpenAPI contract and event schema under `docs/api/`.
@@ -60,7 +61,7 @@ cp .env.example .env
 ./scripts/dev-up.sh
 ```
 
-Open `http://localhost:5173`. The frontend is served by Nginx and proxies `/api` to the backend container.
+Open `http://localhost:5173`. The frontend is served by Nginx and proxies `/api` to the backend container. For the complete owner/partner/mobile runbook, use [docs/run-all-projects.md](docs/run-all-projects.md).
 
 For local frontend development against a locally running backend:
 
@@ -81,6 +82,7 @@ cd backend
 
 cd ../frontend
 npm install
+npm run typecheck
 npm run build
 
 cd ../mobile
@@ -92,6 +94,6 @@ CI runs backend Gradle build/tests, frontend install/build, and mobile install/t
 
 ## Architecture notes
 
-The backend is intentionally a Spring Boot modular monolith, not microservices. Each bounded context keeps domain models Spring-free, application use cases behind ports, and adapters for REST, persistence, and external providers. See `docs/design/software-architecture.md` and `docs/adr/` for the decisions behind this structure.
+The backend is intentionally a Spring Boot modular monolith, not microservices. Each bounded context keeps domain models Spring-free, application use cases behind ports, and adapters for REST, persistence, and external providers. Client forms use shared validation helpers while the backend remains the authoritative validation boundary. See `docs/design/software-architecture.md`, `docs/adr/`, and `docs/run-all-projects.md` for the decisions and local runbook behind this structure.
 
 When deploying behind an HTTPS proxy or proxy chain, set `TRUSTED_PROXY_CIDRS` for the frontend Nginx container and `TRUSTED_PROXIES` for the backend to the explicit proxy IPs/CIDRs you trust. Nginx only rewrites the client address for configured upstreams, and the backend only trusts forwarding headers from configured proxies.

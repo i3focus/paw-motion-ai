@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { ApiError, getStoredPartnerToken, updateProfile } from '../api/client';
 import { usePartnerAuth } from '../partnerAuth';
-import { Avatar, Badge, Button, Card, ErrorMessage, Field, SectionHeader, TextArea, TextInput } from '../components/ui';
+import { Avatar, Badge, Button, Card, ErrorMessage, PhoneInput, SectionHeader, TextArea, TextInput, UrlInput } from '../components/ui';
+import { isValidHttpUrl, isValidPhone, normalizeUrl } from '../lib/validation';
 
 export function PartnerProfilePage() {
   const { partner, refreshProfile } = usePartnerAuth();
@@ -15,6 +16,7 @@ export function PartnerProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!partner) {
@@ -31,18 +33,39 @@ export function PartnerProfilePage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!displayName.trim()) {
+      errors.displayName = 'Contact name is required';
+    }
+    if (!businessName.trim()) {
+      errors.businessName = 'Business name is required';
+    }
+    if (website.trim() && !isValidHttpUrl(website)) {
+      errors.website = 'Enter a valid http(s) website URL';
+    }
+    if (phone.trim() && !isValidPhone(phone)) {
+      errors.phone = 'Enter a valid phone number with area code';
+    }
+    if (avatarUrl.trim() && !isValidHttpUrl(avatarUrl)) {
+      errors.avatarUrl = 'Enter a valid http(s) URL';
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     setError(null);
     setSaved(false);
     setSubmitting(true);
     try {
       await updateProfile({
-        displayName,
-        businessName,
-        website,
-        partnerDescription,
-        bio,
-        phone,
-        avatarUrl,
+        displayName: displayName.trim(),
+        businessName: businessName.trim(),
+        website: normalizeUrl(website),
+        partnerDescription: partnerDescription.trim(),
+        bio: bio.trim(),
+        phone: phone.trim(),
+        avatarUrl: normalizeUrl(avatarUrl),
       }, getStoredPartnerToken());
       await refreshProfile();
       setSaved(true);
@@ -71,18 +94,52 @@ export function PartnerProfilePage() {
           </div>
         </Card>
 
-        <Card title="Business details">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <Card title="Business details" description="This information helps campaigns and recommendations stay trustworthy.">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Contact name"><TextInput value={displayName} onChange={(event) => setDisplayName(event.target.value)} required /></Field>
-              <Field label="Business name"><TextInput value={businessName} onChange={(event) => setBusinessName(event.target.value)} required /></Field>
+              <TextInput
+                label="Contact name"
+                required
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                error={fieldErrors.displayName}
+                maxLength={120}
+              />
+              <TextInput
+                label="Business name"
+                required
+                value={businessName}
+                onChange={(event) => setBusinessName(event.target.value)}
+                error={fieldErrors.businessName}
+                maxLength={160}
+              />
             </div>
-            <Field label="Website"><TextInput type="url" value={website} onChange={(event) => setWebsite(event.target.value)} maxLength={300} placeholder="https://…" /></Field>
-            <Field label="Business description"><TextArea value={partnerDescription} onChange={(event) => setPartnerDescription(event.target.value)} rows={4} maxLength={1000} /></Field>
-            <Field label="Bio"><TextArea value={bio} onChange={(event) => setBio(event.target.value)} rows={3} maxLength={500} /></Field>
+            <UrlInput
+              label="Website"
+              value={website}
+              onChange={(event) => setWebsite(event.target.value)}
+              error={fieldErrors.website}
+              maxLength={300}
+              placeholder="https://…"
+            />
+            <TextArea label="Business description" value={partnerDescription} onChange={(event) => setPartnerDescription(event.target.value)} rows={4} maxLength={1000} />
+            <TextArea label="Bio" value={bio} onChange={(event) => setBio(event.target.value)} rows={3} maxLength={500} />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Phone"><TextInput value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={40} /></Field>
-              <Field label="Avatar URL"><TextInput value={avatarUrl} onChange={(event) => setAvatarUrl(event.target.value)} maxLength={500} placeholder="https://…" /></Field>
+              <PhoneInput
+                label="Phone"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                error={fieldErrors.phone}
+                placeholder="(11) 99999-9999"
+              />
+              <UrlInput
+                label="Avatar URL"
+                value={avatarUrl}
+                onChange={(event) => setAvatarUrl(event.target.value)}
+                error={fieldErrors.avatarUrl}
+                maxLength={500}
+                placeholder="https://…"
+              />
             </div>
             <ErrorMessage message={error} />
             {saved ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Profile updated.</p> : null}
