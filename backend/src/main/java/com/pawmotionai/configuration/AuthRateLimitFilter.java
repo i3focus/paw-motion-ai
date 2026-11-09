@@ -33,7 +33,8 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return !("/api/auth/login".equals(path) || "/api/auth/register".equals(path));
+        return !("/api/auth/login".equals(path) || "/api/auth/register".equals(path)
+            || "/api/partner/auth/login".equals(path) || "/api/partner/auth/register".equals(path));
     }
 
     @Override

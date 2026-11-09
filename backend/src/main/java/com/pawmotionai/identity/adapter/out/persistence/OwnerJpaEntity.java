@@ -42,13 +42,22 @@ public class OwnerJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column private String bio;
+    @Column private String phone;
+    @Column(name = "avatar_url") private String avatarUrl;
+    @Column(name = "business_name") private String businessName;
+    @Column private String website;
+    @Column(name = "partner_description") private String partnerDescription;
+
     @Version
     private Long version;
 
     protected OwnerJpaEntity() {
     }
 
-    public OwnerJpaEntity(UUID id, String email, String passwordHash, String displayName, String role, OwnerStatus status, Instant createdAt, Instant updatedAt) {
+    public OwnerJpaEntity(UUID id, String email, String passwordHash, String displayName, String role, OwnerStatus status,
+                          Instant createdAt, Instant updatedAt, String bio, String phone, String avatarUrl,
+                          String businessName, String website, String partnerDescription) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -57,41 +66,39 @@ public class OwnerJpaEntity {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.bio = bio;
+        this.phone = phone;
+        this.avatarUrl = avatarUrl;
+        this.businessName = businessName;
+        this.website = website;
+        this.partnerDescription = partnerDescription;
     }
 
-    public UUID getId() {
-        return id;
-    }
+    public UUID getId() { return id; }
+    public String getEmail() { return email; }
+    public String getPasswordHash() { return passwordHash; }
+    public String getDisplayName() { return displayName; }
+    public String getRole() { return role; }
+    public OwnerStatus getStatus() { return status; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public String getBio() { return bio; }
+    public String getPhone() { return phone; }
+    public String getAvatarUrl() { return avatarUrl; }
+    public String getBusinessName() { return businessName; }
+    public String getWebsite() { return website; }
+    public String getPartnerDescription() { return partnerDescription; }
+    public Long getVersion() { return version; }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public OwnerStatus getStatus() {
-        return status;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public Long getVersion() {
-        return version;
+    public void updateProfile(String displayName, String bio, String phone, String avatarUrl,
+                              String businessName, String website, String partnerDescription) {
+        this.displayName = displayName;
+        this.bio = bio;
+        this.phone = phone;
+        this.avatarUrl = avatarUrl;
+        this.businessName = businessName;
+        this.website = website;
+        this.partnerDescription = partnerDescription;
+        this.updatedAt = Instant.now();
     }
 }

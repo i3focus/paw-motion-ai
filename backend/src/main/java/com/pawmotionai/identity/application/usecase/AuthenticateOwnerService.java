@@ -29,6 +29,7 @@ public class AuthenticateOwnerService implements AuthenticateOwnerUseCase {
     public AuthResponseDto authenticate(LoginCommand command) {
         Owner owner = ownerRepository.findByEmailIgnoreCase(command.email().trim().toLowerCase())
             .filter(Owner::isActive)
+            .filter(candidate -> !candidate.isPartner())
             .filter(candidate -> passwordHasher.matches(command.password(), candidate.getPasswordHash()))
             .orElseThrow(InvalidCredentialsException::new);
 

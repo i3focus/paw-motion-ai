@@ -35,10 +35,10 @@ public class SecurityConfiguration {
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/auth/**", "/actuator/health", "/actuator/health/**", "/error").permitAll()
+                .requestMatchers("/api/auth/**", "/api/partner/auth/**", "/actuator/health", "/actuator/health/**", "/error").permitAll()
                 .anyRequest().authenticated())
             .addFilterBefore(new AuthRateLimitFilter(trustedProxies), BearerTokenAuthenticationFilter.class)
-            .addFilterAfter(new ActiveOwnerFilter(ownerRepository), BearerTokenAuthenticationFilter.class)
+            .addFilterAfter(new ActiveAccountFilter(ownerRepository), BearerTokenAuthenticationFilter.class)
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> { }));
         return http.build();
     }
