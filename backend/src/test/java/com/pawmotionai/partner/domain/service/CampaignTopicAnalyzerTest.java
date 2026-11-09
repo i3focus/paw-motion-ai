@@ -38,4 +38,19 @@ class CampaignTopicAnalyzerTest {
         assertTrue(topics.contains("pet wellness"));
         assertTrue(topics.contains("seasonal care"));
     }
+
+    @Test
+    void keepsCommonWellnessTermsWellFormed() {
+        PartnerCampaign campaign = PartnerCampaign.create(UUID.randomUUID(), UUID.randomUUID(),
+            "Fitness and wellness running plan", "Improve fitness, wellness, and running routines.",
+            "Active owners", "Start today", Instant.now());
+
+        List<String> topics = analyzer.analyze(campaign);
+
+        assertTrue(topics.contains("fitness"));
+        assertTrue(topics.contains("wellness"));
+        assertTrue(topics.stream().anyMatch(topic -> topic.equals("run") || topic.equals("running")));
+        assertTrue(topics.stream().noneMatch(topic -> topic.contains("fitnes care")
+            || topic.contains("wellnes care") || topic.contains("runn care")));
+    }
 }

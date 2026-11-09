@@ -71,15 +71,22 @@ public class CampaignTopicAnalyzer {
     }
 
     private String normalize(String word) {
+        List<String> candidates = new ArrayList<>();
         if (word.endsWith("ies") && word.length() > 4) {
-            return word.substring(0, word.length() - 3) + "y";
+            candidates.add(word.substring(0, word.length() - 3) + "y");
         }
         if (word.endsWith("ing") && word.length() > 5) {
-            return word.substring(0, word.length() - 3);
+            String base = word.substring(0, word.length() - 3);
+            if (base.length() > 1 && base.charAt(base.length() - 1) == base.charAt(base.length() - 2)
+                && Character.isLetter(base.charAt(base.length() - 1))) {
+                base = base.substring(0, base.length() - 1);
+            }
+            candidates.add(base);
         }
-        if (word.endsWith("s") && word.length() > 3) {
-            return word.substring(0, word.length() - 1);
+        if (word.endsWith("s") && word.length() > 3 && !word.endsWith("ss")) {
+            candidates.add(word.substring(0, word.length() - 1));
         }
-        return word;
+        candidates.add(word);
+        return candidates.stream().filter(CAMPAIGN_TERMS::contains).findFirst().orElse(word);
     }
 }
