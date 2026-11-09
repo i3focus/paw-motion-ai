@@ -1,8 +1,12 @@
 package com.pawmotionai.configuration;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,7 +23,12 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     private static final Duration WINDOW = Duration.ofMinutes(1);
     private static final int MAX_TRACKED_KEYS = 10_000;
 
+    private final List<IpCidr> trustedProxies;
     private final Map<String, Window> attempts = new ConcurrentHashMap<>();
+
+    public AuthRateLimitFilter(String trustedProxies) {
+        this.trustedProxies = parseTrustedProxies(trustedProxies);
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -48,41 +57,93 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String clientKey(HttpServletRequest request) {
+    String clientKey(HttpServletRequest request) {
         String remoteAddr = request.getRemoteAddr();
         if (!isTrustedProxy(remoteAddr)) {
             return remoteAddr;
         }
         String forwardedFor = request.getHeader("X-Forwarded-For");
         if (forwardedFor != null && !forwardedFor.isBlank()) {
-            String[] hops = forwardedFor.split(",");
-            return hops[hops.length - 1].trim();
+            List<String> hops = Arrays.stream(forwardedFor.split(","))
+                .map(String::trim)
+                .filter(hop -> !hop.isEmpty())
+                .toList();
+            for (int index = hops.size() - 1; index >= 0; index--) {
+                String hop = hops.get(index);
+                if (!isTrustedProxy(hop)) {
+                    return hop;
+                }
+            }
+            if (!hops.isEmpty()) {
+                return hops.get(0);
+            }
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp.trim();
         }
         return remoteAddr;
     }
 
     private boolean isTrustedProxy(String remoteAddr) {
-        if (remoteAddr == null || remoteAddr.isBlank()) {
-            return false;
+        return trustedProxies.stream().anyMatch(proxy -> proxy.matches(remoteAddr));
+    }
+
+    private static List<IpCidr> parseTrustedProxies(String value) {
+        if (value == null || value.isBlank()) {
+            return List.of();
         }
-        if ("127.0.0.1".equals(remoteAddr) || "::1".equals(remoteAddr) || "0:0:0:0:0:0:0:1".equals(remoteAddr)) {
-            return true;
+        return Arrays.stream(value.split(","))
+            .map(String::trim)
+            .filter(proxy -> !proxy.isEmpty())
+            .map(IpCidr::parse)
+            .toList();
+    }
+
+    private record IpCidr(byte[] address, int prefixLength) {
+
+        static IpCidr parse(String value) {
+            String[] parts = value.split("/", 2);
+            String host = parts[0].trim();
+            byte[] address;
+            try {
+                address = InetAddress.getByName(host).getAddress();
+            } catch (UnknownHostException exception) {
+                throw new IllegalArgumentException("Invalid trusted proxy address: " + host, exception);
+            }
+            int prefixLength = parts.length == 2 ? Integer.parseInt(parts[1].trim()) : address.length * 8;
+            if (prefixLength < 0 || prefixLength > address.length * 8) {
+                throw new IllegalArgumentException("Invalid trusted proxy prefix: " + value);
+            }
+            return new IpCidr(address, prefixLength);
         }
-        if (remoteAddr.startsWith("10.") || remoteAddr.startsWith("192.168.") || remoteAddr.startsWith("169.254.")) {
-            return true;
-        }
-        if (remoteAddr.startsWith("172.")) {
-            String[] parts = remoteAddr.split("\\.");
-            if (parts.length == 4) {
-                try {
-                    int secondOctet = Integer.parseInt(parts[1]);
-                    return secondOctet >= 16 && secondOctet <= 31;
-                } catch (NumberFormatException ignored) {
+
+        boolean matches(String candidateValue) {
+            if (candidateValue == null || candidateValue.isBlank()) {
+                return false;
+            }
+            final byte[] candidate;
+            try {
+                candidate = InetAddress.getByName(candidateValue.trim()).getAddress();
+            } catch (UnknownHostException exception) {
+                return false;
+            }
+            if (candidate.length != address.length) {
+                return false;
+            }
+            int fullBytes = prefixLength / 8;
+            int remainingBits = prefixLength % 8;
+            for (int index = 0; index < fullBytes; index++) {
+                if (candidate[index] != address[index]) {
                     return false;
                 }
             }
+            if (remainingBits == 0) {
+                return true;
+            }
+            int mask = 0xFF << (8 - remainingBits) & 0xFF;
+            return (candidate[fullBytes] & mask) == (address[fullBytes] & mask);
         }
-        return false;
     }
 
     private record Window(long startedAtEpochMilli, int count) {

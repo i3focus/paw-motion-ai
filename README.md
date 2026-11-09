@@ -89,3 +89,5 @@ CI runs backend Gradle build/tests and frontend install/build on pushes and pull
 ## Architecture notes
 
 The backend is intentionally a Spring Boot modular monolith, not microservices. Each bounded context keeps domain models Spring-free, application use cases behind ports, and adapters for REST, persistence, and external providers. See `docs/design/software-architecture.md` and `docs/adr/` for the decisions behind this structure.
+
+When deploying behind an HTTPS proxy or proxy chain, set `TRUSTED_PROXY_CIDRS` for the frontend Nginx container and `TRUSTED_PROXIES` for the backend to the explicit proxy IPs/CIDRs you trust. Nginx only rewrites the client address for configured upstreams, and the backend only trusts forwarding headers from configured proxies.

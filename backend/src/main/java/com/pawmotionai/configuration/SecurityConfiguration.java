@@ -28,7 +28,8 @@ public class SecurityConfiguration {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource,
-                                            OwnerRepository ownerRepository) throws Exception {
+                                            OwnerRepository ownerRepository,
+                                            @Value("${app.security.trusted-proxies}") String trustedProxies) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -36,7 +37,7 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/auth/**", "/actuator/health", "/actuator/health/**", "/error").permitAll()
                 .anyRequest().authenticated())
-            .addFilterBefore(new AuthRateLimitFilter(), BearerTokenAuthenticationFilter.class)
+            .addFilterBefore(new AuthRateLimitFilter(trustedProxies), BearerTokenAuthenticationFilter.class)
             .addFilterAfter(new ActiveOwnerFilter(ownerRepository), BearerTokenAuthenticationFilter.class)
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> { }));
         return http.build();
