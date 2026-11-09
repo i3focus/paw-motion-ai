@@ -56,7 +56,7 @@ Prerequisites: Docker with Compose.
 
 ```bash
 cp .env.example .env
-# Set JWT_SECRET to a random local value in .env
+# Set POSTGRES_PASSWORD and JWT_SECRET to random local values in .env
 ./scripts/dev-up.sh
 ```
 
@@ -71,7 +71,7 @@ npm install
 npm run dev
 ```
 
-The Vite dev server runs on `http://localhost:5173` and proxies `/api` to `http://localhost:8080`.
+The Vite dev server runs on `http://localhost:5173` and proxies `/api` to `http://localhost:8080`. PostgreSQL is only reachable inside the Compose network; use `docker compose exec postgres psql -U pawmotion -d pawmotion` for direct database access.
 
 ## Verification
 

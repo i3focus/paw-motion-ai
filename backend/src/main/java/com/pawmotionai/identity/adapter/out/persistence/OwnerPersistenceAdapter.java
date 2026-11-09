@@ -4,9 +4,11 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 import com.pawmotionai.identity.application.port.out.OwnerRepository;
+import com.pawmotionai.identity.domain.exception.OwnerAlreadyExistsException;
 import com.pawmotionai.identity.domain.model.Owner;
 import com.pawmotionai.identity.domain.model.OwnerStatus;
 
@@ -29,7 +31,11 @@ public class OwnerPersistenceAdapter implements OwnerRepository {
             .orElseGet(() -> new OwnerJpaEntity(
                 owner.getId(), owner.getEmail(), owner.getPasswordHash(), owner.getDisplayName(), owner.getRole(),
                 owner.getStatus(), owner.getCreatedAt(), Instant.now()));
-        return toDomain(repository.save(entity));
+        try {
+            return toDomain(repository.saveAndFlush(entity));
+        } catch (DataIntegrityViolationException exception) {
+            throw new OwnerAlreadyExistsException(owner.getEmail());
+        }
     }
 
     @Override

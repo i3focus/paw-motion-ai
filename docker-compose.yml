@@ -5,9 +5,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-pawmotion}
       POSTGRES_USER: ${POSTGRES_USER:-pawmotion}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pawmotion}
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +21,7 @@ services:
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-pawmotion}
       DB_USERNAME: ${POSTGRES_USER:-pawmotion}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-pawmotion}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       JWT_ISSUER: ${JWT_ISSUER:-paw-motion-ai}
       JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-3600}

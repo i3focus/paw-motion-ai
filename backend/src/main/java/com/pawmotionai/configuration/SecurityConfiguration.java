@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -19,12 +20,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import com.pawmotionai.identity.application.port.out.OwnerRepository;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource,
+                                            OwnerRepository ownerRepository) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -32,6 +36,8 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/auth/**", "/actuator/health", "/actuator/health/**", "/error").permitAll()
                 .anyRequest().authenticated())
+            .addFilterBefore(new AuthRateLimitFilter(), BearerTokenAuthenticationFilter.class)
+            .addFilterAfter(new ActiveOwnerFilter(ownerRepository), BearerTokenAuthenticationFilter.class)
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> { }));
         return http.build();
     }

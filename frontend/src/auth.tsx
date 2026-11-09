@@ -23,7 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     getCurrentOwner()
       .then(setOwner)
-      .catch(() => clearSession())
+      .catch(() => {
+        clearSession();
+        setOwner(null);
+      })
       .finally(() => setLoading(false));
   }, []);
 
