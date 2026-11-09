@@ -25,8 +25,21 @@ class OwnerPersistenceAdapterTest {
 
         when(jpaRepository.findById(owner.getId())).thenReturn(Optional.empty());
         when(jpaRepository.saveAndFlush(any(OwnerJpaEntity.class)))
-            .thenThrow(new DataIntegrityViolationException("duplicate key"));
+            .thenThrow(new DataIntegrityViolationException("ERROR: duplicate key value violates unique constraint \"uq_owners_email\""));
 
         assertThrows(OwnerAlreadyExistsException.class, () -> adapter.save(owner));
+    }
+
+    @Test
+    void rethrowsNonDuplicateIntegrityViolations() {
+        OwnerJpaRepository jpaRepository = mock(OwnerJpaRepository.class);
+        OwnerPersistenceAdapter adapter = new OwnerPersistenceAdapter(jpaRepository);
+        Owner owner = Owner.register(UUID.randomUUID(), "owner@example.com", "hash", "Owner", Instant.now());
+
+        when(jpaRepository.findById(owner.getId())).thenReturn(Optional.empty());
+        when(jpaRepository.saveAndFlush(any(OwnerJpaEntity.class)))
+            .thenThrow(new DataIntegrityViolationException("value too long for type character varying(320)"));
+
+        assertThrows(DataIntegrityViolationException.class, () -> adapter.save(owner));
     }
 }

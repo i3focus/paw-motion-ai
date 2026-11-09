@@ -34,7 +34,10 @@ public class OwnerPersistenceAdapter implements OwnerRepository {
         try {
             return toDomain(repository.saveAndFlush(entity));
         } catch (DataIntegrityViolationException exception) {
-            throw new OwnerAlreadyExistsException(owner.getEmail());
+            if (isEmailUniqueViolation(exception)) {
+                throw new OwnerAlreadyExistsException(owner.getEmail());
+            }
+            throw exception;
         }
     }
 
@@ -51,6 +54,11 @@ public class OwnerPersistenceAdapter implements OwnerRepository {
     @Override
     public boolean existsByEmailIgnoreCase(String email) {
         return repository.existsByEmailIgnoreCase(email);
+    }
+
+    private boolean isEmailUniqueViolation(DataIntegrityViolationException exception) {
+        String message = exception.getMessage();
+        return message != null && (message.contains("uq_owners_email") || message.contains("duplicate key value violates unique constraint"));
     }
 
     private Owner toDomain(OwnerJpaEntity entity) {

@@ -31,7 +31,7 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
         throws ServletException, IOException {
         long now = Instant.now().toEpochMilli();
-        String key = request.getRemoteAddr() + ":" + request.getRequestURI();
+        String key = clientKey(request) + ":" + request.getRequestURI();
         Window window = attempts.compute(key, (ignored, existing) -> {
             if (existing == null || now - existing.startedAtEpochMilli() >= WINDOW.toMillis()) {
                 return new Window(now, 1);
@@ -46,6 +46,14 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
             return;
         }
         filterChain.doFilter(request, response);
+    }
+
+    private String clientKey(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 
     private record Window(long startedAtEpochMilli, int count) {
