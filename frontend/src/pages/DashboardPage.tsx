@@ -16,8 +16,8 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-600">Your pet activity overview for the last 7 days.</p>
+        <h1 className="text-2xl font-bold text-cream-900">Dashboard</h1>
+        <p className="text-cream-600">Your pet activity overview for the last 7 days.</p>
       </div>
       <ErrorMessage message={error} />
       {summary ? (
@@ -35,12 +35,12 @@ export function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {summary.recentActivities.map((activity) => (
-                  <div key={activity.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+                  <div key={activity.id} className="flex items-center justify-between rounded-xl bg-cream-50 px-4 py-3">
                     <div>
-                      <p className="font-medium capitalize text-slate-900">{activity.type.replace('_', ' ')}</p>
-                      <p className="text-sm text-slate-500">{new Date(activity.startedAt).toLocaleString()}</p>
+                      <p className="font-medium capitalize text-cream-900">{activity.type.replace('_', ' ')}</p>
+                      <p className="text-sm text-cream-500">{new Date(activity.startedAt).toLocaleString()}</p>
                     </div>
-                    <div className="text-right text-sm text-slate-600">
+                    <div className="text-right text-sm text-cream-600">
                       <p>{Math.round(activity.durationSeconds / 60)} min</p>
                       <p>{activity.distanceMeters ? `${(activity.distanceMeters / 1000).toFixed(2)} km` : 'No distance'}</p>
                     </div>
@@ -51,7 +51,7 @@ export function DashboardPage() {
           </Card>
         </>
       ) : !error ? (
-        <p className="text-slate-500">Loading dashboard…</p>
+        <p className="text-cream-500">Loading dashboard…</p>
       ) : null}
     </div>
   );

@@ -15,7 +15,7 @@ function AppShell() {
   const [page, setPage] = useState<PageKey>('dashboard');
 
   if (loading) {
-    return <main className="flex min-h-screen items-center justify-center text-slate-500">Loading PawMotion AI…</main>;
+    return <main className="flex min-h-screen items-center justify-center text-cream-500">Loading PawMotion AI…</main>;
   }
   if (!owner) {
     return <AuthPage />;
