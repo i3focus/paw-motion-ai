@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { analyzeCampaign, ApiError, createCampaign, listCampaigns } from '../api/client';
+import { analyzeCampaign, ApiError, archiveCampaign, createCampaign, listCampaigns } from '../api/client';
 import { Badge, Button, Card, EmptyState, ErrorMessage, SectionHeader, TextArea, TextInput } from '../components/ui';
 import type { Campaign } from '../types';
 
@@ -12,6 +12,7 @@ export function PartnerCampaignsPage() {
   const [callToAction, setCallToAction] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function refresh() {
@@ -88,6 +89,19 @@ export function PartnerCampaignsPage() {
     }
   }
 
+  async function handleArchive(campaignId: string) {
+    setError(null);
+    setArchivingId(campaignId);
+    try {
+      await archiveCampaign(campaignId);
+      await refresh();
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : 'Unable to archive campaign');
+    } finally {
+      setArchivingId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <SectionHeader title="Campaigns" subtitle="Create advertisements and campaigns, then run AI analysis to generate owner-facing topics." />
@@ -148,10 +162,18 @@ export function PartnerCampaignsPage() {
                         <Badge tone={campaign.status === 'ACTIVE' ? 'success' : 'neutral'}>{campaign.status}</Badge>
                       </div>
                       <p className="mt-1 text-sm text-cream-500">Audience: {campaign.targetAudience}</p>
+                      <p className="mt-1 text-xs text-cream-500">{campaign.creditsCharged} credits charged · {campaign.creditsRefunded} refunded · expires {new Date(campaign.expiresAt).toLocaleDateString()}</p>
                     </div>
-                    <Button type="button" variant="secondary" onClick={() => handleAnalyze(campaign.id)} disabled={analyzingId === campaign.id}>
-                      {analyzingId === campaign.id ? 'Analyzing…' : campaign.aiTopics.length ? 'Re-analyze' : 'Analyze with AI'}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="secondary" onClick={() => handleAnalyze(campaign.id)} disabled={analyzingId === campaign.id}>
+                        {analyzingId === campaign.id ? 'Analyzing…' : campaign.aiTopics.length ? 'Re-analyze' : 'Analyze with AI'}
+                      </Button>
+                      {campaign.status !== 'ARCHIVED' && campaign.status !== 'EXPIRED' ? (
+                        <Button type="button" variant="ghost" onClick={() => handleArchive(campaign.id)} disabled={archivingId === campaign.id}>
+                          {archivingId === campaign.id ? 'Archiving…' : 'Archive'}
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
                   <p className="mt-3 text-sm text-cream-700">{campaign.description}</p>
                   {campaign.callToAction ? <p className="mt-2 text-sm font-medium text-primary">CTA: {campaign.callToAction}</p> : null}

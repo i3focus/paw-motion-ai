@@ -45,6 +45,18 @@ public class PartnerCampaignJpaEntity {
     @Column(name = "analyzed_at")
     private Instant analyzedAt;
 
+    @Column(name = "credits_charged", nullable = false)
+    private long creditsCharged;
+
+    @Column(name = "credits_refunded", nullable = false)
+    private long creditsRefunded;
+
+    @Column(name = "expires_at", nullable = false)
+    private Instant expiresAt;
+
+    @Column(name = "idempotency_key")
+    private String idempotencyKey;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -59,6 +71,7 @@ public class PartnerCampaignJpaEntity {
 
     public PartnerCampaignJpaEntity(UUID id, UUID partnerId, String title, String description, String targetAudience,
                                     String callToAction, CampaignStatus status, String aiTopics, Instant analyzedAt,
+                                    long creditsCharged, long creditsRefunded, Instant expiresAt, String idempotencyKey,
                                     Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.partnerId = partnerId;
@@ -69,6 +82,10 @@ public class PartnerCampaignJpaEntity {
         this.status = status;
         this.aiTopics = aiTopics;
         this.analyzedAt = analyzedAt;
+        this.creditsCharged = creditsCharged;
+        this.creditsRefunded = creditsRefunded;
+        this.expiresAt = expiresAt;
+        this.idempotencyKey = idempotencyKey;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -82,11 +99,16 @@ public class PartnerCampaignJpaEntity {
     public CampaignStatus getStatus() { return status; }
     public String getAiTopics() { return aiTopics; }
     public Instant getAnalyzedAt() { return analyzedAt; }
+    public long getCreditsCharged() { return creditsCharged; }
+    public long getCreditsRefunded() { return creditsRefunded; }
+    public Instant getExpiresAt() { return expiresAt; }
+    public String getIdempotencyKey() { return idempotencyKey; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 
     public void update(String title, String description, String targetAudience, String callToAction,
-                       CampaignStatus status, String aiTopics, Instant analyzedAt, Instant updatedAt) {
+                       CampaignStatus status, String aiTopics, Instant analyzedAt, long creditsCharged,
+                       long creditsRefunded, Instant expiresAt, String idempotencyKey, Instant updatedAt) {
         this.title = title;
         this.description = description;
         this.targetAudience = targetAudience;
@@ -94,6 +116,10 @@ public class PartnerCampaignJpaEntity {
         this.status = status;
         this.aiTopics = aiTopics;
         this.analyzedAt = analyzedAt;
+        this.creditsCharged = creditsCharged;
+        this.creditsRefunded = creditsRefunded;
+        this.expiresAt = expiresAt;
+        this.idempotencyKey = idempotencyKey;
         this.updatedAt = updatedAt;
     }
 }

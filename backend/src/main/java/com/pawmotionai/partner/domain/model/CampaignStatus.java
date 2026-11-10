@@ -5,7 +5,8 @@ public enum CampaignStatus {
     DRAFT,
     ACTIVE,
     PAUSED,
-    ARCHIVED;
+    ARCHIVED,
+    EXPIRED;
 
     public static CampaignStatus fromValue(String value) {
         return value == null || value.isBlank() ? DRAFT : valueOf(value.trim().toUpperCase());

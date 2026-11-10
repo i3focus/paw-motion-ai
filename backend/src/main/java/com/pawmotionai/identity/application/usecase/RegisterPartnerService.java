@@ -15,6 +15,7 @@ import com.pawmotionai.identity.application.port.out.PasswordHasher;
 import com.pawmotionai.identity.application.port.out.TokenIssuer;
 import com.pawmotionai.identity.domain.exception.OwnerAlreadyExistsException;
 import com.pawmotionai.identity.domain.model.Owner;
+import com.pawmotionai.ledger.application.port.in.EnsureWalletUseCase;
 
 @Service
 public class RegisterPartnerService implements RegisterPartnerUseCase {
@@ -22,11 +23,14 @@ public class RegisterPartnerService implements RegisterPartnerUseCase {
     private final OwnerRepository ownerRepository;
     private final PasswordHasher passwordHasher;
     private final TokenIssuer tokenIssuer;
+    private final EnsureWalletUseCase ensureWalletUseCase;
 
-    public RegisterPartnerService(OwnerRepository ownerRepository, PasswordHasher passwordHasher, TokenIssuer tokenIssuer) {
+    public RegisterPartnerService(OwnerRepository ownerRepository, PasswordHasher passwordHasher, TokenIssuer tokenIssuer,
+                                  EnsureWalletUseCase ensureWalletUseCase) {
         this.ownerRepository = ownerRepository;
         this.passwordHasher = passwordHasher;
         this.tokenIssuer = tokenIssuer;
+        this.ensureWalletUseCase = ensureWalletUseCase;
     }
 
     @Override
@@ -41,6 +45,7 @@ public class RegisterPartnerService implements RegisterPartnerUseCase {
             UUID.randomUUID(), normalizedEmail, passwordHasher.hash(command.password()), command.displayName().trim(),
             command.businessName(), command.website(), command.description(), Instant.now());
         Owner saved = ownerRepository.save(partner);
+        ensureWalletUseCase.ensureWallet(saved.getId());
         TokenIssuer.IssuedToken token = tokenIssuer.issue(saved);
         return new AuthResponseDto(token.accessToken(), token.tokenType(), token.expiresInSeconds(), OwnerResponseDto.from(saved));
     }

@@ -186,6 +186,175 @@ paths:
           $ref: '#/components/responses/Problem'
         '404':
           $ref: '#/components/responses/Problem'
+  /api/partner/campaigns/{campaignId}/archive:
+    post:
+      tags: [Partner Portal]
+      summary: Archive a campaign and refund prorated credits
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Archived campaign
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignResponse'
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /api/partner/wallet:
+    get:
+      tags: [Partner Portal]
+      summary: Get the authenticated partner wallet and account balances
+      responses:
+        '200':
+          description: Wallet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletResponse'
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/partner/wallet/accounts/{accountId}/entries:
+    get:
+      tags: [Partner Portal]
+      summary: List ledger entries for a wallet account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Ledger entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LedgerEntryResponse'
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/partner/billing/pricing:
+    get:
+      tags: [Partner Billing]
+      summary: Get credit pricing and campaign pricing configuration
+      responses:
+        '200':
+          description: Pricing configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingResponse'
+  /api/partner/billing/purchases:
+    get:
+      tags: [Partner Billing]
+      summary: List credit purchases for the authenticated partner
+      responses:
+        '200':
+          description: Purchases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentTransactionResponse'
+    post:
+      tags: [Partner Billing]
+      summary: Create a hosted-checkout credit purchase
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePurchaseRequest'
+      responses:
+        '201':
+          description: Purchase created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransactionResponse'
+        '402': { $ref: '#/components/responses/Problem' }
+        '423': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /api/partner/billing/purchases/{transactionId}:
+    get:
+      tags: [Partner Billing]
+      summary: Get one credit purchase
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Purchase
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransactionResponse'
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/webhooks/payments/{provider}:
+    post:
+      tags: [Partner Billing]
+      summary: Receive a payment provider webhook
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: Webhook accepted }
+        '401': { $ref: '#/components/responses/Problem' }
+  /api/admin/partners/{partnerId}/wallet/unblock:
+    post:
+      tags: [Admin]
+      summary: Unblock a partner wallet (ADMIN)
+      parameters:
+        - name: partnerId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Wallet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletResponse'
+        '403': { $ref: '#/components/responses/Problem' }
+  /api/admin/partners/{partnerId}/wallet/adjustments:
+    post:
+      tags: [Admin]
+      summary: Post a manual wallet adjustment (ADMIN)
+      parameters:
+        - name: partnerId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAdjustmentRequest'
+      responses:
+        '201': { description: Adjustment posted }
+        '402': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
   /api/recommendations:
     get:
       tags: [Recommendations]
@@ -452,13 +621,94 @@ components:
         description: { type: string }
         targetAudience: { type: string }
         callToAction: { type: string }
-        status: { type: string, enum: [DRAFT, ACTIVE, PAUSED, ARCHIVED] }
+        status: { type: string, enum: [DRAFT, ACTIVE, PAUSED, ARCHIVED, EXPIRED] }
         aiTopics:
           type: array
           items: { type: string }
         analyzedAt: { type: string, format: date-time, nullable: true }
+        creditsCharged: { type: integer, format: int64 }
+        creditsRefunded: { type: integer, format: int64 }
+        expiresAt: { type: string, format: date-time }
+        remainingBalance: { type: integer, format: int64, nullable: true }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    WalletAccountResponse:
+      type: object
+      required: [id, walletId, code, status, balance]
+      properties:
+        id: { type: string, format: uuid }
+        walletId: { type: string, format: uuid }
+        code: { type: string, enum: [MAIN, BONUS, PARTNER] }
+        status: { type: string, enum: [OPEN, FROZEN] }
+        balance: { type: integer, format: int64 }
+    WalletResponse:
+      type: object
+      required: [id, partnerId, status, accounts]
+      properties:
+        id: { type: string, format: uuid }
+        partnerId: { type: string, format: uuid }
+        status: { type: string, enum: [ACTIVE, BLOCKED] }
+        blockedReason: { type: string, nullable: true }
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletAccountResponse'
+    LedgerEntryResponse:
+      type: object
+      required: [id, accountId, direction, amount, balanceAfter, referenceType, referenceId, occurredAt]
+      properties:
+        id: { type: string, format: uuid }
+        accountId: { type: string, format: uuid }
+        direction: { type: string, enum: [CREDIT, DEBIT] }
+        amount: { type: integer, format: int64 }
+        balanceAfter: { type: integer, format: int64 }
+        referenceType: { type: string }
+        referenceId: { type: string, format: uuid }
+        description: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+    PricingResponse:
+      type: object
+      required: [currency, creditsPerCurrencyUnit, minPurchaseAmount, maxPurchaseAmount, campaignPriceAmount, campaignCreationCostCredits, campaignDurationDays, paymentProvider]
+      properties:
+        currency: { type: string, example: BRL }
+        creditsPerCurrencyUnit: { type: number }
+        minPurchaseAmount: { type: number }
+        maxPurchaseAmount: { type: number }
+        campaignPriceAmount: { type: number }
+        campaignCreationCostCredits: { type: integer, format: int64 }
+        campaignDurationDays: { type: integer }
+        paymentProvider: { type: string }
+    CreatePurchaseRequest:
+      type: object
+      required: [amount]
+      properties:
+        amount: { type: number, minimum: 0.01 }
+        method: { type: string, enum: [PIX, CARD], nullable: true }
+        customerId: { type: string, nullable: true }
+    PaymentTransactionResponse:
+      type: object
+      required: [id, partnerId, amount, currency, expectedCredits, provider, status, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        partnerId: { type: string, format: uuid }
+        amount: { type: number }
+        currency: { type: string }
+        expectedCredits: { type: integer, format: int64 }
+        method: { type: string, nullable: true }
+        provider: { type: string }
+        status: { type: string, enum: [PENDING, CONFIRMED, FAILED, EXPIRED, CANCELED, DISPUTED, REFUNDED] }
+        providerCheckoutUrl: { type: string, nullable: true }
+        failureReason: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AdminAdjustmentRequest:
+      type: object
+      required: [accountCode, direction, amount, reason]
+      properties:
+        accountCode: { type: string, enum: [MAIN, BONUS, PARTNER] }
+        direction: { type: string, enum: [CREDIT, DEBIT] }
+        amount: { type: integer, format: int64, minimum: 1 }
+        reason: { type: string }
     OwnerRecommendationResponse:
       type: object
       required: [campaignId, campaignTitle, partnerName, description, callToAction, recommendedTopics, analyzedAt]

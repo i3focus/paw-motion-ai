@@ -2,10 +2,11 @@ import type { ReactNode } from 'react';
 import { Avatar, Badge, BrandLogo } from '../components/ui';
 import { usePartnerAuth } from '../partnerAuth';
 
-export type PartnerPageKey = 'campaigns' | 'profile';
+export type PartnerPageKey = 'campaigns' | 'billing' | 'profile';
 
 const NAV_ITEMS: Array<{ key: PartnerPageKey; label: string }> = [
   { key: 'campaigns', label: 'Campaigns' },
+  { key: 'billing', label: 'Credits & Billing' },
   { key: 'profile', label: 'Profile' },
 ];
 

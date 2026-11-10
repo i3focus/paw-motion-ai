@@ -1,5 +1,7 @@
 package com.pawmotionai.partner.application.port.out;
 
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,4 +18,8 @@ public interface PartnerCampaignRepository {
     List<PartnerCampaign> findByPartnerId(UUID partnerId);
 
     List<PartnerCampaign> findByStatus(CampaignStatus status);
+
+    List<PartnerCampaign> findExpiringBefore(Instant now, Collection<CampaignStatus> statuses);
+
+    Optional<PartnerCampaign> findByPartnerIdAndIdempotencyKey(UUID partnerId, String idempotencyKey);
 }
