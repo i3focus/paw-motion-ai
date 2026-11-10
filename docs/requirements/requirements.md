@@ -278,7 +278,7 @@ Source: product feedback received on 2026-11-10. It supersedes the earlier "part
 - **Priority**: Must
 - **Actor**: Business partner
 - **Preconditions**: Authenticated partner.
-- **Main flow**: Partner opens "Dashboard" in the partner area and sees, per campaign and in total, for a selectable period (7/30/90 days or custom): total clicks (views), unique owners who clicked, clicks per day (time series chart), clicks by placement/source, credits spent, cost per click (credits spent / clicks), active/expired campaigns with `expiresAt`, and current wallet balances with a "Buy credits" shortcut.
+- **Main flow**: Partner opens "Dashboard" in the partner area and sees, per campaign and in total, for a selectable period (7/30/90 days or custom): total clicks (views), unique owners who clicked (distinct over the whole period, not summed daily uniques), clicks per day (time series chart), clicks by placement/source, credits spent, cost per click (credits spent / clicks), active/expired campaigns with `expiresAt`, and current wallet balances with a "Buy credits" shortcut.
 - **Business rules**: Aggregate-only counters; no owner identifiers, demographics, or PII. Partner sees only their campaigns. Metrics are near-real-time (≤ 5 min lag acceptable).
 - **Acceptance criteria**: Metrics match recorded interactions for the period; empty state explains how to create the first campaign and buy credits.
 - **Proposed API**: `GET /api/partner/analytics/summary?from=&to=`, `GET /api/partner/analytics/campaigns/{campaignId}?from=&to=&granularity=day`.

@@ -39,7 +39,7 @@ The initial migration creates `owners`, `pets`, and `activities`. Later migratio
 | `payment_webhook_events` | `provider`, `provider_event_id` (PK pair), `received_at`, `payload_hash` — deduplication |
 | `partner_public_profiles` | `partner_id` PK, `categories` text[], `services` JSONB, `website`, `phone`, `address`, `location geography(Point,4326)` GiST index, `service_radius_km` |
 | `campaign_clicks` | `id`, `campaign_id`, `partner_id`, `owner_hash`, `source`, `placement`, `occurred_at`; index (`campaign_id`, `occurred_at`) |
-| `campaign_daily_metrics` | PK (`campaign_id`, `day`), `clicks`, `unique_clicks` |
+| `campaign_daily_metrics` | PK (`campaign_id`, `day`), `clicks`, `unique_clicks` (per day only; period uniques use `COUNT(DISTINCT owner_hash)` on `campaign_clicks`) |
 | `partner_campaigns` (changed) | + `credits_charged BIGINT`, `credits_refunded BIGINT`, `expires_at`, status + `EXPIRED`/`ARCHIVED`; existing `version` (`@Version`) |
 | `challenges` / `badges` / `challenge_enrollments` / `badge_awards` | challenge: `created_by` (`ADMIN`/`AI`), `status` (`DRAFT`/`PUBLISHED`/`CLOSED`), metric, target, period, `badge_id`; enrollment UNIQUE (`challenge_id`, `owner_id`); award UNIQUE (`badge_id`, `owner_id`) |
 | `activity_routes` | `activity_id` PK, `geojson JSONB` (`Feature<LineString>` with timestamps), `start_lat/lng`, `end_lat/lng`, `point_count` (PostGIS deferred) |
