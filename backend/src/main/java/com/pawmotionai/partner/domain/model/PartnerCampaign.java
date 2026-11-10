@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import com.pawmotionai.partner.domain.exception.CampaignStateException;
+
 public class PartnerCampaign {
 
     private final UUID id;
@@ -88,13 +90,13 @@ public class PartnerCampaign {
 
     public void applyAnalysis(List<String> topics, Instant analyzedAt) {
         if (status == CampaignStatus.ARCHIVED || status == CampaignStatus.EXPIRED) {
-            throw new IllegalStateException("Campaign cannot be analyzed from status " + status);
+            throw new CampaignStateException("Campaign cannot be analyzed from status " + status);
         }
         if (topics == null || topics.isEmpty()) {
             throw new IllegalArgumentException("AI analysis must return at least one topic");
         }
         if (expiresAt != null && analyzedAt != null && !analyzedAt.isBefore(expiresAt)) {
-            throw new IllegalStateException("Campaign has expired");
+            throw new CampaignStateException("Campaign has expired");
         }
         this.aiTopics = String.join("\n", topics.stream().map(String::trim).filter(topic -> !topic.isEmpty()).toList());
         this.analyzedAt = analyzedAt;
@@ -103,10 +105,10 @@ public class PartnerCampaign {
 
     public void expire(Instant now) {
         if (status == CampaignStatus.ARCHIVED || status == CampaignStatus.EXPIRED) {
-            throw new IllegalStateException("Campaign cannot expire from status " + status);
+            throw new CampaignStateException("Campaign cannot expire from status " + status);
         }
         if (expiresAt == null || now.isBefore(expiresAt)) {
-            throw new IllegalStateException("Campaign has not reached its expiration date");
+            throw new CampaignStateException("Campaign has not reached its expiration date");
         }
         this.status = CampaignStatus.EXPIRED;
     }
@@ -116,7 +118,7 @@ public class PartnerCampaign {
             return;
         }
         if (status == CampaignStatus.EXPIRED) {
-            throw new IllegalStateException("Expired campaigns cannot be archived for refund");
+            throw new CampaignStateException("Expired campaigns cannot be archived for refund");
         }
         this.status = CampaignStatus.ARCHIVED;
         this.creditsRefunded += Math.max(0, refundAmount);

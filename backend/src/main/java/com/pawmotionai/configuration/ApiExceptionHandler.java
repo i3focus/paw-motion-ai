@@ -20,6 +20,7 @@ import com.pawmotionai.pet.domain.exception.InvalidPetException;
 import com.pawmotionai.pet.domain.exception.PetNotFoundException;
 import com.pawmotionai.partner.domain.exception.CampaignAccessDeniedException;
 import com.pawmotionai.partner.domain.exception.CampaignNotFoundException;
+import com.pawmotionai.partner.domain.exception.CampaignStateException;
 import com.pawmotionai.billing.domain.exception.InvalidPaymentStateException;
 import com.pawmotionai.billing.domain.exception.PaymentGatewayException;
 import com.pawmotionai.billing.domain.exception.PaymentTransactionNotFoundException;
@@ -58,6 +59,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedException exception) {
         return problem(HttpStatus.FORBIDDEN, "Access denied", exception.getMessage());
+    }
+
+    @ExceptionHandler(CampaignStateException.class)
+    public ResponseEntity<ProblemDetail> handleCampaignState(CampaignStateException exception) {
+        return problem(HttpStatus.CONFLICT, "Invalid campaign state", exception.getMessage());
     }
 
     @ExceptionHandler({OwnerNotFoundException.class, PetNotFoundException.class, ActivityNotFoundException.class,

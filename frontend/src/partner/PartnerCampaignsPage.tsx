@@ -165,9 +165,11 @@ export function PartnerCampaignsPage() {
                       <p className="mt-1 text-xs text-cream-500">{campaign.creditsCharged} credits charged · {campaign.creditsRefunded} refunded · expires {new Date(campaign.expiresAt).toLocaleDateString()}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button type="button" variant="secondary" onClick={() => handleAnalyze(campaign.id)} disabled={analyzingId === campaign.id}>
-                        {analyzingId === campaign.id ? 'Analyzing…' : campaign.aiTopics.length ? 'Re-analyze' : 'Analyze with AI'}
-                      </Button>
+                      {campaign.status !== 'ARCHIVED' && campaign.status !== 'EXPIRED' ? (
+                        <Button type="button" variant="secondary" onClick={() => handleAnalyze(campaign.id)} disabled={analyzingId === campaign.id}>
+                          {analyzingId === campaign.id ? 'Analyzing…' : campaign.aiTopics.length ? 'Re-analyze' : 'Analyze with AI'}
+                        </Button>
+                      ) : null}
                       {campaign.status !== 'ARCHIVED' && campaign.status !== 'EXPIRED' ? (
                         <Button type="button" variant="ghost" onClick={() => handleArchive(campaign.id)} disabled={archivingId === campaign.id}>
                           {archivingId === campaign.id ? 'Archiving…' : 'Archive'}
