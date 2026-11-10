@@ -71,9 +71,77 @@ export interface Campaign {
   description: string;
   targetAudience: string;
   callToAction: string;
-  status: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'ARCHIVED' | string;
+  status: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'ARCHIVED' | 'EXPIRED' | string;
   aiTopics: string[];
   analyzedAt: string | null;
+  creditsCharged: number;
+  creditsRefunded: number;
+  expiresAt: string;
+  remainingBalance: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WalletAccount {
+  id: string;
+  walletId: string;
+  code: 'MAIN' | 'BONUS' | 'PARTNER' | string;
+  status: 'OPEN' | 'CLOSED' | string;
+  balance: number;
+}
+
+export interface Wallet {
+  walletId: string;
+  partnerId: string;
+  status: 'ACTIVE' | 'BLOCKED' | string;
+  blockedReason: string | null;
+  accounts: WalletAccount[];
+  totalBalance: number;
+}
+
+export interface LedgerEntry {
+  id: string;
+  accountId: string;
+  accountCode: string | null;
+  direction: 'CREDIT' | 'DEBIT' | string;
+  amount: number;
+  balanceAfter: number;
+  referenceType: string;
+  referenceId: string;
+  description: string | null;
+  occurredAt: string;
+}
+
+export interface LedgerEntryPage {
+  content: LedgerEntry[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface BillingPricing {
+  currency: string;
+  creditsPerCurrencyUnit: number;
+  minPurchaseAmount: number;
+  maxPurchaseAmount: number;
+  campaignPriceAmount: number;
+  campaignCreationCostCredits: number;
+  campaignDurationDays: number;
+  paymentProvider: string;
+}
+
+export interface PaymentTransaction {
+  id: string;
+  partnerId: string;
+  amount: number;
+  currency: string;
+  expectedCredits: number;
+  method: string | null;
+  provider: string;
+  status: 'PENDING' | 'CONFIRMED' | 'FAILED' | 'EXPIRED' | 'CANCELED' | 'DISPUTED' | 'REFUNDED' | string;
+  providerCheckoutUrl: string | null;
+  failureReason: string | null;
   createdAt: string;
   updatedAt: string;
 }

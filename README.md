@@ -45,15 +45,15 @@ Implemented platform slice:
 - Separate owner and partner account roles sharing the same identity store and JWT issuer.
 - Owner registration/login, profile management, pet profiles with add/edit flows, activity tracking, dashboard summary, AI insights, and AI-analyzed partner recommendations.
 - Validated web/mobile inputs for email, password, phone, URLs, dates, and numeric activity fields, plus warm PawMotion visual cards using local dog imagery.
-- Partner registration/login at `/partner`, profile management, campaign creation, and AI campaign topic analysis.
+- Partner registration/login at `/partner`, profile management, campaign creation with credit debit, prorated archive refunds, expiration handling, and AI campaign topic analysis.
+- Partner credits ledger (`MAIN`/`BONUS`/`PARTNER` accounts), prepaid purchase pricing, hosted-checkout billing with fake/AbacatePay providers, webhook reconciliation, and a partner Credits & Billing portal page.
 - Expo mobile app for pet owners covering auth, dashboard, pets, activities, insights, recommendations, and profile.
 - OpenAPI contract and event schema under `docs/api/`.
 
-Challenges, rewards, partner analytics dashboards, GPS routes, and external AI provider adapters are planned in the backlog and are not part of the current runnable slice.
+Partner analytics dashboards, partner public profiles/maps, GPS routes, and external AI provider adapters are planned in the backlog and are not part of the current runnable slice.
 
 Planned next (change request CR-2026-11, see `docs/requirements/requirements.md` and ADR-0014..0018):
 
-- Partner credits: partners buy credits (fiat × CPP) through a payment provider, held in a wallet with one or more ledger accounts; each campaign creation atomically debits a configured amount of credits. CPP, campaign price, and campaign credit cost are environment variables.
 - Partner performance dashboard with campaign clicks, unique owners, and credits spent.
 - Owner-facing partner detail (area of operation, services, website, location map) when clicking a campaign, plus a partner discovery map.
 - Mobile Home quick-start live GPS tracking (Strava-style) with optional publication to Strava.

@@ -1,6 +1,7 @@
 package com.pawmotionai.partner.adapter.out.persistence;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,9 +26,11 @@ public class PartnerCampaignPersistenceAdapter implements PartnerCampaignReposit
         PartnerCampaignJpaEntity entity = repository.findById(campaign.getId())
             .orElseGet(() -> new PartnerCampaignJpaEntity(campaign.getId(), campaign.getPartnerId(), campaign.getTitle(),
                 campaign.getDescription(), campaign.getTargetAudience(), campaign.getCallToAction(), campaign.getStatus(),
-                null, null, campaign.getCreatedAt(), Instant.now()));
+                null, null, campaign.getCreditsCharged(), campaign.getCreditsRefunded(), campaign.getExpiresAt(),
+                campaign.getIdempotencyKey(), campaign.getCreatedAt(), Instant.now()));
         entity.update(campaign.getTitle(), campaign.getDescription(), campaign.getTargetAudience(), campaign.getCallToAction(),
-            campaign.getStatus(), joinTopics(campaign), campaign.getAnalyzedAt(), Instant.now());
+            campaign.getStatus(), joinTopics(campaign), campaign.getAnalyzedAt(), campaign.getCreditsCharged(),
+            campaign.getCreditsRefunded(), campaign.getExpiresAt(), campaign.getIdempotencyKey(), Instant.now());
         return toDomain(repository.save(entity));
     }
 
@@ -46,6 +49,16 @@ public class PartnerCampaignPersistenceAdapter implements PartnerCampaignReposit
         return repository.findByStatus(status).stream().map(this::toDomain).toList();
     }
 
+    @Override
+    public List<PartnerCampaign> findExpiringBefore(Instant now, Collection<CampaignStatus> statuses) {
+        return repository.findByStatusInAndExpiresAtBefore(statuses, now).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public Optional<PartnerCampaign> findByPartnerIdAndIdempotencyKey(UUID partnerId, String idempotencyKey) {
+        return repository.findByPartnerIdAndIdempotencyKey(partnerId, idempotencyKey).map(this::toDomain);
+    }
+
     private String joinTopics(PartnerCampaign campaign) {
         return campaign.topics().isEmpty() ? null : String.join("\n", campaign.topics());
     }
@@ -53,6 +66,7 @@ public class PartnerCampaignPersistenceAdapter implements PartnerCampaignReposit
     private PartnerCampaign toDomain(PartnerCampaignJpaEntity entity) {
         return PartnerCampaign.reconstitute(entity.getId(), entity.getPartnerId(), entity.getTitle(), entity.getDescription(),
             entity.getTargetAudience(), entity.getCallToAction(), entity.getStatus(), entity.getAiTopics(),
-            entity.getAnalyzedAt(), entity.getCreatedAt(), entity.getUpdatedAt());
+            entity.getAnalyzedAt(), entity.getCreditsCharged(), entity.getCreditsRefunded(), entity.getExpiresAt(),
+            entity.getIdempotencyKey(), entity.getCreatedAt(), entity.getUpdatedAt());
     }
 }

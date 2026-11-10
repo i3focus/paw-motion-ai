@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PartnerAuthProvider, usePartnerAuth } from '../partnerAuth';
 import { PartnerAuthPage } from './PartnerAuthPage';
+import { PartnerBillingPage } from './PartnerBillingPage';
 import { PartnerCampaignsPage } from './PartnerCampaignsPage';
 import { PartnerLayout, type PartnerPageKey } from './PartnerLayout';
 import { PartnerProfilePage } from './PartnerProfilePage';
@@ -19,6 +20,7 @@ function PartnerShell() {
   return (
     <PartnerLayout page={page} setPage={setPage}>
       {page === 'campaigns' ? <PartnerCampaignsPage /> : null}
+      {page === 'billing' ? <PartnerBillingPage /> : null}
       {page === 'profile' ? <PartnerProfilePage /> : null}
     </PartnerLayout>
   );

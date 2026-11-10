@@ -1,12 +1,16 @@
 import type {
   Activity,
   AuthResponse,
+  BillingPricing,
   Campaign,
   DashboardSummary,
+  LedgerEntryPage,
+  PaymentTransaction,
   Insight,
   Owner,
   OwnerRecommendation,
   Pet,
+  Wallet,
 } from '../types';
 
 const OWNER_TOKEN_KEY = 'pawmotion.owner.accessToken';
@@ -232,15 +236,50 @@ export function createCampaign(input: {
   description: string;
   targetAudience: string;
   callToAction: string;
-}): Promise<Campaign> {
+}, idempotencyKey: string = crypto.randomUUID()): Promise<Campaign> {
   return request<Campaign>('/api/partner/campaigns', {
     method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(input),
+  }, getStoredPartnerToken());
+}
+
+export function archiveCampaign(campaignId: string): Promise<Campaign> {
+  return request<Campaign>(`/api/partner/campaigns/${campaignId}/archive`, {
+    method: 'POST',
   }, getStoredPartnerToken());
 }
 
 export function analyzeCampaign(campaignId: string): Promise<Campaign> {
   return request<Campaign>(`/api/partner/campaigns/${campaignId}/analyze`, {
     method: 'POST',
+  }, getStoredPartnerToken());
+}
+
+export function getWallet(): Promise<Wallet> {
+  return request<Wallet>('/api/partner/wallet', {}, getStoredPartnerToken());
+}
+
+export function getWalletEntries(accountId: string, page: number = 0, size: number = 20): Promise<LedgerEntryPage> {
+  return request<LedgerEntryPage>(`/api/partner/wallet/accounts/${accountId}/entries?page=${page}&size=${size}`, {}, getStoredPartnerToken());
+}
+
+export function getBillingPricing(): Promise<BillingPricing> {
+  return request<BillingPricing>('/api/partner/billing/pricing', {}, getStoredPartnerToken());
+}
+
+export function listPurchases(): Promise<PaymentTransaction[]> {
+  return request<PaymentTransaction[]>('/api/partner/billing/purchases', {}, getStoredPartnerToken());
+}
+
+export function createPurchase(input: {
+  amount: number;
+  method?: string;
+  customerId?: string;
+}, idempotencyKey: string = crypto.randomUUID()): Promise<PaymentTransaction> {
+  return request<PaymentTransaction>('/api/partner/billing/purchases', {
+    method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
+    body: JSON.stringify(input),
   }, getStoredPartnerToken());
 }

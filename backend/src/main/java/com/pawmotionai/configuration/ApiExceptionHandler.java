@@ -20,6 +20,15 @@ import com.pawmotionai.pet.domain.exception.InvalidPetException;
 import com.pawmotionai.pet.domain.exception.PetNotFoundException;
 import com.pawmotionai.partner.domain.exception.CampaignAccessDeniedException;
 import com.pawmotionai.partner.domain.exception.CampaignNotFoundException;
+import com.pawmotionai.partner.domain.exception.CampaignStateException;
+import com.pawmotionai.billing.domain.exception.InvalidPaymentStateException;
+import com.pawmotionai.billing.domain.exception.PaymentGatewayException;
+import com.pawmotionai.billing.domain.exception.PaymentTransactionNotFoundException;
+import com.pawmotionai.billing.domain.exception.WebhookVerificationException;
+import com.pawmotionai.ledger.domain.exception.InsufficientCreditsException;
+import com.pawmotionai.ledger.domain.exception.LedgerConflictException;
+import com.pawmotionai.ledger.domain.exception.WalletBlockedException;
+import com.pawmotionai.ledger.domain.exception.WalletNotFoundException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -52,10 +61,48 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.FORBIDDEN, "Access denied", exception.getMessage());
     }
 
+    @ExceptionHandler(CampaignStateException.class)
+    public ResponseEntity<ProblemDetail> handleCampaignState(CampaignStateException exception) {
+        return problem(HttpStatus.CONFLICT, "Invalid campaign state", exception.getMessage());
+    }
+
     @ExceptionHandler({OwnerNotFoundException.class, PetNotFoundException.class, ActivityNotFoundException.class,
-        CampaignNotFoundException.class})
+        CampaignNotFoundException.class, WalletNotFoundException.class, PaymentTransactionNotFoundException.class})
     public ResponseEntity<ProblemDetail> handleNotFound(RuntimeException exception) {
         return problem(HttpStatus.NOT_FOUND, "Resource not found", exception.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientCreditsException.class)
+    public ResponseEntity<ProblemDetail> handleInsufficientCredits(InsufficientCreditsException exception) {
+        ProblemDetail problem = problem(HttpStatus.PAYMENT_REQUIRED, "Insufficient credits", exception.getMessage()).getBody();
+        problem.setProperty("requiredCredits", exception.getRequiredCredits());
+        problem.setProperty("balance", exception.getAvailableBalance());
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(problem);
+    }
+
+    @ExceptionHandler(WalletBlockedException.class)
+    public ResponseEntity<ProblemDetail> handleWalletBlocked(WalletBlockedException exception) {
+        return problem(HttpStatus.LOCKED, "Wallet blocked", exception.getMessage());
+    }
+
+    @ExceptionHandler(WebhookVerificationException.class)
+    public ResponseEntity<ProblemDetail> handleWebhookVerification(WebhookVerificationException exception) {
+        return problem(HttpStatus.UNAUTHORIZED, "Webhook verification failed", exception.getMessage());
+    }
+
+    @ExceptionHandler(PaymentGatewayException.class)
+    public ResponseEntity<ProblemDetail> handlePaymentGateway(PaymentGatewayException exception) {
+        return problem(HttpStatus.BAD_GATEWAY, "Payment provider error", exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidPaymentStateException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidPaymentState(InvalidPaymentStateException exception) {
+        return problem(HttpStatus.CONFLICT, "Invalid payment state", exception.getMessage());
+    }
+
+    @ExceptionHandler(LedgerConflictException.class)
+    public ResponseEntity<ProblemDetail> handleLedgerConflict(LedgerConflictException exception) {
+        return problem(HttpStatus.CONFLICT, "Ledger conflict", exception.getMessage());
     }
 
     @ExceptionHandler({InvalidPetException.class, InvalidActivityException.class, IllegalArgumentException.class})
