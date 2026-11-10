@@ -66,7 +66,7 @@ flowchart LR
 
 - `Wallet` aggregate (one per partner, created at partner registration, status `ACTIVE`/`BLOCKED`) containing `LedgerAccount`s `MAIN`, `BONUS`, `PARTNER`; `LedgerEntry` append-only records. Wallet and accounts carry a JPA `@Version`; postings also lock account rows.
 - Value objects: `Credits` (positive integer), `EntryDirection` (CREDIT/DEBIT), `LedgerReference` (type + id).
-- Invariants: balance never negative; balance equals sum of entries; `(referenceType, referenceId, direction)` unique; closed accounts reject postings; debits consume `MAIN` → `BONUS` → `PARTNER` (split if needed); blocked wallets reject debits for new campaigns and purchases.
+- Invariants: balance never negative; balance equals sum of entries; `(accountId, referenceType, referenceId, direction)` unique (split debits/refunds post one entry per account); closed accounts reject postings; debits consume `MAIN` → `BONUS` → `PARTNER` (split if needed); blocked wallets reject debits for new campaigns and purchases.
 
 ### Integration Context
 
