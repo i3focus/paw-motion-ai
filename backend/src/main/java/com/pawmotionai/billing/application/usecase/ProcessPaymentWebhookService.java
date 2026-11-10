@@ -16,6 +16,7 @@ import com.pawmotionai.billing.application.port.out.PaymentTransactionRepository
 import com.pawmotionai.billing.application.port.out.PaymentWebhookEventRepository;
 import com.pawmotionai.billing.application.port.out.ProviderWebhookEvent;
 import com.pawmotionai.billing.application.port.out.WebhookRequest;
+import com.pawmotionai.billing.domain.exception.PaymentGatewayException;
 import com.pawmotionai.billing.domain.exception.InvalidPaymentStateException;
 import com.pawmotionai.billing.domain.exception.WebhookVerificationException;
 import com.pawmotionai.billing.domain.model.PaymentTransaction;
@@ -62,6 +63,9 @@ public class ProcessPaymentWebhookService implements ProcessPaymentWebhookUseCas
         CheckoutDetails details = gateway.fetchCheckoutByExternalId(transaction.getId().toString());
         String status = details.status() == null ? "" : details.status().toUpperCase();
         String eventType = event.eventType() == null ? "" : event.eventType();
+        if (eventType.contains("completed") && status.equals("PENDING")) {
+            throw new PaymentGatewayException("Provider checkout is not yet consistent for completed webhook");
+        }
         try {
             if (status.equals("UNDER_DISPUTE") || status.equals("DISPUTED")) {
                 lifecycleService.dispute(transaction.getId());

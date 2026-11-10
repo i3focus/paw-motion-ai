@@ -32,6 +32,9 @@ import com.pawmotionai.configuration.AbacatePayProperties;
 @ConditionalOnProperty(name = "app.billing.provider", havingValue = "abacatepay")
 public class AbacatePayHostedCheckoutAdapter implements PaymentGatewayPort {
 
+    private static final String ABACATEPAY_WEBHOOK_PUBLIC_KEY =
+        "t9dXRhHHo3yDEj5pVDYz0frf7q6bMKyMRmxxCPIPp3RCplBfXRxqlC6ZpiWmOqj4L63qEaeUOtrCI8P0VMUgo6iIga2ri9ogaHFs0WIIywSMg0q7RmBfybe1E5XJcfC4IW3alNqym0tXoAKkzvfEjZxV6bE0oG2zJrNNYmUCKZyV0KZ3JS8Votf9EAWWYdiDkMkpbMdPggfh1EqHlVkMiTady6jOR3hyzGEHrIz2Ret0xHKMbiqkr9HS1JhNHDX9";
+
     private final AbacatePayProperties properties;
     private final RestClient restClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -180,7 +183,7 @@ public class AbacatePayHostedCheckoutAdapter implements PaymentGatewayPort {
     private String sign(byte[] body) throws WebhookVerificationException {
         try {
             Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(properties.getWebhookSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            mac.init(new SecretKeySpec(ABACATEPAY_WEBHOOK_PUBLIC_KEY.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
             return Base64.getEncoder().encodeToString(mac.doFinal(body));
         } catch (Exception exception) {
             throw new WebhookVerificationException("Unable to verify webhook signature");
