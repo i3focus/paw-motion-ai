@@ -53,11 +53,10 @@ public class ProcessPaymentWebhookService implements ProcessPaymentWebhookUseCas
         if (webhookEventRepository.exists(gateway.provider(), event.providerEventId())) {
             return;
         }
-        webhookEventRepository.save(gateway.provider(), event.providerEventId(), payloadHash(request.body()),
-            java.time.Instant.now());
-
         PaymentTransaction transaction = findTransaction(gateway.provider(), event);
         if (transaction == null) {
+            webhookEventRepository.save(gateway.provider(), event.providerEventId(), payloadHash(request.body()),
+                java.time.Instant.now());
             return;
         }
         CheckoutDetails details = gateway.fetchCheckoutByExternalId(transaction.getId().toString());
@@ -80,6 +79,8 @@ public class ProcessPaymentWebhookService implements ProcessPaymentWebhookUseCas
         } catch (InvalidPaymentStateException ignored) {
             // Out-of-order or duplicate provider events are acknowledged without changes.
         }
+        webhookEventRepository.save(gateway.provider(), event.providerEventId(), payloadHash(request.body()),
+            java.time.Instant.now());
     }
 
     private void requirePaidDetails(PaymentTransaction transaction, CheckoutDetails details) {
