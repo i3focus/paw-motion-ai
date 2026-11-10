@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pawmotionai.ledger.application.dto.WalletResponseDto;
 import com.pawmotionai.ledger.application.port.in.SetWalletStatusUseCase;
 import com.pawmotionai.ledger.application.port.out.LedgerRepository;
-import com.pawmotionai.ledger.domain.exception.WalletNotFoundException;
 import com.pawmotionai.ledger.domain.model.LedgerAccount;
 import com.pawmotionai.ledger.domain.model.Wallet;
 
@@ -28,8 +27,7 @@ public class WalletStatusService implements SetWalletStatusUseCase {
     @Override
     @Transactional
     public WalletResponseDto block(UUID partnerId, String reason) {
-        Wallet wallet = repository.findWalletByPartnerId(partnerId)
-            .orElseThrow(() -> new WalletNotFoundException(partnerId));
+        Wallet wallet = repository.findWalletForUpdate(partnerId);
         wallet.block(reason, Instant.now());
         repository.saveWallet(wallet);
         return walletQueryService.getByPartner(partnerId);
@@ -38,8 +36,7 @@ public class WalletStatusService implements SetWalletStatusUseCase {
     @Override
     @Transactional
     public WalletResponseDto unblock(UUID partnerId) {
-        Wallet wallet = repository.findWalletByPartnerId(partnerId)
-            .orElseThrow(() -> new WalletNotFoundException(partnerId));
+        Wallet wallet = repository.findWalletForUpdate(partnerId);
         wallet.unblock(Instant.now());
         repository.saveWallet(wallet);
         return walletQueryService.getByPartner(partnerId);

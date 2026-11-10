@@ -12,6 +12,7 @@ import com.pawmotionai.billing.domain.model.PaymentStatus;
 import com.pawmotionai.billing.domain.model.PaymentTransaction;
 import com.pawmotionai.ledger.application.dto.WalletResponseDto;
 import com.pawmotionai.ledger.application.port.in.GetWalletUseCase;
+import com.pawmotionai.ledger.application.port.in.LockWalletUseCase;
 import com.pawmotionai.ledger.application.port.in.PostLedgerEntryUseCase;
 import com.pawmotionai.ledger.application.port.in.LedgerPostingCommands.CreditPosting;
 import com.pawmotionai.ledger.application.port.in.LedgerPostingCommands.DebitPosting;
@@ -27,19 +28,23 @@ public class PaymentLifecycleService {
     private final PostLedgerEntryUseCase postLedgerEntryUseCase;
     private final SetWalletStatusUseCase setWalletStatusUseCase;
     private final GetWalletUseCase getWalletUseCase;
+    private final LockWalletUseCase lockWalletUseCase;
 
     public PaymentLifecycleService(PaymentTransactionRepository transactionRepository,
                                    PostLedgerEntryUseCase postLedgerEntryUseCase,
                                    SetWalletStatusUseCase setWalletStatusUseCase,
-                                   GetWalletUseCase getWalletUseCase) {
+                                   GetWalletUseCase getWalletUseCase,
+                                   LockWalletUseCase lockWalletUseCase) {
         this.transactionRepository = transactionRepository;
         this.postLedgerEntryUseCase = postLedgerEntryUseCase;
         this.setWalletStatusUseCase = setWalletStatusUseCase;
         this.getWalletUseCase = getWalletUseCase;
+        this.lockWalletUseCase = lockWalletUseCase;
     }
 
     @Transactional
-    public void confirm(UUID transactionId) {
+    public void confirm(UUID partnerId, UUID transactionId) {
+        lockWalletUseCase.lock(partnerId);
         PaymentTransaction transaction = load(transactionId);
         if (transaction.isConfirmed()) {
             return;
@@ -59,7 +64,8 @@ public class PaymentLifecycleService {
     }
 
     @Transactional
-    public void dispute(UUID transactionId) {
+    public void dispute(UUID partnerId, UUID transactionId) {
+        lockWalletUseCase.lock(partnerId);
         PaymentTransaction transaction = load(transactionId);
         transaction.dispute(Instant.now());
         transactionRepository.save(transaction);
@@ -67,7 +73,8 @@ public class PaymentLifecycleService {
     }
 
     @Transactional
-    public void refund(UUID transactionId, String reason) {
+    public void refund(UUID partnerId, UUID transactionId, String reason) {
+        lockWalletUseCase.lock(partnerId);
         PaymentTransaction transaction = load(transactionId);
         long available = postLedgerEntryUseCase.availableBalance(transaction.getPartnerId());
         long reversal = Math.min(transaction.getExpectedCredits(), available);
