@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import com.pawmotionai.ledger.application.port.out.LedgerRepository;
+import com.pawmotionai.ledger.domain.exception.WalletNotFoundException;
 import com.pawmotionai.ledger.domain.model.LedgerAccount;
 import com.pawmotionai.ledger.domain.model.LedgerAccountCode;
 import com.pawmotionai.ledger.domain.model.LedgerAccountStatus;
@@ -58,7 +59,7 @@ public class LedgerPersistenceAdapter implements LedgerRepository {
     public Wallet findWalletForUpdate(UUID partnerId) {
         return walletRepository.findByPartnerIdForUpdate(partnerId)
             .map(this::toDomain)
-            .orElseThrow(() -> new IllegalStateException("Wallet not found for partner " + partnerId));
+            .orElseThrow(() -> new WalletNotFoundException(partnerId));
     }
 
     @Override
