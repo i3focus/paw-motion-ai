@@ -22,7 +22,7 @@ Deliver vertical slices, not isolated layers. Each slice must include domain rul
 ## Slice 2 — AI Insights
 
 1. Activity aggregate read model.
-2. AI provider port, deterministic local provider, optional OpenAI/Gemini adapter.
+2. AI provider port, deterministic local provider, OpenAI adapter (primary).
 3. Prompt templates, validation, fallback, metadata persistence.
 4. Frontend insight card.
 
@@ -54,10 +54,13 @@ Deliver vertical slices, not isolated layers. Each slice must include domain rul
 4. Campaign creation debits credits — T-020.
 5. Payment webhook/reconciliation and real provider sandbox — T-019.
 6. Partner portal wallet UI — T-021.
+7. Credits explainer, campaign expiration and archive refund, wallet unblock — T-035, T-034, T-037.
 
 ## Slice 7 — Partner value and owner discovery
 
-1. Campaign interaction tracking in owner apps — T-022.
+(Admin/AI challenges T-036 and account deletion/retention T-038 can run in parallel with Slices 6–8.)
+
+1. Campaign click tracking in owner apps — T-022.
 2. Partner performance dashboard — T-023.
 3. Partner public profile with location — T-024.
 4. Owner partner detail page — T-025.

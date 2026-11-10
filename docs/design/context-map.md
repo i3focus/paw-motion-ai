@@ -29,7 +29,7 @@ flowchart LR
 - **Billing → Ledger / Partner → Ledger**: customer/supplier through the Ledger inbound port (`PostLedgerEntryUseCase`), executed in the caller's local transaction (ADR-0014).
 - **Billing → Payment provider**: anti-corruption layer `PaymentGatewayPort` (ADR-0015).
 - **Activity → Integration**: event-driven; Integration publishes to Strava asynchronously (ADR-0018).
-- **Owner apps → Partner**: interaction tracking API feeding aggregate analytics (ADR-0016).
+- **Owner apps → Partner**: click tracking API feeding aggregate analytics (ADR-0016).
 
 ## Anti-corruption notes
 

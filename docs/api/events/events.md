@@ -25,4 +25,4 @@ See `docs/design/domain-events.md` for producer/consumer mapping. `PetCreated.v1
 
 ## CR-2026-11 events
 
-Billing (`Payment*.v1`), Ledger (`CreditsPurchased.v1`, `CampaignCreditsDebited.v1`), Partner (`CampaignCreated.v1`, `CampaignInteractionRecorded.v1`), and Integration (`Strava*.v1`, `ActivityPublishedToStrava.v1`) events are planned; see `docs/design/domain-events.md`. `ActivityRecorded.v1` gains optional `source`, `hasRoute`, and `publishToStrava` fields (backward compatible). The Strava publication worker is the first consumer that requires the outbox to be enabled.
+Billing (`Payment*.v1`), Ledger (`CreditsPurchased.v1`, `CampaignCreditsDebited.v1`), Partner (`CampaignCreated.v1`, `CampaignClickRecorded.v1`, `CampaignArchived.v1`, `CampaignExpired.v1`), Engagement (`ChallengePublished.v1`, `BadgeAwarded.v1`), and Integration (`Strava*.v1`, `ActivityPublishedToStrava.v1`) events are planned; see `docs/design/domain-events.md`. `ActivityRecorded.v1` gains optional `source`, `hasRoute`, and `publishToStrava` fields (backward compatible). The Strava publication worker is the first consumer that requires the outbox to be enabled.

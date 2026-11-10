@@ -10,3 +10,4 @@
 - **Risks**: Provider API drift; unsafe generated claims.
 - **Implementation guidance**: Version prompts, use timeouts/retries, record provider metadata, and never require live API for tests.
 - **Migration/reversal**: Swap providers by configuration only.
+- **Decision update (2026-11-10)**: OpenAI is the primary demo provider; the deterministic provider remains for local/CI.

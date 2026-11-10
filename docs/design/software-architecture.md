@@ -31,7 +31,7 @@ flowchart LR
     Frontend --> Backend[Spring Boot API]
     Backend --> Postgres[(PostgreSQL + PostGIS)]
     Backend --> RabbitMQ[(RabbitMQ optional)]
-    Backend --> Gemini[Gemini/OpenAI optional]
+    Backend --> OpenAI[OpenAI primary]
 ```
 
 ## Logical modules
@@ -86,11 +86,15 @@ Configuration is externalized through environment variables and Spring profiles:
 | `app.billing.currency` | `BILLING_CURRENCY` | Billing |
 | `app.billing.credits-per-currency-unit` | `BILLING_CREDITS_PER_CURRENCY_UNIT` (CPP) | Billing |
 | `app.billing.min-purchase-amount` | `BILLING_MIN_PURCHASE_AMOUNT` | Billing |
-| `app.billing.provider` | `PAYMENT_PROVIDER` | Billing |
-| `app.billing.provider-api-key` / `webhook-secret` | `PAYMENT_PROVIDER_API_KEY`, `PAYMENT_WEBHOOK_SECRET` | Billing |
+| `app.billing.provider` | `PAYMENT_PROVIDER` (`abacatepay` / `fake`) | Billing |
+| `app.billing.abacatepay.api-key` / `webhook-secret` | `ABACATEPAY_API_KEY`, `ABACATEPAY_WEBHOOK_SECRET` | Billing |
+| `app.billing.abacatepay.credit-product-external-id` | `ABACATEPAY_CREDIT_PRODUCT_EXTERNAL_ID` | Billing |
+| `app.billing.pending-ttl` / `partner-portal-base-url` | `BILLING_PENDING_TTL`, `PARTNER_PORTAL_BASE_URL` | Billing |
 | `app.campaign.price-amount` | `CAMPAIGN_PRICE_AMOUNT` | Partner |
 | `app.campaign.creation-cost-credits` | `CAMPAIGN_CREATION_COST_CREDITS` | Partner/Ledger |
-| `app.analytics.click-dedup-window` / `k-anonymity-min` | `ANALYTICS_CLICK_DEDUP_WINDOW`, `ANALYTICS_K_ANONYMITY_MIN` | Partner |
+| `app.campaign.duration-days` | `CAMPAIGN_DURATION_DAYS` | Partner |
+| `app.engagement.ai-challenge-autopublish` | `CHALLENGE_AI_AUTOPUBLISH` | Engagement |
+| `app.analytics.click-dedup-window` | `ANALYTICS_CLICK_DEDUP_WINDOW` | Partner |
 | `app.maps.tile-url` / `style-url` | `MAP_TILE_URL`, `MAP_STYLE_URL` | Web/Mobile |
 | `app.integration.strava.*` | `STRAVA_ENABLED`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REDIRECT_URI` | Integration |
 | `app.integration.token-encryption-key` | `INTEGRATION_TOKEN_ENCRYPTION_KEY` | Integration |

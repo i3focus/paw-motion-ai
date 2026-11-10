@@ -34,7 +34,7 @@ flowchart LR
 
 ### Activity Context
 
-- `Activity` aggregate: pet reference, activity type, source (`MANUAL`/`LIVE_TRACKING`), start time, duration, distance, optional notes, optional route (`ActivityRoute`: simplified LineString, start/end points), publish-to-Strava intent.
+- `Activity` aggregate: pet reference, activity type, source (`MANUAL`/`LIVE_TRACKING`), start time, duration, distance, optional notes, optional route (`ActivityRoute`: GeoJSON `Feature<LineString>`, start/end points), publish-to-Strava intent.
 - `ActivityStatistics` read model: totals, averages, streaks, weekly progress.
 - Value objects: `ActivityId`, `ActivityType`, `Distance`, `Duration`.
 - Invariants: duration and distance non-negative; start time valid; pet must be active and owned by requester.
@@ -58,15 +58,15 @@ flowchart LR
 
 ### Billing Context
 
-- `PaymentTransaction` aggregate: partner, amount, currency, CPP snapshot, expected credits, target ledger account, provider, provider reference, idempotency key, status, timestamps.
+- `PaymentTransaction` aggregate: partner, amount, currency, CPP snapshot, expected credits, target ledger account, provider (AbacatePay), provider checkout id/url, idempotency key, status, version, timestamps.
 - Value objects: `Money`, `CreditsPerCurrencyUnit`, `PaymentStatus`, `PaymentMethod`.
-- Invariants: state machine `PENDING → CONFIRMED | FAILED | EXPIRED | CANCELED`, `CONFIRMED → REFUNDED`; terminal states immutable; credits granted at most once and only on `CONFIRMED`.
+- Invariants: state machine `PENDING → CONFIRMED | FAILED | EXPIRED | CANCELED`, `CONFIRMED → DISPUTED | REFUNDED`, `DISPUTED → CONFIRMED | REFUNDED`; terminal states immutable; credits granted at most once and only on `CONFIRMED`.
 
 ### Ledger Context
 
-- `Wallet` aggregate (one per partner) containing `LedgerAccount`s; `LedgerEntry` append-only records.
+- `Wallet` aggregate (one per partner, created at partner registration, status `ACTIVE`/`BLOCKED`) containing `LedgerAccount`s `MAIN`, `BONUS`, `PARTNER`; `LedgerEntry` append-only records. Wallet and accounts carry a JPA `@Version`; postings also lock account rows.
 - Value objects: `Credits` (positive integer), `EntryDirection` (CREDIT/DEBIT), `LedgerReference` (type + id).
-- Invariants: balance never negative; balance equals sum of entries; `(referenceType, referenceId, direction)` unique; closed accounts reject postings; exactly one default account per wallet.
+- Invariants: balance never negative; balance equals sum of entries; `(referenceType, referenceId, direction)` unique; closed accounts reject postings; debits consume `MAIN` → `BONUS` → `PARTNER` (split if needed); blocked wallets reject debits for new campaigns and purchases.
 
 ### Integration Context
 
@@ -202,7 +202,7 @@ sequenceDiagram
     participant API
     participant Partner
     Owner->>App: Tap campaign card
-    App->>API: POST /campaigns/{id}/interactions (CLICK) [fire-and-forget]
+    App->>API: POST /campaigns/{id}/clicks [fire-and-forget]
     API->>Partner: store interaction, upsert daily metrics
     App->>API: GET /partners/{partnerId}
     API-->>App: public profile, services, website?, location?, active campaigns

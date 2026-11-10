@@ -24,7 +24,7 @@ flowchart LR
     T017 --> T020[T-020 Campaign debit]
     T018 --> T021[T-021 Wallet UI]
     T020 --> T021
-    T014 --> T022[T-022 Interaction tracking]
+    T014 --> T022[T-022 Click tracking]
     T022 --> T023[T-023 Partner dashboard]
     T020 --> T023
     T014 --> T024[T-024 Public profile + location]
@@ -36,6 +36,11 @@ flowchart LR
     T002 --> T029[T-029 Outbox]
     T005 --> T030[T-030 Strava OAuth]
     T028 --> T031[T-031 Strava publish]
+    T020 --> T034[T-034 Expiry + archive refund]
+    T016 --> T035[T-035 Credits explainer]
+    T011 --> T036[T-036 Admin/AI challenges]
+    T019 --> T037[T-037 Wallet unblock]
+    T005 --> T038[T-038 Deletion + retention]
     T029 --> T031
     T030 --> T031
 ```

@@ -2,7 +2,7 @@
 
 ## Authentication
 
-- Preferred target: OIDC through Keycloak or a managed provider.
+- Hackathon decision: the platform's own JWT issuer (ADR-0008). OIDC through Keycloak or a managed provider is a later option.
 - MVP fallback: Spring Authorization Server or a development JWT issuer must be explicitly documented and disabled outside local/demo environments.
 - Passwords are hashed with a modern adaptive algorithm; tokens are short-lived.
 
@@ -23,13 +23,13 @@
 - Rate limits on authentication, AI generation, and coupon redemption.
 - Idempotency keys for coupon redemption, challenge completion, credit purchases, and campaign creation.
 - Payment webhooks are public but require provider signature verification, event deduplication, and status re-fetch before crediting.
-- Rate limits on campaign interaction tracking to prevent click inflation.
+- Rate limits on campaign click tracking to prevent click inflation.
 
 ## Data privacy
 
 - LGPD-oriented minimization: collect only fields needed for the MVP.
 - No personal data in logs; correlation IDs only.
-- Business analytics are aggregate-only, with k-anonymity grouping for small breakdowns.
+- Business analytics are aggregate-only click counters; no owner identity or attributes are exposed to partners.
 - GPS routes and owner locations are personal data: explicit OS permission, owner-only access, never shared with partners, opt-in Strava publication.
 - Card data never reaches PawMotion servers (hosted checkout / tokenization) to minimize PCI scope.
 - Account deletion and retention workflow must be implemented before production.
@@ -40,3 +40,6 @@
 - Strava OAuth tokens are encrypted at rest (AES-GCM with `INTEGRATION_TOKEN_ENCRYPTION_KEY`).
 - `.env.example` contains placeholders only.
 - CI scans should prevent committed secrets.
+- AbacatePay webhooks: verify `X-Webhook-Secret` with constant-time comparison and the `X-Webhook-Signature` HMAC-SHA256 over the raw body; reject events whose `devMode` does not match the environment; re-fetch the checkout before granting credits; never log the webhook URL query secret. API keys are scoped to checkout permissions only.
+- Optimistic (`@Version`) plus pessimistic (`SELECT … FOR UPDATE`) locking protect wallet balances against lost updates (ADR-0014).
+- `ADMIN` role required for challenge/badge authoring, wallet unblock, and credit adjustments; every admin action is audited.

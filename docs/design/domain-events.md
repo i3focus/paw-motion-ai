@@ -15,11 +15,17 @@ All integration events use the common envelope defined in `docs/api/events/event
 | `InsightGenerated.v1` | AI Insights | Notification | insightId, ownerId, provider, fallbackUsed |
 | `PaymentConfirmed.v1` | Billing | Notification | transactionId, partnerId, amount, currency, occurredAt |
 | `PaymentFailed.v1` | Billing | Notification | transactionId, partnerId, status, reason |
-| `PaymentRefunded.v1` | Billing | Ledger (compensation), Notification | transactionId, partnerId, amount |
+| `PaymentRefunded.v1` | Billing | Ledger (compensation), Notification | transactionId, partnerId, amount, reason (`REFUND`/`CHARGEBACK`) |
+| `PaymentDisputed.v1` | Billing | Ledger (block wallet), Notification | transactionId, partnerId, status |
+| `PartnerWalletBlocked.v1` | Ledger | Partner (pause campaigns), Notification | walletId, partnerId, reason |
+| `CampaignArchived.v1` | Partner | Ledger (refund), analytics | campaignId, partnerId, creditsRefunded |
+| `CampaignExpired.v1` | Partner | analytics, Notification | campaignId, partnerId, expiresAt |
+| `ChallengePublished.v1` | Engagement | Notification | challengeId, createdBy (`ADMIN`/`AI`), badgeId |
+| `BadgeAwarded.v1` | Engagement | Notification, Insights | badgeId, ownerId, challengeId |
 | `CreditsPurchased.v1` | Ledger | Partner (analytics), Notification | walletId, accountId, partnerId, credits, balanceAfter, transactionId |
 | `CampaignCreditsDebited.v1` | Ledger | Partner (analytics), Notification | walletId, accountId, partnerId, campaignId, credits, balanceAfter |
 | `CampaignCreated.v1` | Partner | AI topic analysis, Notification | campaignId, partnerId, creditsCharged |
-| `CampaignInteractionRecorded.v1` | Partner | Partner analytics projection | campaignId, partnerId, type, source, placement, occurredAt (no owner PII) |
+| `CampaignClickRecorded.v1` | Partner | Partner analytics projection | campaignId, partnerId, source, placement, occurredAt (no owner PII) |
 | `StravaConnected.v1` / `StravaConnectionRevoked.v1` | Integration | Notification | ownerId, occurredAt |
 | `ActivityPublishedToStrava.v1` | Integration | Notification | activityId, ownerId, stravaActivityId |
 | `StravaPublicationFailed.v1` | Integration | Notification | activityId, ownerId, reason |

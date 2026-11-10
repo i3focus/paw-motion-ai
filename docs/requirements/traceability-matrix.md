@@ -21,7 +21,7 @@
 | REQ-CAMP-003 | Must | Partner/Ledger | domain-model.md, ADR-0014 | `partner`, `ledger` | transaction + idempotency tests |
 | REQ-CONF-001 | Must | Platform | software-architecture.md | configuration | binding/validation tests |
 | REQ-CAMP-001 | Must | Partner | ADR-0016 | `partner`, web, mobile | API + dedup tests |
-| REQ-CAMP-002 | Must | Partner | ADR-0016, security-architecture.md | `partner`, partner portal | aggregation + k-anonymity tests |
+| REQ-CAMP-002 | Must | Partner | ADR-0016, security-architecture.md | `partner`, partner portal | aggregation + no-PII tests |
 | REQ-PARTNER-002 | Must | Partner | ADR-0017, data-architecture.md | `partner`, partner portal | validation + authorization tests |
 | REQ-DISC-001 | Must | Partner | ADR-0017 | `partner`, web, mobile | API exposure + UI tests |
 | REQ-DISC-002 | Should | Partner | ADR-0017 | `partner`, web, mobile | spatial query + UI tests |
@@ -31,3 +31,6 @@
 | REQ-STRAVA-002 | Should | Integration | ADR-0018, ADR-0006 | `integration` | outbox/retry + idempotency tests |
 | REQ-NFR-003 | Must | Billing/Ledger | ADR-0014, ADR-0015 | `billing`, `ledger` | concurrency + audit tests |
 | REQ-NFR-004 | Must | Activity/Partner | security-architecture.md | `activity`, `partner` | security tests |
+| REQ-CAMP-004 | Must | Partner, Ledger | ADR-0014 | `partner`, `ledger`, partner portal | expiration job, prorated refund, double-archive tests |
+| REQ-LEDGER-004 | Must | Partner portal | ADR-0014 | partner portal | explainer renders config values |
+| REQ-CHAL-002 | Should | Engagement | ADR-0009 | `engagement`, admin | admin/AI authoring, many-owner award idempotency |
