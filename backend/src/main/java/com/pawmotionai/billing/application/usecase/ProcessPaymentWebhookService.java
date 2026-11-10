@@ -63,17 +63,27 @@ public class ProcessPaymentWebhookService implements ProcessPaymentWebhookUseCas
         String status = details.status() == null ? "" : details.status().toUpperCase();
         String eventType = event.eventType() == null ? "" : event.eventType();
         try {
-            if (eventType.contains("completed") || status.equals("PAID") || status.equals("REDEEMED")) {
-                lifecycleService.confirm(transaction.getId());
-            } else if (eventType.contains("disputed") || status.equals("UNDER_DISPUTE")) {
+            if (eventType.contains("disputed") || status.equals("UNDER_DISPUTE")) {
                 lifecycleService.dispute(transaction.getId());
             } else if (eventType.contains("refunded") || eventType.contains("lost") || status.equals("REFUNDED")) {
                 lifecycleService.refund(transaction.getId(), "Payment " + eventType);
+            } else if (eventType.contains("completed") || status.equals("PAID") || status.equals("REDEEMED")) {
+                requirePaidDetails(transaction, details);
+                lifecycleService.confirm(transaction.getId());
             } else if (status.equals("FAILED") || status.equals("CANCELED")) {
                 lifecycleService.fail(transaction.getId(), "Provider status " + status);
             }
         } catch (InvalidPaymentStateException ignored) {
             // Out-of-order or duplicate provider events are acknowledged without changes.
+        }
+    }
+
+    private void requirePaidDetails(PaymentTransaction transaction, CheckoutDetails details) {
+        if (details.paidAmount() != null && details.paidAmount().compareTo(transaction.getAmount()) != 0) {
+            throw new WebhookVerificationException("Paid amount does not match purchase amount");
+        }
+        if (details.currency() != null && !details.currency().equalsIgnoreCase(transaction.getCurrency())) {
+            throw new WebhookVerificationException("Paid currency does not match purchase currency");
         }
     }
 

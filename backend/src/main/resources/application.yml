@@ -43,7 +43,7 @@ app:
     provider: ${PAYMENT_PROVIDER:fake}
     pending-ttl: ${BILLING_PENDING_TTL:24h}
     partner-portal-base-url: ${PARTNER_PORTAL_BASE_URL:http://localhost:5173/partner}
-    fake-webhook-secret: ${FAKE_WEBHOOK_SECRET:fake-webhook-secret}
+    fake-webhook-secret: ${FAKE_WEBHOOK_SECRET:}
     abacatepay:
       api-key: ${ABACATEPAY_API_KEY:}
       webhook-secret: ${ABACATEPAY_WEBHOOK_SECRET:}

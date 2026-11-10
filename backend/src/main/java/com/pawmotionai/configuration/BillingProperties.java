@@ -40,8 +40,7 @@ public class BillingProperties {
     @NotBlank
     private String partnerPortalBaseUrl = "http://localhost:5173/partner";
 
-    @NotBlank
-    private String fakeWebhookSecret = "fake-webhook-secret";
+    private String fakeWebhookSecret;
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }

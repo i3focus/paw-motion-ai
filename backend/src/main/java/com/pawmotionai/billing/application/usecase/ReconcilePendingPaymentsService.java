@@ -59,7 +59,7 @@ public class ReconcilePendingPaymentsService implements ReconcilePendingPayments
             return;
         }
         CheckoutDetails details = gateway.fetchCheckoutByExternalId(transaction.getId().toString());
-        if (details.status() != null && details.status().equalsIgnoreCase("PAID")) {
+        if (details.status() != null && (details.status().equalsIgnoreCase("PAID") || details.status().equalsIgnoreCase("REDEEMED"))) {
             lifecycleService.confirm(transaction.getId());
             return;
         }

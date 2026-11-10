@@ -44,9 +44,11 @@ export function PartnerBillingPage() {
     setSubmitting(true);
     try {
       const purchase = await createPurchase({ amount: value, method });
-      setNotice(purchase.providerCheckoutUrl
-        ? `Purchase ${purchase.id} created with ${purchase.expectedCredits} expected credits.`
-        : `Purchase ${purchase.id} is pending confirmation.`);
+      if (purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
+        window.location.assign(purchase.providerCheckoutUrl);
+        return;
+      }
+      setNotice(`Purchase ${purchase.id} is pending confirmation.`);
       await refresh();
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to create purchase');

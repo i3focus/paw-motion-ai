@@ -98,7 +98,7 @@ public class PostLedgerEntryService implements PostLedgerEntryUseCase {
     private List<LedgerEntry> debitInTransaction(DebitPosting command) {
         return transactionTemplate.execute(status -> {
             Wallet wallet = repository.findWalletForUpdate(command.partnerId());
-            if (wallet.isBlocked()) {
+            if (wallet.isBlocked() && command.referenceType() != LedgerReferenceType.PAYMENT_REVERSAL) {
                 throw new WalletBlockedException(wallet.getBlockedReason());
             }
             List<LedgerAccount> accounts = repository.findAccountsByWalletIdForUpdate(wallet.getId()).stream()

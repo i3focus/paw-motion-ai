@@ -87,6 +87,9 @@ public class PartnerCampaign {
     }
 
     public void applyAnalysis(List<String> topics, Instant analyzedAt) {
+        if (status == CampaignStatus.ARCHIVED || status == CampaignStatus.EXPIRED) {
+            throw new IllegalStateException("Campaign cannot be analyzed from status " + status);
+        }
         if (topics == null || topics.isEmpty()) {
             throw new IllegalArgumentException("AI analysis must return at least one topic");
         }
