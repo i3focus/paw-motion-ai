@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { ApiError, createPurchase, getBillingPricing, getWallet, listPurchases } from '../api/client';
+import { useEffect, useState, type FormEvent } from 'react';
+import { ApiError, createPurchase, getBillingPricing, getWallet, getWalletEntries, listPurchases } from '../api/client';
 import { Badge, Button, Card, EmptyState, ErrorMessage, SectionHeader, StatCard, TextInput } from '../components/ui';
-import type { BillingPricing, PaymentTransaction, Wallet } from '../types';
+import type { BillingPricing, LedgerEntryPage, PaymentTransaction, Wallet } from '../types';
 
 function money(currency: string, value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value);
@@ -11,13 +11,29 @@ export function PartnerBillingPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [pricing, setPricing] = useState<BillingPricing | null>(null);
   const [purchases, setPurchases] = useState<PaymentTransaction[]>([]);
+  const [statement, setStatement] = useState<LedgerEntryPage | null>(null);
+  const [statementAccountId, setStatementAccountId] = useState<string | null>(null);
+  const [statementLoading, setStatementLoading] = useState(false);
   const [amount, setAmount] = useState('50');
   const [method, setMethod] = useState<'PIX' | 'CARD'>('PIX');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const totalBalance = useMemo(() => wallet?.accounts.reduce((sum, account) => sum + account.balance, 0) ?? 0, [wallet]);
+  const totalBalance = wallet?.totalBalance ?? 0;
+
+  async function loadStatement(accountId: string) {
+    setStatementLoading(true);
+    try {
+      const page = await getWalletEntries(accountId);
+      setStatement(page);
+      setStatementAccountId(accountId);
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : 'Unable to load ledger statement');
+    } finally {
+      setStatementLoading(false);
+    }
+  }
 
   async function refresh() {
     const [walletResponse, pricingResponse, purchaseResponse] = await Promise.all([
@@ -26,6 +42,17 @@ export function PartnerBillingPage() {
     setWallet(walletResponse);
     setPricing(pricingResponse);
     setPurchases(purchaseResponse);
+    const preferredAccount = walletResponse.accounts.find((account) => account.code === 'MAIN') ?? walletResponse.accounts[0];
+    if (preferredAccount) {
+      try {
+        const page = await getWalletEntries(preferredAccount.id);
+        setStatement(page);
+        setStatementAccountId(preferredAccount.id);
+      } catch {
+        setStatement(null);
+        setStatementAccountId(null);
+      }
+    }
   }
 
   useEffect(() => {
@@ -88,17 +115,52 @@ export function PartnerBillingPage() {
         <Card title="Wallet accounts" description="MAIN is spent first, then BONUS, then PARTNER promotional credits.">
           <div className="space-y-3">
             {(wallet?.accounts ?? []).map((account) => (
-              <div key={account.id} className="flex items-center justify-between rounded-2xl border border-cream-200 bg-cream-50 px-4 py-3">
+              <div key={account.id} className="flex items-center justify-between gap-3 rounded-2xl border border-cream-200 bg-cream-50 px-4 py-3">
                 <div>
                   <p className="font-semibold text-cream-900">{account.code}</p>
                   <p className="text-xs text-cream-500">{account.status}</p>
                 </div>
-                <p className="text-lg font-bold text-primary">{account.balance} credits</p>
+                <div className="flex items-center gap-3">
+                  <p className="text-lg font-bold text-primary">{account.balance} credits</p>
+                  <Button type="button" variant="ghost" onClick={() => loadStatement(account.id)} disabled={statementLoading}>
+                    Statement
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         </Card>
       </div>
+
+      <Card
+        title="Ledger statement"
+        description={statementAccountId
+          ? `${wallet?.accounts.find((account) => account.id === statementAccountId)?.code ?? 'Account'} · ${statement?.totalElements ?? 0} movements`
+          : 'Select an account to view credit and debit history.'}
+      >
+        {statementLoading ? (
+          <p className="text-sm text-cream-500">Loading statement…</p>
+        ) : !statement || statement.content.length === 0 ? (
+          <EmptyState title="No ledger movements" description="Credits and debits will appear here." />
+        ) : (
+          <div className="space-y-3">
+            {statement.content.map((entry) => (
+              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cream-200 px-4 py-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Badge tone={entry.direction === 'CREDIT' ? 'success' : 'accent'}>{entry.direction}</Badge>
+                    <p className="font-semibold text-cream-900">{entry.referenceType}</p>
+                  </div>
+                  <p className="mt-1 text-xs text-cream-500">{entry.description ?? 'Ledger movement'} · balance after {entry.balanceAfter} · {new Date(entry.occurredAt).toLocaleString()}</p>
+                </div>
+                <p className={`text-lg font-bold ${entry.direction === 'CREDIT' ? 'text-emerald-700' : 'text-primary'}`}>
+                  {entry.direction === 'CREDIT' ? '+' : '-'}{entry.amount}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
 
       <Card title="Payment history" description="Hosted checkout purchases and their confirmation status.">
         {purchases.length === 0 ? (

@@ -86,21 +86,23 @@ export interface WalletAccount {
   id: string;
   walletId: string;
   code: 'MAIN' | 'BONUS' | 'PARTNER' | string;
-  status: 'OPEN' | 'FROZEN' | string;
+  status: 'OPEN' | 'CLOSED' | string;
   balance: number;
 }
 
 export interface Wallet {
-  id: string;
+  walletId: string;
   partnerId: string;
   status: 'ACTIVE' | 'BLOCKED' | string;
   blockedReason: string | null;
   accounts: WalletAccount[];
+  totalBalance: number;
 }
 
 export interface LedgerEntry {
   id: string;
   accountId: string;
+  accountCode: string | null;
   direction: 'CREDIT' | 'DEBIT' | string;
   amount: number;
   balanceAfter: number;
@@ -108,6 +110,14 @@ export interface LedgerEntry {
   referenceId: string;
   description: string | null;
   occurredAt: string;
+}
+
+export interface LedgerEntryPage {
+  content: LedgerEntry[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 export interface BillingPricing {

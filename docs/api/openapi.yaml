@@ -226,15 +226,21 @@ paths:
           in: path
           required: true
           schema: { type: string, format: uuid }
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, default: 0, minimum: 0 }
+        - name: size
+          in: query
+          required: false
+          schema: { type: integer, default: 20, minimum: 1 }
       responses:
         '200':
-          description: Ledger entries
+          description: Ledger entry page
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/LedgerEntryResponse'
+                $ref: '#/components/schemas/LedgerEntryPage'
         '404': { $ref: '#/components/responses/Problem' }
   /api/partner/billing/pricing:
     get:
@@ -318,6 +324,7 @@ paths:
       responses:
         '200': { description: Webhook accepted }
         '401': { $ref: '#/components/responses/Problem' }
+        '502': { $ref: '#/components/responses/Problem' }
   /api/admin/partners/{partnerId}/wallet/unblock:
     post:
       tags: [Admin]
@@ -639,13 +646,13 @@ components:
         id: { type: string, format: uuid }
         walletId: { type: string, format: uuid }
         code: { type: string, enum: [MAIN, BONUS, PARTNER] }
-        status: { type: string, enum: [OPEN, FROZEN] }
+        status: { type: string, enum: [OPEN, CLOSED] }
         balance: { type: integer, format: int64 }
     WalletResponse:
       type: object
-      required: [id, partnerId, status, accounts]
+      required: [walletId, partnerId, status, accounts, totalBalance]
       properties:
-        id: { type: string, format: uuid }
+        walletId: { type: string, format: uuid }
         partnerId: { type: string, format: uuid }
         status: { type: string, enum: [ACTIVE, BLOCKED] }
         blockedReason: { type: string, nullable: true }
@@ -653,12 +660,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WalletAccountResponse'
+        totalBalance: { type: integer, format: int64 }
     LedgerEntryResponse:
       type: object
-      required: [id, accountId, direction, amount, balanceAfter, referenceType, referenceId, occurredAt]
+      required: [id, accountId, accountCode, direction, amount, balanceAfter, referenceType, referenceId, occurredAt]
       properties:
         id: { type: string, format: uuid }
         accountId: { type: string, format: uuid }
+        accountCode: { type: string, enum: [MAIN, BONUS, PARTNER], nullable: true }
         direction: { type: string, enum: [CREDIT, DEBIT] }
         amount: { type: integer, format: int64 }
         balanceAfter: { type: integer, format: int64 }
@@ -666,6 +675,18 @@ components:
         referenceId: { type: string, format: uuid }
         description: { type: string, nullable: true }
         occurredAt: { type: string, format: date-time }
+    LedgerEntryPage:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/LedgerEntryResponse'
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
     PricingResponse:
       type: object
       required: [currency, creditsPerCurrencyUnit, minPurchaseAmount, maxPurchaseAmount, campaignPriceAmount, campaignCreationCostCredits, campaignDurationDays, paymentProvider]

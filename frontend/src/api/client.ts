@@ -4,7 +4,7 @@ import type {
   BillingPricing,
   Campaign,
   DashboardSummary,
-  LedgerEntry,
+  LedgerEntryPage,
   PaymentTransaction,
   Insight,
   Owner,
@@ -260,8 +260,8 @@ export function getWallet(): Promise<Wallet> {
   return request<Wallet>('/api/partner/wallet', {}, getStoredPartnerToken());
 }
 
-export function getWalletEntries(accountId: string): Promise<LedgerEntry[]> {
-  return request<LedgerEntry[]>(`/api/partner/wallet/accounts/${accountId}/entries`, {}, getStoredPartnerToken());
+export function getWalletEntries(accountId: string, page: number = 0, size: number = 20): Promise<LedgerEntryPage> {
+  return request<LedgerEntryPage>(`/api/partner/wallet/accounts/${accountId}/entries?page=${page}&size=${size}`, {}, getStoredPartnerToken());
 }
 
 export function getBillingPricing(): Promise<BillingPricing> {
