@@ -83,7 +83,15 @@ public class PaymentLifecycleService {
     private void unblockDispute(UUID partnerId, UUID transactionId) {
         WalletResponseDto wallet = getWalletUseCase.getByPartner(partnerId);
         String disputeReason = "Payment dispute " + transactionId;
-        if (wallet.status() == WalletStatus.BLOCKED && disputeReason.equals(wallet.blockedReason())) {
+        if (wallet.status() != WalletStatus.BLOCKED || !disputeReason.equals(wallet.blockedReason())) {
+            return;
+        }
+        var remainingDispute = transactionRepository.findByPartnerIdOrderByCreatedAtDesc(partnerId).stream()
+            .filter(candidate -> !candidate.getId().equals(transactionId) && candidate.getStatus() == PaymentStatus.DISPUTED)
+            .findFirst();
+        if (remainingDispute.isPresent()) {
+            setWalletStatusUseCase.block(partnerId, "Payment dispute " + remainingDispute.get().getId());
+        } else {
             setWalletStatusUseCase.unblock(partnerId);
         }
     }
