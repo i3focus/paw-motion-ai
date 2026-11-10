@@ -60,7 +60,7 @@ flowchart LR
 
 - `PaymentTransaction` aggregate: partner, amount, currency, CPP snapshot, expected credits, target ledger account, provider (AbacatePay), provider checkout id/url, idempotency key, status, version, timestamps.
 - Value objects: `Money`, `CreditsPerCurrencyUnit`, `PaymentStatus`, `PaymentMethod`.
-- Invariants: state machine `PENDING → CONFIRMED | FAILED | EXPIRED | CANCELED`, `CONFIRMED → DISPUTED | REFUNDED`, `DISPUTED → CONFIRMED | REFUNDED`; terminal states immutable; credits granted at most once and only on `CONFIRMED`.
+- Invariants: state machine `PENDING → CONFIRMED | FAILED | EXPIRED | CANCELED`, `CONFIRMED → DISPUTED | REFUNDED`, `DISPUTED → CONFIRMED | REFUNDED`, `EXPIRED → CONFIRMED` (late verified payment); terminal states immutable; credits granted at most once and only on `CONFIRMED`.
 
 ### Ledger Context
 
