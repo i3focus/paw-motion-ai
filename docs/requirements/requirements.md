@@ -247,7 +247,7 @@ Source: product feedback received on 2026-11-10. It supersedes the earlier "part
 
 - **Priority**: Must
 - **Actor**: Business partner, System
-- **Main flow**: Every campaign has `expiresAt`. A scheduled job moves `ACTIVE`/`PAUSED` campaigns past `expiresAt` to `EXPIRED` (hidden from owners, read-only). When a partner archives a non-expired campaign, the system refunds credits in one transaction with reference `CAMPAIGN_REFUND:{campaignId}` back to the accounts that were debited (reverse order `PARTNER` → `BONUS` → `MAIN`, capped by each account's original debit).
+- **Main flow**: Every campaign has `expiresAt`. `expiresAt` is fixed at creation (when credits are debited) regardless of status. A scheduled job moves `DRAFT`/`ACTIVE`/`PAUSED` campaigns past `expiresAt` to `EXPIRED` (hidden from owners, read-only), and activation/resume is rejected when `now ≥ expiresAt`. When a partner archives a non-expired campaign, the system refunds credits in one transaction with reference `CAMPAIGN_REFUND:{campaignId}` back to the accounts that were debited (reverse order `PARTNER` → `BONUS` → `MAIN`, capped by each account's original debit).
 - **Business rules**: Refund amount = `floor(creditsCharged × remainingTime / totalDuration)` (prorated by unused time; see open question 16 to confirm vs. full refund); expired campaigns are not refunded; a campaign is refunded at most once (unique ledger reference); archive is final.
 - **Acceptance criteria**: Archiving a 30-day, 500-credit campaign after 15 days returns 250 credits and shows a refund entry in the statement; an expired campaign cannot be archived for refund.
 - **Proposed API**: `POST /api/partner/campaigns/{campaignId}/archive` (response includes `creditsRefunded`).
