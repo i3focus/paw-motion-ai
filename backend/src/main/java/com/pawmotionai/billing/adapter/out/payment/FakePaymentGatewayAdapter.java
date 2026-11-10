@@ -1,7 +1,6 @@
 package com.pawmotionai.billing.adapter.out.payment;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,7 +24,7 @@ public class FakePaymentGatewayAdapter implements PaymentGatewayPort {
     private final BillingProperties billingProperties;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, String> checkoutToTransaction = new ConcurrentHashMap<>();
-    private final Set<String> paidTransactions = ConcurrentHashMap.newKeySet();
+    private final Map<String, String> checkoutStates = new ConcurrentHashMap<>();
 
     public FakePaymentGatewayAdapter(BillingProperties billingProperties) {
         this.billingProperties = billingProperties;
@@ -38,21 +37,26 @@ public class FakePaymentGatewayAdapter implements PaymentGatewayPort {
 
     @Override
     public CheckoutSession createCheckout(CreateCheckoutRequest request) {
-        String checkoutId = "fake_" + request.transactionId();
-        checkoutToTransaction.put(checkoutId, request.transactionId().toString());
+        String transactionId = request.transactionId().toString();
+        String checkoutId = "fake_" + transactionId;
+        checkoutToTransaction.put(checkoutId, transactionId);
+        checkoutStates.put(transactionId, "PENDING");
         return new CheckoutSession(checkoutId,
-            billingProperties.getPartnerPortalBaseUrl() + "/billing/fake?transactionId=" + request.transactionId());
+            billingProperties.getPartnerPortalBaseUrl() + "/billing/fake?transactionId=" + transactionId);
     }
 
     @Override
     public CheckoutDetails fetchCheckoutByExternalId(String externalId) {
-        String status = paidTransactions.contains(externalId) ? "PAID" : "PENDING";
+        String status = checkoutStates.getOrDefault(externalId, "PENDING");
         return new CheckoutDetails("fake_" + externalId, externalId, status, null, billingProperties.getCurrency());
     }
 
     @Override
     public void deleteCheckout(String providerCheckoutId) {
-        checkoutToTransaction.remove(providerCheckoutId);
+        String transactionId = checkoutToTransaction.remove(providerCheckoutId);
+        if (transactionId != null) {
+            checkoutStates.remove(transactionId);
+        }
     }
 
     @Override
@@ -65,17 +69,23 @@ public class FakePaymentGatewayAdapter implements PaymentGatewayPort {
         if (providedSecret == null || !providedSecret.equals(configuredSecret)) {
             throw new WebhookVerificationException("Invalid fake webhook secret");
         }
+        JsonNode root;
         try {
-            JsonNode root = objectMapper.readTree(request.body());
-            String eventId = root.path("id").asText(null);
-            String event = root.path("event").asText("checkout.completed");
-            JsonNode data = root.path("data");
-            String checkoutId = data.path("checkoutId").asText(data.path("id").asText(null));
-            markPaid(event, checkoutId, data);
-            return new ProviderWebhookEvent(eventId, event, checkoutId, checkoutId, root.path("devMode").asBoolean(false));
+            root = objectMapper.readTree(request.body());
         } catch (Exception exception) {
             throw new WebhookVerificationException("Invalid fake webhook payload");
         }
+        boolean devMode = root.path("devMode").asBoolean(false);
+        if (devMode != expectedDevMode()) {
+            throw new WebhookVerificationException("Webhook devMode does not match environment");
+        }
+        String eventId = root.path("id").asText(null);
+        String event = root.path("event").asText("checkout.completed");
+        JsonNode data = root.path("data");
+        String checkoutId = firstText(data, "checkoutId", "id");
+        String transactionId = resolveTransactionId(data, checkoutId);
+        applyEvent(event, transactionId);
+        return new ProviderWebhookEvent(eventId, event, transactionId, checkoutId, devMode);
     }
 
     @Override
@@ -83,18 +93,50 @@ public class FakePaymentGatewayAdapter implements PaymentGatewayPort {
         return true;
     }
 
-    private void markPaid(String event, String checkoutId, JsonNode data) {
-        if (event == null || !event.contains("completed") || checkoutId == null) {
+    private String resolveTransactionId(JsonNode data, String checkoutId) {
+        String explicit = firstText(data, "transactionId", "externalId");
+        if (explicit != null) {
+            return explicit;
+        }
+        String mapped = checkoutId == null ? null : checkoutToTransaction.get(checkoutId);
+        if (mapped != null) {
+            return mapped;
+        }
+        if (checkoutId != null && checkoutId.startsWith("fake_")) {
+            return checkoutId.substring("fake_".length());
+        }
+        return null;
+    }
+
+    private void applyEvent(String event, String transactionId) {
+        if (event == null || transactionId == null) {
             return;
         }
-        String transactionId = data.path("transactionId").asText(data.path("externalId").asText(null));
-        if (transactionId != null && !transactionId.isBlank()) {
-            paidTransactions.add(transactionId);
+        String status = null;
+        if (event.contains("completed")) {
+            status = "PAID";
+        } else if (event.contains("disputed")) {
+            status = "UNDER_DISPUTE";
+        } else if (event.contains("refunded") || event.contains("lost")) {
+            status = "REFUNDED";
+        } else if (event.contains("failed")) {
+            status = "FAILED";
+        } else if (event.contains("canceled") || event.contains("cancelled")) {
+            status = "CANCELED";
         }
-        String mapped = checkoutToTransaction.get(checkoutId);
-        if (mapped != null) {
-            paidTransactions.add(mapped);
+        if (status != null) {
+            checkoutStates.put(transactionId, status);
         }
+    }
+
+    private String firstText(JsonNode node, String... fields) {
+        for (String field : fields) {
+            JsonNode value = node.path(field);
+            if (value.isTextual() && !value.asText().isBlank()) {
+                return value.asText();
+            }
+        }
+        return null;
     }
 
     private String header(Map<String, String> headers, String name) {

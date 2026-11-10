@@ -44,7 +44,8 @@ export function PartnerBillingPage() {
     setSubmitting(true);
     try {
       const purchase = await createPurchase({ amount: value, method });
-      if (purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
+      const fakeCheckout = purchase.provider === 'fake' || (purchase.providerCheckoutUrl ?? '').includes('/billing/fake');
+      if (!fakeCheckout && purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
         window.location.assign(purchase.providerCheckoutUrl);
         return;
       }

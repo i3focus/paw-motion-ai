@@ -63,10 +63,10 @@ public class ProcessPaymentWebhookService implements ProcessPaymentWebhookUseCas
         String status = details.status() == null ? "" : details.status().toUpperCase();
         String eventType = event.eventType() == null ? "" : event.eventType();
         try {
-            if (eventType.contains("disputed") || status.equals("UNDER_DISPUTE")) {
+            if (status.equals("UNDER_DISPUTE") || status.equals("DISPUTED")) {
                 lifecycleService.dispute(transaction.getId());
-            } else if (eventType.contains("refunded") || eventType.contains("lost") || status.equals("REFUNDED")) {
-                lifecycleService.refund(transaction.getId(), "Payment " + eventType);
+            } else if (status.equals("REFUNDED")) {
+                lifecycleService.refund(transaction.getId(), "Payment " + (eventType.isBlank() ? status : eventType));
             } else if (status.equals("PAID") || status.equals("REDEEMED")) {
                 requirePaidDetails(transaction, details);
                 lifecycleService.confirm(transaction.getId());

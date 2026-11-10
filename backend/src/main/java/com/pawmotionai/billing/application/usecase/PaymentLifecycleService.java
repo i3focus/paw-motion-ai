@@ -8,13 +8,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pawmotionai.billing.application.port.out.PaymentTransactionRepository;
 import com.pawmotionai.billing.domain.exception.PaymentTransactionNotFoundException;
+import com.pawmotionai.billing.domain.model.PaymentStatus;
 import com.pawmotionai.billing.domain.model.PaymentTransaction;
+import com.pawmotionai.ledger.application.dto.WalletResponseDto;
+import com.pawmotionai.ledger.application.port.in.GetWalletUseCase;
 import com.pawmotionai.ledger.application.port.in.PostLedgerEntryUseCase;
 import com.pawmotionai.ledger.application.port.in.LedgerPostingCommands.CreditPosting;
 import com.pawmotionai.ledger.application.port.in.LedgerPostingCommands.DebitPosting;
 import com.pawmotionai.ledger.application.port.in.SetWalletStatusUseCase;
 import com.pawmotionai.ledger.domain.model.LedgerAccountCode;
 import com.pawmotionai.ledger.domain.model.LedgerReferenceType;
+import com.pawmotionai.ledger.domain.model.WalletStatus;
 
 @Service
 public class PaymentLifecycleService {
@@ -22,13 +26,16 @@ public class PaymentLifecycleService {
     private final PaymentTransactionRepository transactionRepository;
     private final PostLedgerEntryUseCase postLedgerEntryUseCase;
     private final SetWalletStatusUseCase setWalletStatusUseCase;
+    private final GetWalletUseCase getWalletUseCase;
 
     public PaymentLifecycleService(PaymentTransactionRepository transactionRepository,
                                    PostLedgerEntryUseCase postLedgerEntryUseCase,
-                                   SetWalletStatusUseCase setWalletStatusUseCase) {
+                                   SetWalletStatusUseCase setWalletStatusUseCase,
+                                   GetWalletUseCase getWalletUseCase) {
         this.transactionRepository = transactionRepository;
         this.postLedgerEntryUseCase = postLedgerEntryUseCase;
         this.setWalletStatusUseCase = setWalletStatusUseCase;
+        this.getWalletUseCase = getWalletUseCase;
     }
 
     @Transactional
@@ -37,11 +44,18 @@ public class PaymentLifecycleService {
         if (transaction.isConfirmed()) {
             return;
         }
-        postLedgerEntryUseCase.credit(new CreditPosting(transaction.getPartnerId(), LedgerAccountCode.MAIN,
-            transaction.getExpectedCredits(), LedgerReferenceType.PAYMENT, transaction.getId(),
-            "Credit purchase", transaction.getId().toString()));
+        PaymentStatus previousStatus = transaction.getStatus();
+        boolean disputeResolved = previousStatus == PaymentStatus.DISPUTED;
+        if (previousStatus == PaymentStatus.PENDING || previousStatus == PaymentStatus.EXPIRED) {
+            postLedgerEntryUseCase.credit(new CreditPosting(transaction.getPartnerId(), LedgerAccountCode.MAIN,
+                transaction.getExpectedCredits(), LedgerReferenceType.PAYMENT, transaction.getId(),
+                "Credit purchase", transaction.getId().toString()));
+        }
         transaction.confirm(Instant.now());
         transactionRepository.save(transaction);
+        if (disputeResolved) {
+            unblockDispute(transaction.getPartnerId(), transaction.getId());
+        }
     }
 
     @Transactional
@@ -64,6 +78,14 @@ public class PaymentLifecycleService {
         transaction.refund(Instant.now());
         transactionRepository.save(transaction);
         setWalletStatusUseCase.block(transaction.getPartnerId(), reason);
+    }
+
+    private void unblockDispute(UUID partnerId, UUID transactionId) {
+        WalletResponseDto wallet = getWalletUseCase.getByPartner(partnerId);
+        String disputeReason = "Payment dispute " + transactionId;
+        if (wallet.status() == WalletStatus.BLOCKED && disputeReason.equals(wallet.blockedReason())) {
+            setWalletStatusUseCase.unblock(partnerId);
+        }
     }
 
     @Transactional
