@@ -51,6 +51,13 @@ Implemented platform slice:
 
 Challenges, rewards, partner analytics dashboards, GPS routes, and external AI provider adapters are planned in the backlog and are not part of the current runnable slice.
 
+Planned next (change request CR-2026-11, see `docs/requirements/requirements.md` and ADR-0014..0018):
+
+- Partner credits: partners buy credits (fiat × CPP) through a payment provider, held in a wallet with one or more ledger accounts; each campaign creation atomically debits a configured amount of credits. CPP, campaign price, and campaign credit cost are environment variables.
+- Partner performance dashboard with campaign impressions, clicks, CTR, and credits spent.
+- Owner-facing partner detail (area of operation, services, website, location map) when clicking a campaign, plus a partner discovery map.
+- Mobile Home quick-start live GPS tracking (Strava-style) with optional publication to Strava.
+
 ## Local development
 
 Prerequisites: Docker with Compose.

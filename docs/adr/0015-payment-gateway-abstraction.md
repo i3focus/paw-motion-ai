@@ -1,0 +1,12 @@
+# ADR-0015: Payment Gateway Abstraction and Payment Transaction Lifecycle
+
+- **Status**: Proposed
+- **Context**: Partners must pay in fiat (BRL, PIX and card) to obtain credits. The provider is not yet chosen, local development and CI cannot depend on real payments, and credits must be granted only after a confirmed payment.
+- **Decision**: Create a **Billing** bounded context (`com.pawmotionai.billing`) owning `PaymentTransaction` with states `PENDING → CONFIRMED | FAILED | EXPIRED | CANCELED` and `CONFIRMED → REFUNDED`. Providers sit behind `PaymentGatewayPort` (`createCheckout`, `fetchStatus`, `verifyWebhook`). Ship a deterministic `FakePaymentGatewayAdapter` (selected with `PAYMENT_PROVIDER=fake`) for local/CI with a dev-only endpoint to simulate outcomes, and one real adapter for a Brazilian-capable provider using hosted checkout/tokenization. Confirmation arrives through a signed webhook (`POST /api/webhooks/payments/{provider}`), deduplicated by provider event id, plus a scheduled reconciliation job for stale `PENDING` transactions. Confirmation and the ledger credit happen in one local transaction (ADR-0014).
+- **Alternatives**: Integrating a provider SDK directly in use cases (rejected: vendor lock-in, untestable); client-side confirmation only (rejected: forgeable); storing card data (rejected: PCI scope).
+- **Rationale**: Ports keep the domain provider-agnostic, the fake adapter keeps CI free and deterministic, and webhook + reconciliation is the standard reliable pattern for asynchronous payments such as PIX.
+- **Positive consequences**: Provider can be swapped or added; complete transaction history for partners and support.
+- **Negative consequences**: Webhook endpoint must be publicly reachable in deployed environments; extra reconciliation job to operate.
+- **Risks**: Provider choice (Stripe, Mercado Pago, Pagar.me, etc.) affects PIX support and fees — tracked in open questions; webhook spoofing mitigated by signature verification and status re-fetch from the provider.
+- **Implementation guidance**: Store `cppSnapshot`, `amount`, `currency`, `expectedCredits`, `targetAccountId`, `providerReference`, `idempotencyKey` on the transaction. Endpoints that start purchases require an `Idempotency-Key` header. Provider secrets (`PAYMENT_PROVIDER_API_KEY`, `PAYMENT_WEBHOOK_SECRET`) come from the environment only.
+- **Migration/reversal**: Additional providers are new adapters; switching provider does not change stored transactions or ledger entries.

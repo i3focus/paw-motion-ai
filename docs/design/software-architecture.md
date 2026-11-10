@@ -9,8 +9,14 @@ PawMotion AI MVP uses a **Spring Boot modular monolith** with hexagonal architec
 ```mermaid
 flowchart LR
     Owner[Pet owner] --> Web[PawMotion AI Web App]
+    Owner --> Mobile[PawMotion AI Mobile App]
     Partner[Business partner] --> Web
     Web --> API[Spring Boot Modular Monolith]
+    Mobile --> API
+    API --> PSP[Payment provider]
+    API --> Strava[Strava API]
+    Web --> Tiles[OSM tile provider]
+    Mobile --> Tiles
     API --> DB[(PostgreSQL + PostGIS)]
     API --> Broker{{Optional RabbitMQ}}
     API --> AI[AI Provider]
@@ -58,14 +64,35 @@ The first implemented vertical slice covers Identity, Pet, Activity, dashboard s
 - A use case owns one local transaction for writes within its bounded context.
 - Cross-context consistency uses events and idempotent consumers, not distributed transactions.
 - Coupon redemption uses a single Partner-context transaction with row locking or optimistic constraints.
+- Documented exception (ADR-0014): campaign creation + ledger debit, and payment confirmation + ledger credit, run in one local transaction through the Ledger inbound port, with row locking on the ledger account.
 
 ## Failure handling
 
 - REST errors use RFC 9457 Problem Details.
 - AI provider failures return deterministic fallback insights.
+- Insufficient credits return `402` Problem Details; payment provider failures leave transactions `FAILED` without ledger changes.
+- Strava failures never block activity saving; publications retry asynchronously.
 - Event publication failures are isolated through outbox/inbox adapters when messaging is enabled.
 - Database failures return `500` Problem Details and are logged with correlation IDs.
 
 ## Configuration management
 
 Configuration is externalized through environment variables and Spring profiles: `local`, `test`, `demo`, `prod`. Secrets never enter Git.
+
+### CR-2026-11 configuration
+
+| Property | Environment variable | Owner |
+|---|---|---|
+| `app.billing.currency` | `BILLING_CURRENCY` | Billing |
+| `app.billing.credits-per-currency-unit` | `BILLING_CREDITS_PER_CURRENCY_UNIT` (CPP) | Billing |
+| `app.billing.min-purchase-amount` | `BILLING_MIN_PURCHASE_AMOUNT` | Billing |
+| `app.billing.provider` | `PAYMENT_PROVIDER` | Billing |
+| `app.billing.provider-api-key` / `webhook-secret` | `PAYMENT_PROVIDER_API_KEY`, `PAYMENT_WEBHOOK_SECRET` | Billing |
+| `app.campaign.price-amount` | `CAMPAIGN_PRICE_AMOUNT` | Partner |
+| `app.campaign.creation-cost-credits` | `CAMPAIGN_CREATION_COST_CREDITS` | Partner/Ledger |
+| `app.analytics.click-dedup-window` / `k-anonymity-min` | `ANALYTICS_CLICK_DEDUP_WINDOW`, `ANALYTICS_K_ANONYMITY_MIN` | Partner |
+| `app.maps.tile-url` / `style-url` | `MAP_TILE_URL`, `MAP_STYLE_URL` | Web/Mobile |
+| `app.integration.strava.*` | `STRAVA_ENABLED`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REDIRECT_URI` | Integration |
+| `app.integration.token-encryption-key` | `INTEGRATION_TOKEN_ENCRYPTION_KEY` | Integration |
+
+All values are validated at startup (`@Validated @ConfigurationProperties`); `.env.example` gains placeholders when each slice is implemented.

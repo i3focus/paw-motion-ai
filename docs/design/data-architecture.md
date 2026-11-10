@@ -15,18 +15,42 @@
 |---|---|
 | Identity | `owners`, `owner_credentials` or credential columns on `owners` |
 | Pet | `pets` |
-| Activity | `activities`, `activity_routes`, `activity_statistics_projection` |
+| Activity | `activities` (+ `source`), `activity_routes` (PostGIS `LineString`), `activity_statistics_projection` |
 | AI Insights | `insights`, `insight_provider_attempts` |
 | Engagement | `weekly_goals`, `streaks`, `badges`, `challenges`, `challenge_enrollments`, `challenge_progress`, `rewards` |
-| Partner | `business_profiles`, `campaigns`, `reward_offers`, `coupons`, `coupon_redemptions` |
+| Partner | `partner_campaigns` (+ `credits_charged`, `idempotency_key`), `partner_public_profiles` (categories, services, website, address, `geography(Point,4326)`), `campaign_interactions`, `campaign_daily_metrics`, `reward_offers`, `coupons`, `coupon_redemptions` |
+| Billing | `payment_transactions`, `payment_webhook_events` |
+| Ledger | `ledger_wallets`, `ledger_accounts`, `ledger_entries` |
+| Integration | `strava_connections`, `strava_publications` |
 | Notification | `notifications`, `notification_preferences` |
 
 ## MVP schema slice
 
 The initial migration creates `owners`, `pets`, and `activities`. Later migrations add goals, challenges, coupons, insights, and spatial columns.
 
+## CR-2026-11 schema outline
+
+| Table | Key columns and constraints |
+|---|---|
+| `ledger_wallets` | `id`, `partner_id` UNIQUE, timestamps, `version` |
+| `ledger_accounts` | `id`, `wallet_id`, `code` (`MAIN`, `BONUS`…), `is_default`, `status` (`OPEN`/`CLOSED`), `balance BIGINT CHECK (balance >= 0)`, `version`; UNIQUE (`wallet_id`, `code`); partial UNIQUE on default per wallet |
+| `ledger_entries` | `id`, `account_id`, `direction` (`CREDIT`/`DEBIT`), `amount BIGINT CHECK (amount > 0)`, `balance_after BIGINT`, `reference_type` (`PAYMENT`, `CAMPAIGN`, `REFUND`, `ADJUSTMENT`), `reference_id`, `description`, `correlation_id`, `occurred_at`; UNIQUE (`reference_type`, `reference_id`, `direction`); no UPDATE/DELETE |
+| `payment_transactions` | `id`, `partner_id`, `amount NUMERIC(19,4)`, `currency`, `cpp_snapshot NUMERIC(19,6)`, `expected_credits BIGINT`, `target_account_id`, `method`, `provider`, `provider_reference`, `status`, `idempotency_key` UNIQUE per partner, `failure_reason`, timestamps, `version` |
+| `payment_webhook_events` | `provider`, `provider_event_id` (PK pair), `received_at`, `payload_hash` — deduplication |
+| `partner_public_profiles` | `partner_id` PK, `categories` text[], `services` JSONB, `website`, `phone`, `address`, `location geography(Point,4326)` GiST index, `service_radius_km` |
+| `campaign_interactions` | `id`, `campaign_id`, `partner_id`, `owner_hash`, `type`, `source`, `placement`, `occurred_at`; index (`campaign_id`, `occurred_at`) |
+| `campaign_daily_metrics` | PK (`campaign_id`, `day`), `impressions`, `clicks`, `unique_clicks` |
+| `activity_routes` | `activity_id` PK, `path geography(LineString,4326)`, `start_point`, `end_point`, `point_count` |
+| `strava_connections` | `owner_id` PK, `athlete_id`, `access_token_enc`, `refresh_token_enc`, `expires_at`, `scopes`, `auto_publish`, `status` |
+| `strava_publications` | `activity_id` PK, `status`, `strava_activity_id`, `attempts`, `last_error`, timestamps |
+
+Migrations are added per slice (`V4__ledger_and_billing.sql`, `V5__partner_public_profile_and_interactions.sql`, `V6__activity_routes_and_strava.sql`); PostGIS extension must be enabled before `V5`.
+
 ## Retention and deletion
 
 - Activity facts are retained while the account is active.
 - Account deletion anonymizes/removes owner, pet, activity, insight, coupon, and notification data according to legal retention requirements.
 - Audit logs are separated from domain data and have their own retention policy.
+- Payment transactions and ledger entries are retained for fiscal/audit purposes after partner account deletion, with personal fields anonymized.
+- Raw campaign interactions are retained 13 months; aggregates are kept.
+- Activity routes and Strava tokens are deleted with the owner account; Strava disconnect deletes tokens immediately.
