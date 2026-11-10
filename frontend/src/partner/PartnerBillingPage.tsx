@@ -14,6 +14,8 @@ export function PartnerBillingPage() {
   const [statement, setStatement] = useState<LedgerEntryPage | null>(null);
   const [statementAccountId, setStatementAccountId] = useState<string | null>(null);
   const [statementLoading, setStatementLoading] = useState(false);
+  const [statementPage, setStatementPage] = useState(0);
+  const [statementError, setStatementError] = useState<string | null>(null);
   const [amount, setAmount] = useState('50');
   const [method, setMethod] = useState<'PIX' | 'CARD'>('PIX');
   const [error, setError] = useState<string | null>(null);
@@ -22,14 +24,18 @@ export function PartnerBillingPage() {
 
   const totalBalance = wallet?.totalBalance ?? 0;
 
-  async function loadStatement(accountId: string) {
+  async function loadStatement(accountId: string, page = 0) {
     setStatementLoading(true);
+    setStatementError(null);
     try {
-      const page = await getWalletEntries(accountId);
-      setStatement(page);
+      const result = await getWalletEntries(accountId, page);
+      setStatement(result);
       setStatementAccountId(accountId);
+      setStatementPage(result.page);
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Unable to load ledger statement');
+      setStatement(null);
+      setStatementAccountId(accountId);
+      setStatementError(caught instanceof ApiError ? caught.message : 'Unable to load ledger statement');
     } finally {
       setStatementLoading(false);
     }
@@ -44,20 +50,25 @@ export function PartnerBillingPage() {
     setPurchases(purchaseResponse);
     const preferredAccount = walletResponse.accounts.find((account) => account.code === 'MAIN') ?? walletResponse.accounts[0];
     if (preferredAccount) {
-      try {
-        const page = await getWalletEntries(preferredAccount.id);
-        setStatement(page);
-        setStatementAccountId(preferredAccount.id);
-      } catch {
-        setStatement(null);
-        setStatementAccountId(null);
-      }
+      await loadStatement(preferredAccount.id, 0);
+    } else {
+      setStatement(null);
+      setStatementAccountId(null);
+      setStatementPage(0);
+      setStatementError(null);
     }
   }
 
   useEffect(() => {
     refresh().catch((caught) => setError(caught instanceof ApiError ? caught.message : 'Unable to load billing'));
   }, []);
+
+  async function changeStatementPage(delta: number) {
+    if (!statementAccountId || !statement) {
+      return;
+    }
+    await loadStatement(statementAccountId, statementPage + delta);
+  }
 
   async function handlePurchase(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -122,7 +133,7 @@ export function PartnerBillingPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <p className="text-lg font-bold text-primary">{account.balance} credits</p>
-                  <Button type="button" variant="ghost" onClick={() => loadStatement(account.id)} disabled={statementLoading}>
+                  <Button type="button" variant="ghost" onClick={() => loadStatement(account.id, 0)} disabled={statementLoading}>
                     Statement
                   </Button>
                 </div>
@@ -138,7 +149,9 @@ export function PartnerBillingPage() {
           ? `${wallet?.accounts.find((account) => account.id === statementAccountId)?.code ?? 'Account'} · ${statement?.totalElements ?? 0} movements`
           : 'Select an account to view credit and debit history.'}
       >
-        {statementLoading ? (
+        {statementError ? (
+          <ErrorMessage message={statementError} />
+        ) : statementLoading ? (
           <p className="text-sm text-cream-500">Loading statement…</p>
         ) : !statement || statement.content.length === 0 ? (
           <EmptyState title="No ledger movements" description="Credits and debits will appear here." />
@@ -158,6 +171,13 @@ export function PartnerBillingPage() {
                 </p>
               </div>
             ))}
+            {statement.totalPages > 1 ? (
+              <div className="flex items-center justify-between gap-3 pt-2">
+                <Button type="button" variant="ghost" disabled={statementLoading || statementPage === 0} onClick={() => changeStatementPage(-1)}>Previous</Button>
+                <p className="text-xs text-cream-500">Page {statementPage + 1} of {statement.totalPages}</p>
+                <Button type="button" variant="ghost" disabled={statementLoading || statementPage >= statement.totalPages - 1} onClick={() => changeStatementPage(1)}>Next</Button>
+              </div>
+            ) : null}
           </div>
         )}
       </Card>
