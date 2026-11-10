@@ -13,6 +13,9 @@ flowchart LR
     Activity --> Engagement[Engagement Context]
     Engagement --> Partner[Partner Context]
     Engagement --> Notification[Notification Context]
+    Partner --> Ledger[Ledger Context]
+    Billing[Billing Context] --> Ledger
+    Activity --> Integration[Integration Context]
 ```
 
 ## Core aggregates
@@ -31,7 +34,7 @@ flowchart LR
 
 ### Activity Context
 
-- `Activity` aggregate: pet reference, activity type, start time, duration, distance, optional notes/route summary.
+- `Activity` aggregate: pet reference, activity type, source (`MANUAL`/`LIVE_TRACKING`), start time, duration, distance, optional notes, optional route (`ActivityRoute`: GeoJSON `Feature<LineString>`, start/end points), publish-to-Strava intent.
 - `ActivityStatistics` read model: totals, averages, streaks, weekly progress.
 - Value objects: `ActivityId`, `ActivityType`, `Distance`, `Duration`.
 - Invariants: duration and distance non-negative; start time valid; pet must be active and owned by requester.
@@ -49,8 +52,26 @@ flowchart LR
 
 ### Partner Context
 
-- `BusinessProfile`, `Campaign`, `RewardOffer`, `Coupon`, `Redemption`.
-- Invariants: coupon inventory cannot be oversold; redemption is idempotent; partner analytics are aggregate-only.
+- `BusinessProfile`, `PartnerPublicProfile` (categories, services, website, address, location), `Campaign`, `CampaignInteraction`, `CampaignDailyMetrics` (read model), `RewardOffer`, `Coupon`, `Redemption`.
+- Value objects: `CampaignId`, `PartnerCategory`, `ServiceOffering`, `GeoPoint`, `InteractionType`.
+- Invariants: coupon inventory cannot be oversold; redemption is idempotent; partner analytics are aggregate-only; a campaign stores `creditsCharged` and is created only if its ledger debit succeeds; publishing campaigns requires at least one category and one service.
+
+### Billing Context
+
+- `PaymentTransaction` aggregate: partner, amount, currency, CPP snapshot, expected credits, target ledger account, provider (AbacatePay), provider checkout id/url, idempotency key, status, version, timestamps.
+- Value objects: `Money`, `CreditsPerCurrencyUnit`, `PaymentStatus`, `PaymentMethod`.
+- Invariants: state machine `PENDING → CONFIRMED | FAILED | EXPIRED | CANCELED`, `CONFIRMED → DISPUTED | REFUNDED`, `DISPUTED → CONFIRMED | REFUNDED`, `EXPIRED → CONFIRMED` (late verified payment); terminal states immutable; credits granted at most once and only on `CONFIRMED`.
+
+### Ledger Context
+
+- `Wallet` aggregate (one per partner, created at partner registration, status `ACTIVE`/`BLOCKED`) containing `LedgerAccount`s `MAIN`, `BONUS`, `PARTNER`; `LedgerEntry` append-only records. Wallet and accounts carry a JPA `@Version`; postings also lock account rows.
+- Value objects: `Credits` (positive integer), `EntryDirection` (CREDIT/DEBIT), `LedgerReference` (type + id).
+- Invariants: balance never negative; balance equals sum of entries; `(accountId, referenceType, referenceId, direction)` unique (split debits/refunds post one entry per account); closed accounts reject postings; debits consume `MAIN` → `BONUS` → `PARTNER` (split if needed); blocked wallets reject debits for new campaigns and purchases.
+
+### Integration Context
+
+- `StravaConnection` aggregate (owner, athlete id, encrypted tokens, scopes, auto-publish flag, status) and `StravaPublication` (activity id, status, Strava activity id, attempts, last error).
+- Invariants: one active connection per owner; one publication per activity per connection; tokens never exposed.
 
 ## Major user journeys
 
@@ -132,4 +153,77 @@ flowchart TD
     G -- Yes --> H[Persist insight metadata]
     E --> I[Return insight]
     H --> I
+```
+
+## Credit purchase flow (REQ-BILL-001/002)
+
+```mermaid
+sequenceDiagram
+    actor Partner
+    participant API
+    participant Billing
+    participant PSP as Payment provider
+    participant Ledger
+    Partner->>API: POST /partner/billing/purchases (amount, method, Idempotency-Key)
+    API->>Billing: create PENDING tx (cppSnapshot, expectedCredits)
+    Billing->>PSP: createCheckout
+    PSP-->>Partner: PIX QR / hosted card form
+    PSP->>API: signed webhook (paid)
+    API->>Billing: verify signature, dedupe event
+    Note over Billing,Ledger: single DB transaction
+    Billing->>Billing: PENDING -> CONFIRMED
+    Billing->>Ledger: credit(account, expectedCredits, ref=PAYMENT:txId)
+    Ledger-->>Billing: entry + new balance
+    Billing->>Billing: outbox CreditsPurchased.v1
+```
+
+## Campaign creation with credit debit (REQ-CAMP-003)
+
+```mermaid
+flowchart TD
+    A[POST /partner/campaigns + Idempotency-Key] --> B{Same key already processed?}
+    B -- Yes --> R[Return existing campaign]
+    B -- No --> C[Begin DB transaction]
+    C --> D[Lock ledger account FOR UPDATE]
+    D --> E{balance >= CAMPAIGN_CREATION_COST_CREDITS?}
+    E -- No --> X[Rollback, 402 InsufficientCredits]
+    E -- Yes --> F[Insert campaign with creditsCharged]
+    F --> G[Insert DEBIT entry ref=CAMPAIGN:id, update balance]
+    G --> H[Outbox CampaignCreditsDebited.v1]
+    H --> I[Commit, 201 with remainingBalance]
+```
+
+## Campaign click to partner detail (REQ-CAMP-001, REQ-DISC-001)
+
+```mermaid
+sequenceDiagram
+    actor Owner
+    participant App as Owner app
+    participant API
+    participant Partner
+    Owner->>App: Tap campaign card
+    App->>API: POST /campaigns/{id}/clicks [fire-and-forget]
+    API->>Partner: store interaction, upsert daily metrics
+    App->>API: GET /partners/{partnerId}
+    API-->>App: public profile, services, website?, location?, active campaigns
+    App-->>Owner: Partner detail (services emphasized if no website, map if located)
+```
+
+## Live tracking and Strava publication (REQ-TRACK-001, REQ-STRAVA-002)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Tracking: Start walk (Home quick action)
+    Tracking --> Paused: Pause
+    Paused --> Tracking: Resume
+    Tracking --> Review: Finish
+    Paused --> Review: Finish
+    Review --> Saved: Save (POST /activities with route)
+    Review --> Discarded: Discard
+    Saved --> PublishQueued: publishToStrava = true
+    PublishQueued --> Published: Strava upload ok
+    PublishQueued --> PublishFailed: permanent error
+    Saved --> [*]
+    Discarded --> [*]
 ```

@@ -22,3 +22,7 @@ Every integration event uses the envelope in `event-envelope.schema.json`:
 ## Initial events
 
 See `docs/design/domain-events.md` for producer/consumer mapping. `PetCreated.v1` and `ActivityRecorded.v1` are the initial planned integration events. The current implementation slice only persists Pet and Activity records; publication through the outbox/event port is scheduled for a later integration slice and is not enabled yet.
+
+## CR-2026-11 events
+
+Billing (`Payment*.v1`), Ledger (`CreditsPurchased.v1`, `CampaignCreditsDebited.v1`), Partner (`CampaignCreated.v1`, `CampaignClickRecorded.v1`, `CampaignArchived.v1`, `CampaignExpired.v1`), Engagement (`ChallengePublished.v1`, `BadgeAwarded.v1`), and Integration (`Strava*.v1`, `ActivityPublishedToStrava.v1`) events are planned; see `docs/design/domain-events.md`. `ActivityRecorded.v1` gains optional `source`, `hasRoute`, and `publishToStrava` fields (backward compatible). The Strava publication worker is the first consumer that requires the outbox to be enabled.

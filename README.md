@@ -25,7 +25,7 @@ The regulations explicitly include physical activity and wellness projects. PawM
 1. Frontend	React + TypeScript + Tailwind CSS
 2. Backend	Java 21 + Spring Boot
 3. Database	PostgreSQL + PostGIS
-4. AI	Gemini API or OpenAI API
+4. AI	OpenAI API (primary)
 5. Maps	MapLibre + OpenStreetMap
 6. Deployment	Vercel + Render/Fly.io
 7. Optional integration: Strava API
@@ -50,6 +50,13 @@ Implemented platform slice:
 - OpenAPI contract and event schema under `docs/api/`.
 
 Challenges, rewards, partner analytics dashboards, GPS routes, and external AI provider adapters are planned in the backlog and are not part of the current runnable slice.
+
+Planned next (change request CR-2026-11, see `docs/requirements/requirements.md` and ADR-0014..0018):
+
+- Partner credits: partners buy credits (fiat × CPP) through a payment provider, held in a wallet with one or more ledger accounts; each campaign creation atomically debits a configured amount of credits. CPP, campaign price, and campaign credit cost are environment variables.
+- Partner performance dashboard with campaign clicks, unique owners, and credits spent.
+- Owner-facing partner detail (area of operation, services, website, location map) when clicking a campaign, plus a partner discovery map.
+- Mobile Home quick-start live GPS tracking (Strava-style) with optional publication to Strava.
 
 ## Local development
 

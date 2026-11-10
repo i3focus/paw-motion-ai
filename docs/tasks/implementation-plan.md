@@ -22,7 +22,7 @@ Deliver vertical slices, not isolated layers. Each slice must include domain rul
 ## Slice 2 — AI Insights
 
 1. Activity aggregate read model.
-2. AI provider port, deterministic local provider, optional OpenAI/Gemini adapter.
+2. AI provider port, deterministic local provider, OpenAI adapter (primary).
 3. Prompt templates, validation, fallback, metadata persistence.
 4. Frontend insight card.
 
@@ -46,6 +46,39 @@ Deliver vertical slices, not isolated layers. Each slice must include domain rul
 4. Security review, rate limits, account deletion.
 5. Deployment documentation and seed data.
 
+## Slice 6 — Partner monetization with credits (CR-2026-11)
+
+1. Pricing configuration (CPP, campaign price, campaign credit cost) — T-016.
+2. Ledger context: wallet, accounts, atomic postings — T-017.
+3. Billing context: payment transactions, fake provider, purchase API — T-018.
+4. Campaign creation debits credits — T-020.
+5. Payment webhook/reconciliation and real provider sandbox — T-019.
+6. Partner portal wallet UI — T-021.
+7. Credits explainer, campaign expiration and archive refund, wallet unblock — T-035, T-034, T-037.
+
+## Slice 7 — Partner value and owner discovery
+
+(Admin/AI challenges T-036 and account deletion/retention T-038 can run in parallel with Slices 6–8.)
+
+1. Campaign click tracking in owner apps — T-022.
+2. Partner performance dashboard — T-023.
+3. Partner public profile with location — T-024.
+4. Owner partner detail page — T-025.
+5. Partner map and campaign list — T-026.
+
+## Slice 8 — Live tracking and Strava
+
+1. Activity routes in PostGIS — T-027.
+2. Mobile Home quick-start live tracking — T-028.
+3. Outbox publisher — T-029.
+4. Strava connection and publication — T-030, T-031.
+
+Slices 6 and 8 are independent and can run in parallel (backend ledger/billing vs. mobile tracking). Slice 7 depends on campaign creation being stable. Every slice updates OpenAPI, `.env.example`, README, and tests (T-032, T-033).
+
 ## First recommended vertical slice
 
 **Slice 1** because it proves identity, ownership, persistence, API contracts, and the core demo loop before adding AI or gamification complexity.
+
+## Next recommended slice (CR-2026-11)
+
+**Slice 6 (T-016 → T-017 → T-018 → T-020)** using the fake payment provider: it proves the ledger invariants (atomic, idempotent, non-negative) and the "campaign costs credits" rule end-to-end before a real payment provider is chosen. In parallel, T-027/T-028 deliver the mobile quick-start tracking.

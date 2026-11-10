@@ -17,3 +17,8 @@ The following ADRs record the initial architecture baseline. They are proposed p
 | [0011](0011-testing-strategy.md) | Unit, integration, contract, security, E2E tests |
 | [0012](0012-deployment-operational-simplicity.md) | Docker Compose and simple deployment |
 | [0013](0013-client-input-validation-and-pet-editing.md) | Client input validation and pet profile editing |
+| [0014](0014-credit-ledger-and-wallets.md) | Credit ledger, wallets, and atomic campaign debit |
+| [0015](0015-payment-gateway-abstraction.md) | Payment gateway (AbacatePay hosted checkout) and payment transaction lifecycle |
+| [0016](0016-campaign-interaction-analytics.md) | Campaign click tracking and aggregate partner analytics |
+| [0017](0017-partner-geolocation-and-discovery-maps.md) | Partner geolocation and discovery maps |
+| [0018](0018-live-tracking-and-strava-publication.md) | Live GPS tracking and Strava publication |

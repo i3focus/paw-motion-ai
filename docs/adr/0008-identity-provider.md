@@ -10,3 +10,4 @@
 - **Risks**: Developers may accidentally run insecure demo auth in production.
 - **Implementation guidance**: Gate dev issuer by profile/environment; enforce strong JWT secret and short expiry.
 - **Migration/reversal**: Replace issuer configuration with Keycloak without changing resource-server validation.
+- **Decision update (2026-11-10)**: For the hackathon the platform's own JWT issuer is the identity provider; Keycloak/external OIDC is deferred.
