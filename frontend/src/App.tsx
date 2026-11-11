@@ -1,58 +1,73 @@
-import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './auth';
-import { Layout, type PageKey } from './components/Layout';
+import { AppShell } from './components/AppShell';
+import { LoadingState } from './components/ui';
+import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
-import { CityPage } from './pages/CityPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { PetsPage } from './pages/PetsPage';
-import { ActivitiesPage } from './pages/ActivitiesPage';
-import { BusinessesPage } from './pages/BusinessesPage';
-import { InsightsPage } from './pages/InsightsPage';
-import { ProfilePage } from './pages/ProfilePage';
+import { FeedPage } from './pages/app/FeedPage';
+import { MapPage } from './pages/app/MapPage';
+import { AiPage } from './pages/app/AiPage';
+import { PetProfilePage } from './pages/app/PetProfilePage';
+import { ProfilePage } from './pages/app/ProfilePage';
+import { DiscoverPage } from './pages/app/DiscoverPage';
+import { NotificationsPage } from './pages/app/NotificationsPage';
 import { PartnerFakeCheckoutPage } from './partner/PartnerFakeCheckoutPage';
 import { PartnerPortal } from './partner/PartnerPortal';
 
-function AppShell() {
+function RequireOwnerAuth() {
   const { owner, loading } = useAuth();
-  const [page, setPage] = useState<PageKey>('city');
-
   if (loading) {
-    return <main className="flex min-h-screen items-center justify-center text-muted">Loading PETLIFE…</main>;
+    return <main className="flex min-h-screen items-center justify-center"><LoadingState label="Loading PETLIFE…" /></main>;
   }
   if (!owner) {
-    return <AuthPage />;
+    return <Navigate to="/login" replace />;
   }
   if (owner.role === 'PARTNER') {
-    return <PartnerPortal />;
+    return <Navigate to="/partner" replace />;
   }
-
   return (
-    <Layout page={page} setPage={setPage}>
-      {page === 'dashboard' ? <DashboardPage /> : null}
-      {page === 'city' ? <CityPage /> : null}
-      {page === 'pets' ? <PetsPage /> : null}
-      {page === 'activities' ? <ActivitiesPage /> : null}
-      {page === 'businesses' ? <BusinessesPage /> : null}
-      {page === 'insights' ? <InsightsPage /> : null}
-      {page === 'profile' ? <ProfilePage /> : null}
-    </Layout>
+    <AppShell>
+      <Outlet />
+    </AppShell>
   );
 }
 
+function RedirectIfAuthed({ children }: { children: ReactNode }) {
+  const { owner, loading } = useAuth();
+  if (loading) {
+    return <main className="flex min-h-screen items-center justify-center"><LoadingState label="Loading PETLIFE…" /></main>;
+  }
+  if (owner) {
+    return <Navigate to={owner.role === 'PARTNER' ? '/partner' : '/app/feed'} replace />;
+  }
+  return children;
+}
+
 export default function App() {
-  const isFakeCheckout = window.location.pathname.startsWith('/partner') && window.location.pathname.includes('/billing/fake');
-  const isPartnerPortal = window.location.pathname.startsWith('/partner');
-
-  if (isFakeCheckout) {
-    return <PartnerFakeCheckoutPage />;
-  }
-  if (isPartnerPortal) {
-    return <PartnerPortal />;
-  }
-
   return (
-    <AuthProvider>
-      <AppShell />
-    </AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/partner/:purchaseId/billing/fake" element={<PartnerFakeCheckoutPage />} />
+        <Route path="/partner/*" element={<PartnerPortal />} />
+        <Route path="/" element={<AuthProvider><Outlet /></AuthProvider>}>
+          <Route index element={<LandingPage />} />
+          <Route path="login" element={<RedirectIfAuthed><AuthPage mode="login" /></RedirectIfAuthed>} />
+          <Route path="signup" element={<RedirectIfAuthed><AuthPage mode="register" /></RedirectIfAuthed>} />
+          <Route path="app" element={<RequireOwnerAuth />}>
+            <Route index element={<Navigate to="/app/feed" replace />} />
+            <Route path="feed" element={<FeedPage />} />
+            <Route path="map" element={<MapPage />} />
+            <Route path="ai" element={<AiPage />} />
+            <Route path="pets/:petId" element={<PetProfilePage />} />
+            <Route path="discover" element={<DiscoverPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="*" element={<Navigate to="/app/feed" replace />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
