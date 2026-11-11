@@ -16,6 +16,8 @@ const REACTIONS = [
   { type: 'CHEER', label: 'Cheer', icon: '★' },
 ] as const;
 
+const FEED_PAGE_SIZE = 20;
+
 function timeAgo(value: string): string {
   const seconds = Math.max(1, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
   if (seconds < 60) return `${seconds}s ago`;
@@ -207,18 +209,44 @@ export function CityPage() {
   const [points, setPoints] = useState<MapPoints>({ partners: [], activities: [] });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   async function refresh() {
     setLoading(true);
     setError(null);
     try {
-      const [feed, map] = await Promise.all([listActivityFeed(), listMapPoints()]);
+      const [feed, map] = await Promise.all([listActivityFeed(0, FEED_PAGE_SIZE), listMapPoints()]);
       setPosts(feed);
+      setPage(0);
+      setHasMore(feed.length === FEED_PAGE_SIZE);
       setPoints(map);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to load Paw City');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadMore() {
+    if (loadingMore || !hasMore) {
+      return;
+    }
+    setLoadingMore(true);
+    setError(null);
+    try {
+      const next = await listActivityFeed(page + 1, FEED_PAGE_SIZE);
+      setPosts((current) => {
+        const seen = new Set(current.map((post) => post.id));
+        return [...current, ...next.filter((post) => !seen.has(post.id))];
+      });
+      setPage((current) => current + 1);
+      setHasMore(next.length === FEED_PAGE_SIZE);
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : 'Unable to load more Paw City posts');
+    } finally {
+      setLoadingMore(false);
     }
   }
 
@@ -236,9 +264,18 @@ export function CityPage() {
       {loading ? <Card><p className="text-sm text-cream-500">Loading Paw City…</p></Card> : posts.length === 0 ? (
         <EmptyState title="The city is quiet" description="Record an activity with a location to publish the first Paw City post." />
       ) : (
-        <div className="grid gap-5 lg:grid-cols-2">
-          {posts.map((post) => <ActivityPostCard key={post.id} post={post} onUpdated={updatePost} />)}
-        </div>
+        <>
+          <div className="grid gap-5 lg:grid-cols-2">
+            {posts.map((post) => <ActivityPostCard key={post.id} post={post} onUpdated={updatePost} />)}
+          </div>
+          {hasMore ? (
+            <div className="flex justify-center">
+              <Button type="button" variant="secondary" onClick={loadMore} disabled={loadingMore}>
+                {loadingMore ? 'Loading…' : 'Load more posts'}
+              </Button>
+            </div>
+          ) : null}
+        </>
       )}
     </div>
   );

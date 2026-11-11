@@ -6,5 +6,5 @@ import java.util.UUID;
 import com.pawmotionai.social.application.dto.ActivityPostDto;
 
 public interface ListActivityFeedUseCase {
-    List<ActivityPostDto> listFeed(UUID viewerId);
+    List<ActivityPostDto> listFeed(UUID viewerId, int page, int size);
 }

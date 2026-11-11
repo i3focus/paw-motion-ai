@@ -11,7 +11,7 @@ import com.pawmotionai.social.application.dto.MapPointsDto;
 
 public interface SocialRepository {
 
-    List<ActivityPostDto> findRecentPosts(UUID viewerId, int limit);
+    List<ActivityPostDto> findRecentPosts(UUID viewerId, int limit, long offset);
 
     Optional<ActivityPostDto> findPostById(UUID activityId, UUID viewerId);
 

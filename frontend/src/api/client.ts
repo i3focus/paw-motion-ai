@@ -299,8 +299,9 @@ export function completeFakePurchase(transactionId: string): Promise<PaymentTran
   }, getStoredPartnerToken());
 }
 
-export function listActivityFeed(): Promise<ActivityPost[]> {
-  return request<ActivityPost[]>('/api/feed');
+export function listActivityFeed(page = 0, size = 20): Promise<ActivityPost[]> {
+  const params = new URLSearchParams({ page: String(page), size: String(size) });
+  return request<ActivityPost[]>(`/api/feed?${params.toString()}`);
 }
 
 export function toggleActivityReaction(activityId: string, type: string): Promise<ActivityPost> {

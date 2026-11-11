@@ -23,7 +23,7 @@ public class SocialService implements ListActivityFeedUseCase, ToggleReactionUse
     AddActivityCommentUseCase, ListMapPointsUseCase {
 
     private static final Set<String> REACTIONS = Set.of("LIKE", "LOVE", "CHEER");
-    private static final int FEED_LIMIT = 50;
+    private static final int MAX_FEED_SIZE = 50;
 
     private final SocialRepository repository;
 
@@ -33,8 +33,11 @@ public class SocialService implements ListActivityFeedUseCase, ToggleReactionUse
 
     @Override
     @Transactional(readOnly = true)
-    public List<ActivityPostDto> listFeed(UUID viewerId) {
-        return repository.findRecentPosts(viewerId, FEED_LIMIT);
+    public List<ActivityPostDto> listFeed(UUID viewerId, int page, int size) {
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(Math.max(1, size), MAX_FEED_SIZE);
+        long offset = (long) safePage * safeSize;
+        return repository.findRecentPosts(viewerId, safeSize, offset);
     }
 
     @Override
