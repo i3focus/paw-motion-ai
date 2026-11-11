@@ -15,8 +15,7 @@ class OwnerProfileTest {
     @Test
     void registersOwnerAndPartnerRoles() {
         Owner owner = Owner.register(UUID.randomUUID(), "owner@example.com", "hash", "Owner", Instant.now());
-        Owner partner = Owner.registerPartner(UUID.randomUUID(), "partner@example.com", "hash", "Partner",
-            "PetCo", "https://petco.example", "Pet supplies", Instant.now());
+        Owner partner = Owner.registerPartner(UUID.randomUUID(), "partner@example.com", "hash", "Partner", Instant.now());
 
         assertEquals("OWNER", owner.getRole());
         assertEquals("PARTNER", partner.getRole());
@@ -28,7 +27,7 @@ class OwnerProfileTest {
     void updatesProfileFieldsAndNormalizesEmptyValues() {
         Owner owner = Owner.register(UUID.randomUUID(), "owner@example.com", "hash", "Owner", Instant.now());
 
-        owner.updateProfile("  Ana  ", "Bio", "", "https://avatar.example", null, null, null);
+        owner.updateProfile("  Ana  ", "Bio", "", "https://avatar.example");
 
         assertEquals("Ana", owner.getDisplayName());
         assertEquals("Bio", owner.getBio());
@@ -40,9 +39,9 @@ class OwnerProfileTest {
     @Test
     void keepsOmittedProfileFieldsUnchanged() {
         Owner owner = Owner.register(UUID.randomUUID(), "owner@example.com", "hash", "Owner", Instant.now());
-        owner.updateProfile(null, "Bio", "+55 11 99999-9999", null, null, null, null);
+        owner.updateProfile(null, "Bio", "+55 11 99999-9999", null);
 
-        owner.updateProfile(null, "Updated bio", null, null, null, null, null);
+        owner.updateProfile(null, "Updated bio", null, null);
 
         assertEquals("Owner", owner.getDisplayName());
         assertEquals("Updated bio", owner.getBio());
@@ -54,6 +53,6 @@ class OwnerProfileTest {
         Owner owner = Owner.register(UUID.randomUUID(), "owner@example.com", "hash", "Owner", Instant.now());
 
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
-            () -> owner.updateProfile("   ", null, null, null, null, null, null));
+            () -> owner.updateProfile("   ", null, null, null));
     }
 }

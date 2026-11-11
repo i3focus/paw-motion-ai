@@ -6,9 +6,6 @@ export interface Owner {
   bio: string | null;
   phone: string | null;
   avatarUrl: string | null;
-  businessName: string | null;
-  website: string | null;
-  partnerDescription: string | null;
 }
 
 export interface AuthResponse {
@@ -64,12 +61,3 @@ export interface Insight {
   generatedAt: string;
 }
 
-export interface OwnerRecommendation {
-  campaignId: string;
-  partnerName: string;
-  campaignTitle: string;
-  description: string;
-  callToAction: string;
-  recommendedTopics: string[];
-  analyzedAt: string | null;
-}

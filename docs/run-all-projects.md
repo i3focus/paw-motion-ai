@@ -103,9 +103,10 @@ For Android emulators, prefer `http://10.0.2.2:8080`; for iOS simulators, `http:
 
 ## 5. Smoke-test the platform
 
-1. Owner portal: register a pet owner, create a pet, edit the pet, record an activity, generate an insight, and check recommendations.
-2. Partner portal: register a partner, create a campaign, run AI analysis, and verify the campaign topics appear for owners under recommendations.
-3. Mobile app: log in with the same owner account and confirm dashboard, pets, activities, insights, recommendations, and profile load.
+1. Owner app (`/app`): register a pet owner, create a pet, check the feed (posts, activity, sponsored card with the "Sponsored" badge), react, open the map, chat with PetLife AI, and create a post from the `+` sheet.
+2. Partner portal (`/partner`): register a partner, buy credits (fake checkout), create a service, create a campaign with media + CTA, submit for review.
+3. Admin review (`/app/admin`, admin account): approve the campaign and verify the partner; confirm the sponsored card appears in the owner feed and the BOOKING CTA opens the booking sheet.
+4. Mobile app: log in with the same owner account and confirm Feed, Map, AI, Profile, create-post, pet profile, Discover, and notifications load.
 
 ## 6. Verification commands
 
@@ -116,12 +117,16 @@ cd backend
 cd ../frontend
 npm install
 npm run typecheck
+npm run test
 npm run build
 
 cd ../mobile
 npm install
 npm run typecheck
+npm run test
 ```
+
+OpenAPI: `docs/api/openapi.yaml` regenerates with `EXPORT_OPENAPI=true ./gradlew test --tests 'OpenApiExportIT'`, then `cd packages/api-client && npx openapi-typescript ../../docs/api/openapi.yaml -o src/schema.d.ts`.
 
 CI runs the equivalent backend/frontend/mobile checks on pushes and pull requests.
 

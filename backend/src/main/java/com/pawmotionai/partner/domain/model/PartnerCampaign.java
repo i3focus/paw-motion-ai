@@ -81,28 +81,6 @@ public class PartnerCampaign {
         return partnerId.equals(accountId);
     }
 
-    public void activate() {
-        this.status = CampaignStatus.ACTIVE;
-    }
-
-    public void pause() {
-        this.status = CampaignStatus.PAUSED;
-    }
-
-    public void applyAnalysis(List<String> topics, Instant analyzedAt) {
-        if (status == CampaignStatus.ENDED) {
-            throw new CampaignStateException("Campaign cannot be analyzed from status " + status);
-        }
-        if (topics == null || topics.isEmpty()) {
-            throw new IllegalArgumentException("AI analysis must return at least one topic");
-        }
-        if (expiresAt != null && analyzedAt != null && !analyzedAt.isBefore(expiresAt)) {
-            throw new CampaignStateException("Campaign has expired");
-        }
-        this.aiTopics = String.join("\n", topics.stream().map(String::trim).filter(topic -> !topic.isEmpty()).toList());
-        this.analyzedAt = analyzedAt;
-    }
-
     public void expire(Instant now) {
         if (status == CampaignStatus.ENDED) {
             throw new CampaignStateException("Campaign cannot expire from status " + status);
@@ -112,18 +90,6 @@ public class PartnerCampaign {
         }
         this.status = CampaignStatus.ENDED;
         this.endReason = CampaignEndReason.EXPIRED;
-    }
-
-    public void archive(long refundAmount) {
-        if (isArchived()) {
-            return;
-        }
-        if (status == CampaignStatus.ENDED) {
-            throw new CampaignStateException("Ended campaigns cannot be archived for refund");
-        }
-        this.status = CampaignStatus.ENDED;
-        this.endReason = CampaignEndReason.ARCHIVED;
-        this.creditsRefunded += Math.max(0, refundAmount);
     }
 
     public List<String> topics() {

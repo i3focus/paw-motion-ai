@@ -34,6 +34,9 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
+      - name: Test frontend
+        working-directory: frontend
+        run: npm run test
       - name: Build frontend
         working-directory: frontend
         run: npm run build
@@ -53,3 +56,6 @@ jobs:
       - name: Typecheck mobile
         working-directory: mobile
         run: npm run typecheck
+      - name: Test mobile
+        working-directory: mobile
+        run: npm run test

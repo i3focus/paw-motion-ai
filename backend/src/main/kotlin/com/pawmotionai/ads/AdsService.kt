@@ -270,7 +270,7 @@ class AdsService(
             """
             INSERT INTO partner_profiles (partner_id, business_name, category, description, website, phone, address, location,
                                           opening_hours, cover_url, created_at, updated_at)
-            SELECT :id, COALESCE(NULLIF(CAST(:name AS varchar), ''), NULLIF(o.business_name, ''), o.display_name), COALESCE(CAST(:category AS varchar), 'OTHER'),
+            SELECT :id, COALESCE(NULLIF(CAST(:name AS varchar), ''), o.display_name), COALESCE(CAST(:category AS varchar), 'OTHER'),
                    NULLIF(CAST(:description AS varchar), ''), NULLIF(CAST(:website AS varchar), ''), NULLIF(CAST(:phone AS varchar), ''), NULLIF(CAST(:address AS varchar), ''),
                    CASE WHEN CAST(:lat AS float8) IS NULL THEN NULL ELSE ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography END,
                    NULLIF(CAST(:hours AS varchar), ''), NULLIF(CAST(:cover AS varchar), ''), now(), now()
@@ -333,7 +333,7 @@ class AdsService(
             """
             SELECT c.id, c.partner_id, c.status, c.title, c.description, c.cta, c.cta_type, c.cta_url, c.service_id, c.media_asset_id,
                    c.formats, c.starts_at, c.ends_at, c.submitted_at, c.reviewed_at, c.rejection_reason,
-                   COALESCE(pp.business_name, o.business_name, o.display_name) AS partner_name, COALESCE(pp.verified, FALSE) AS verified
+                   COALESCE(pp.business_name, o.display_name) AS partner_name, COALESCE(pp.verified, FALSE) AS verified
             FROM partner_campaigns c JOIN owners o ON o.id = c.partner_id
             LEFT JOIN partner_profiles pp ON pp.partner_id = c.partner_id
             WHERE c.status = :status ORDER BY c.submitted_at LIMIT :limit OFFSET :offset
@@ -368,7 +368,7 @@ class AdsService(
         val updated = jdbc.sql(
             """
             INSERT INTO partner_profiles (partner_id, business_name, verified, verified_at, verified_by, created_at, updated_at)
-            SELECT :id, COALESCE(NULLIF(o.business_name, ''), o.display_name), :v,
+            SELECT :id, o.display_name, :v,
                    CASE WHEN :v THEN now() END, CASE WHEN :v THEN :admin END, now(), now()
             FROM owners o WHERE o.id = :id AND o.role = 'PARTNER'
             ON CONFLICT (partner_id) DO UPDATE SET
@@ -397,7 +397,7 @@ class AdsService(
             """
             SELECT c.id, c.partner_id, c.status, c.title, c.description, c.cta, c.cta_type, c.cta_url, c.service_id, c.media_asset_id,
                    c.formats, c.starts_at, c.ends_at, c.submitted_at, c.reviewed_at, c.rejection_reason,
-                   COALESCE(pp.business_name, o.business_name, o.display_name) AS partner_name, COALESCE(pp.verified, FALSE) AS verified
+                   COALESCE(pp.business_name, o.display_name) AS partner_name, COALESCE(pp.verified, FALSE) AS verified
             FROM partner_campaigns c JOIN owners o ON o.id = c.partner_id
             LEFT JOIN partner_profiles pp ON pp.partner_id = c.partner_id WHERE c.id = :id
             """,

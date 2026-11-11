@@ -145,7 +145,8 @@ All migrations are additive first, then backfill, then constrain. Old columns ar
 | `V15__partner_services_bookings` | `partner_profiles` (verified, verified_at, category, address, opening hours, cover) backfilled from `owners` partner fields; `partner_services`; `bookings` (owner, pet, service, slot, status `REQUESTED`/`CONFIRMED`/`CANCELLED`/`COMPLETED`, source `APP`/`AI`/`AD`, campaign_id) |
 | `V16__campaigns_v2` | `partner_campaigns` adds `media_asset_id`, `body`, `cta_type` (`LINK`/`BOOKING`), `cta_url`, `service_id`, `budget_credits`, `starts_at`, `ends_at`, `target_location geography(Point)`, `target_radius_m`, `target_species[]`, `target_breeds[]`, `target_interests[]`, `formats[]` (`FEED_CARD`/`MAP_PIN`/`DISCOVER_HIGHLIGHT`/`NEARBY_PROMO`), `review_status`, `reviewed_by`, `reviewed_at`, `rejection_reason`, `end_reason`; status migrated `ARCHIVED→ENDED(end_reason=ARCHIVED)`, `EXPIRED→ENDED(end_reason=EXPIRED)`, `ACTIVE` stays `ACTIVE` (grandfathered as approved), `DRAFT` stays `DRAFT`; new statuses `IN_REVIEW`; `campaign_events` (impression/click/booking, owner hash, placement, occurred_at) + `campaign_daily_metrics`; `budget_credits = credits_charged`, `starts_at = created_at`, `ends_at = expires_at`, `title/description/cta` preserved |
 | `V17__notifications` | `push_tokens` (owner, expo token, platform, last_seen), `notification_preferences`, `notifications` (type, payload, sent_at, error) |
-| phase 6 `V18__drop_legacy` | drop `activity_reactions`, `activity_comments`, `owners.business_name/website/partner_description/latitude/longitude` once no reader remains |
+| `V18__campaign_submitted_at` | `partner_campaigns.submitted_at` for review-queue ordering |
+| `V19__drop_legacy` | dropped `activity_reactions`, `activity_comments`, `owners.business_name/website/partner_description/latitude/longitude` (all readers removed) |
 
 ## 6. API changes
 
@@ -166,7 +167,7 @@ All new routes: bean validation, `page`/`size` (max 50) with `{items,page,size,h
 | Push | `POST /api/devices/push-tokens`, `DELETE /api/devices/push-tokens/{token}`, `GET/PATCH /api/me/notification-preferences` |
 | Discover | `GET /api/discover?lat,lng` (highlighted partners, communities, events) |
 
-Deprecated (kept until phase 6): `/api/activities/{id}/reactions|comments`, `/api/map/points`, `/api/promotions`, `/api/recommendations`.
+Deprecated endpoints removed in phase 6: `/api/activities/{id}/reactions|comments`, `/api/activities/feed`, `/api/map/points`, `/api/promotions`, `/api/recommendations`, and the v1 campaign `GET /analyze /archive` routes (v1 `POST /api/partner/campaigns` remains the create path).
 
 ### Feed ranking
 1. Organic candidates: followed pets + own + neighborhood items from the last 14 days, scored by recency decay × (1 + log(1 + reactions + 2·comments)) with a boost for followed pets.

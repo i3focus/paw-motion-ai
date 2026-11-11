@@ -24,9 +24,9 @@ export function PartnerLayout({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-3 sm:flex">
-              <Avatar name={partner?.businessName ?? partner?.displayName ?? 'Partner'} src={partner?.avatarUrl} className="h-10 w-10" />
+              <Avatar name={partner?.displayName ?? 'Partner'} src={partner?.avatarUrl} className="h-10 w-10" />
               <div className="text-right">
-                <p className="text-body font-semibold text-ink">{partner?.businessName ?? partner?.displayName}</p>
+                <p className="text-body font-semibold text-ink">{partner?.displayName}</p>
                 <p className="text-label text-muted">{partner?.email}</p>
               </div>
             </div>

@@ -26,11 +26,7 @@ public class UpdateProfileService implements UpdateProfileUseCase {
     public OwnerResponseDto update(UUID accountId, UpdateProfileCommand command) {
         Owner owner = ownerRepository.findById(accountId)
             .orElseThrow(() -> new OwnerNotFoundException(accountId));
-        owner.updateProfile(command.displayName(), command.bio(), command.phone(), command.avatarUrl(),
-            command.businessName(), command.website(), command.partnerDescription(), command.latitude(), command.longitude());
-        if (command.clearCoordinates()) {
-            owner.clearCoordinates();
-        }
+        owner.updateProfile(command.displayName(), command.bio(), command.phone(), command.avatarUrl());
         return OwnerResponseDto.from(ownerRepository.save(owner));
     }
 }

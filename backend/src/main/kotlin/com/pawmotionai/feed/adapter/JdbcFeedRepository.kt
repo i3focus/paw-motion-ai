@@ -220,7 +220,7 @@ class JdbcFeedRepository(private val jdbc: JdbcClient) {
         """
         SELECT c.id, c.partner_id, c.title, c.description, c.cta, c.cta_type, c.cta_url, c.service_id, c.media_asset_id,
                c.target_species, c.target_breeds, c.target_interests, c.target_radius_m,
-               COALESCE(pp.business_name, NULLIF(o.business_name, ''), o.display_name) AS partner_name,
+               COALESCE(pp.business_name, o.display_name) AS partner_name,
                COALESCE(pp.verified, FALSE) AS verified,
                CASE WHEN c.target_location IS NULL OR NOT :hasLocation THEN NULL
                     ELSE ST_Distance(c.target_location, $VIEWER_POINT) END AS distance

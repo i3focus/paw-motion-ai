@@ -8,13 +8,8 @@ import type {
   PaymentTransaction,
   Insight,
   Owner,
-  OwnerRecommendation,
-  OwnerPromotion,
   Pet,
   Wallet,
-  ActivityPost,
-  ActivityComment,
-  MapPoints,
 } from '../types';
 
 const OWNER_TOKEN_KEY = 'pawmotion.owner.accessToken';
@@ -135,12 +130,6 @@ export function updateProfile(input: {
   bio?: string;
   phone?: string;
   avatarUrl?: string;
-  businessName?: string;
-  website?: string;
-  partnerDescription?: string;
-  latitude?: number | null;
-  longitude?: number | null;
-  clearCoordinates?: boolean;
 }, token: string | null = getStoredOwnerToken()): Promise<Owner> {
   return request<Owner>('/api/me', {
     method: 'PATCH',
@@ -212,14 +201,6 @@ export function generateInsight(input: { petId?: string; periodDays?: number } =
   });
 }
 
-export function listRecommendations(): Promise<OwnerRecommendation[]> {
-  return request<OwnerRecommendation[]>('/api/recommendations');
-}
-
-export function listPromotions(): Promise<OwnerPromotion[]> {
-  return request<OwnerPromotion[]>('/api/promotions');
-}
-
 export function registerPartner(input: {
   email: string;
   password: string;
@@ -288,29 +269,4 @@ export function completeFakePurchase(transactionId: string): Promise<PaymentTran
   }, getStoredPartnerToken());
 }
 
-export function listActivityFeed(page = 0, size = 20): Promise<ActivityPost[]> {
-  const params = new URLSearchParams({ page: String(page), size: String(size) });
-  return request<ActivityPost[]>(`/api/activities/feed?${params.toString()}`);
-}
 
-export function toggleActivityReaction(activityId: string, type: string): Promise<ActivityPost> {
-  return request<ActivityPost>(`/api/activities/${activityId}/reactions`, {
-    method: 'POST',
-    body: JSON.stringify({ type }),
-  });
-}
-
-export function listActivityComments(activityId: string): Promise<ActivityComment[]> {
-  return request<ActivityComment[]>(`/api/activities/${activityId}/comments`);
-}
-
-export function addActivityComment(activityId: string, body: string): Promise<ActivityComment> {
-  return request<ActivityComment>(`/api/activities/${activityId}/comments`, {
-    method: 'POST',
-    body: JSON.stringify({ body }),
-  });
-}
-
-export function listMapPoints(): Promise<MapPoints> {
-  return request<MapPoints>('/api/map/points');
-}

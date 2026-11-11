@@ -45,11 +45,6 @@ public class OwnerJpaEntity {
     @Column private String bio;
     @Column private String phone;
     @Column(name = "avatar_url") private String avatarUrl;
-    @Column(name = "business_name") private String businessName;
-    @Column private String website;
-    @Column(name = "partner_description") private String partnerDescription;
-    @Column private Double latitude;
-    @Column private Double longitude;
 
     @Version
     private Long version;
@@ -58,15 +53,7 @@ public class OwnerJpaEntity {
     }
 
     public OwnerJpaEntity(UUID id, String email, String passwordHash, String displayName, String role, OwnerStatus status,
-                          Instant createdAt, Instant updatedAt, String bio, String phone, String avatarUrl,
-                          String businessName, String website, String partnerDescription) {
-        this(id, email, passwordHash, displayName, role, status, createdAt, updatedAt, bio, phone, avatarUrl,
-            businessName, website, partnerDescription, null, null);
-    }
-
-    public OwnerJpaEntity(UUID id, String email, String passwordHash, String displayName, String role, OwnerStatus status,
-                          Instant createdAt, Instant updatedAt, String bio, String phone, String avatarUrl,
-                          String businessName, String website, String partnerDescription, Double latitude, Double longitude) {
+                          Instant createdAt, Instant updatedAt, String bio, String phone, String avatarUrl) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -78,11 +65,6 @@ public class OwnerJpaEntity {
         this.bio = bio;
         this.phone = phone;
         this.avatarUrl = avatarUrl;
-        this.businessName = businessName;
-        this.website = website;
-        this.partnerDescription = partnerDescription;
-        this.latitude = latitude;
-        this.longitude = longitude;
     }
 
     public UUID getId() { return id; }
@@ -96,25 +78,13 @@ public class OwnerJpaEntity {
     public String getBio() { return bio; }
     public String getPhone() { return phone; }
     public String getAvatarUrl() { return avatarUrl; }
-    public String getBusinessName() { return businessName; }
-    public String getWebsite() { return website; }
-    public String getPartnerDescription() { return partnerDescription; }
-    public Double getLatitude() { return latitude; }
-    public Double getLongitude() { return longitude; }
     public Long getVersion() { return version; }
 
-    public void updateProfile(String displayName, String bio, String phone, String avatarUrl,
-                              String businessName, String website, String partnerDescription,
-                              Double latitude, Double longitude) {
+    public void updateProfile(String displayName, String bio, String phone, String avatarUrl) {
         this.displayName = displayName;
         this.bio = bio;
         this.phone = phone;
         this.avatarUrl = avatarUrl;
-        this.businessName = businessName;
-        this.website = website;
-        this.partnerDescription = partnerDescription;
-        this.latitude = latitude;
-        this.longitude = longitude;
         this.updatedAt = Instant.now();
     }
 }
