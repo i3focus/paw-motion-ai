@@ -24,7 +24,7 @@ export function ActivitiesPage() {
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [locating, setLocating] = useState(false);
-  const [shareToPawCity, setShareToPawCity] = useState(true);
+  const [shareToPawCity, setShareToPawCity] = useState(false);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
