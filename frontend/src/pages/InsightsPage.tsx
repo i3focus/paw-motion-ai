@@ -43,10 +43,10 @@ export function InsightsPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="AI Activity Coach" subtitle="Non-medical, personalized activity summaries and partner recommendations." />
+      <SectionHeader title="AI Pack Coach" subtitle="Non-medical, personalized activity summaries and partner recommendations." />
       <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
         <div className="space-y-6">
-          <Card title="Generate insight" description="Summarize recent activity for one pet or all pets.">
+          <Card title="Generate insight" description="Summarize recent activity for one pet or the whole pack.">
             <div className="grid gap-4 sm:grid-cols-[1fr_140px_auto] sm:items-end">
               <SelectInput label="Pet" value={petId} onChange={(event) => setPetId(event.target.value)}>
                 <option value="">All pets</option>

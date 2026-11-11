@@ -33,7 +33,7 @@ export function PetAvatar({ pet, className = 'h-16 w-16' }: { pet: Pet; classNam
 
 export function PetCard({ pet, action }: { pet: Pet; action?: ReactNode }) {
   return (
-    <article className="rounded-[28px] border border-cream-200 bg-white p-5 shadow-[0_24px_60px_-35px_rgba(54,39,20,0.4)]">
+    <article className="game-card p-5">
       <div className="flex items-start gap-4">
         <PetAvatar pet={pet} className="h-20 w-20" />
         <div className="min-w-0 flex-1">
@@ -58,7 +58,7 @@ export function ActivityCard({ activity, petName, compact = false }: { activity:
 
   if (compact) {
     return (
-      <article className="flex items-center gap-4 rounded-3xl border border-cream-200 bg-cream-50 p-4">
+      <article className="quest-card flex items-center gap-4">
         <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-primary">
           <PawIcon className="h-6 w-6" />
         </span>
@@ -75,7 +75,7 @@ export function ActivityCard({ activity, petName, compact = false }: { activity:
   }
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-cream-200 bg-white shadow-[0_24px_60px_-35px_rgba(54,39,20,0.4)]">
+    <article className="game-card">
       <div className="relative h-40 overflow-hidden sm:h-48">
         <img src="/assets/dog-walk.jpg" alt="Dog walking outdoors" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-dark/55 via-dark/10 to-transparent" />

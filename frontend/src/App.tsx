@@ -13,7 +13,7 @@ import { PartnerPortal } from './partner/PartnerPortal';
 
 function AppShell() {
   const { owner, loading } = useAuth();
-  const [page, setPage] = useState<PageKey>('dashboard');
+  const [page, setPage] = useState<PageKey>('city');
 
   if (loading) {
     return <main className="flex min-h-screen items-center justify-center text-cream-500">Loading PawMotion AI…</main>;

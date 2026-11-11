@@ -67,7 +67,7 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Profile" subtitle="Manage your pet-owner account details." />
+      <SectionHeader title="Trainer profile" subtitle="Manage your pet-owner account details." />
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         <Card>
           <div className="flex flex-col items-center text-center">

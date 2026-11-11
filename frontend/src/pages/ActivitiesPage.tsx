@@ -117,9 +117,9 @@ export function ActivitiesPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Activities" subtitle="Record walks, runs, play sessions, and outdoor time." />
+      <SectionHeader title="Activities" subtitle="Log real walks, runs, play sessions, and outdoor time to earn Paw City progress." />
       <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
-        <Card title="Record activity" description="Use real activity data to power dashboard insights.">
+        <Card title="Record activity" description="Real activity data powers insights and Paw City posts.">
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <SelectInput
               label="Pet"
@@ -194,7 +194,7 @@ export function ActivitiesPage() {
               />
               <span>
                 <span className="font-semibold text-cream-900">Share to Paw City</span>
-                <span className="block text-cream-500">Show this activity as a post with reactions and comments.</span>
+                <span className="block text-cream-500">Publish this activity as an Instagram-style post with reactions and comments.</span>
               </span>
             </label>
             <TextArea label="Notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} maxLength={500} />

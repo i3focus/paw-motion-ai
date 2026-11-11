@@ -48,7 +48,7 @@ export function Badge({ children, tone = 'neutral' }: { children: ReactNode; ton
 
 export function Card({ children, className = '', title, description }: { children: ReactNode; className?: string; title?: string; description?: string }) {
   return (
-    <section className={`rounded-[30px] border border-cream-200 bg-white shadow-[0_30px_80px_-45px_rgba(54,39,20,0.55)] ${className}`}>
+    <section className={`game-card ${className}`}>
       {title ? (
         <div className="border-b border-cream-100 px-5 py-4 sm:px-6">
           <h2 className="font-display text-lg font-bold text-cream-900">{title}</h2>
@@ -63,9 +63,16 @@ export function Card({ children, className = '', title, description }: { childre
 export function StatCard({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {
   return (
     <Card className="p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">{label}</p>
-      <p className="mt-3 font-display text-4xl font-bold text-cream-900">{value}</p>
-      {hint ? <p className="mt-2 text-sm text-cream-500">{hint}</p> : null}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">{label}</p>
+          <p className="mt-3 font-display text-4xl font-bold text-cream-900">{value}</p>
+          {hint ? <p className="mt-2 text-sm text-cream-500">{hint}</p> : null}
+        </div>
+        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-primary shadow-inner">
+          <PoppyMark className="h-6 w-6" />
+        </span>
+      </div>
     </Card>
   );
 }
@@ -120,7 +127,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 export function Button({ children, variant = 'primary', className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
   const variants: Record<ButtonVariant, string> = {
-    primary: 'bg-primary text-white shadow-sm hover:bg-secondary disabled:bg-cream-300 disabled:text-cream-500',
+    primary: 'bg-primary text-white shadow-[0_16px_34px_-18px_rgba(130,94,49,0.95)] hover:bg-secondary disabled:bg-cream-300 disabled:text-cream-500',
     secondary: 'border border-cream-300 bg-white text-cream-800 hover:border-accent hover:text-primary disabled:text-cream-400',
     ghost: 'text-primary hover:bg-accent-soft disabled:text-cream-400',
     danger: 'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 disabled:text-red-300',
