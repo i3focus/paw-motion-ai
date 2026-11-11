@@ -105,7 +105,7 @@ function StoriesRow({ pets, ownerName, ownerAvatarUrl }: { pets: Pet[]; ownerNam
 }
 
 function PetWeekCard({ summary, pets, activities }: { summary: DashboardSummary | null; pets: Pet[]; activities: Activity[] }) {
-  const recent = activities;
+  const recent = activities.length > 0 ? activities : (summary?.recentActivities ?? []);
   const days = useMemo(() => {
     return Array.from({ length: 7 }, (_, index) => {
       const date = new Date();
