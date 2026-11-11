@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth';
 import { createPet, listPets, updateProfile } from '../../api/client';
-import { getNotificationPreferences, updateNotificationPreferences, type NotificationPreferences } from '../../api/petlife';
+import { cancelBooking, getNotificationPreferences, listMyBookings, updateNotificationPreferences, type Booking, type NotificationPreferences } from '../../api/petlife';
 import { PetForm, type PetFormInput } from '../../components/PetForm';
 import type { Pet } from '../../types';
 import { Avatar, BottomSheet, Button, ErrorMessage, LoadingState, SectionHeader } from '../../components/ui';
@@ -16,6 +16,7 @@ export function ProfilePage() {
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
+  const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [savingPet, setSavingPet] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(owner?.displayName ?? '');
@@ -23,6 +24,24 @@ export function ProfilePage() {
 
   useEffect(() => { listPets().then(setPets).catch(() => setPets([])); }, [addOpen]);
   useEffect(() => { getNotificationPreferences().then(setPrefs).catch(() => setPrefs({})); }, []);
+  const [hasMoreBookings, setHasMoreBookings] = useState(false);
+  const [loadingMoreBookings, setLoadingMoreBookings] = useState(false);
+
+  useEffect(() => {
+    listMyBookings().then((r) => { setBookings(r.items ?? []); setHasMoreBookings(Boolean(r.hasNext)); }).catch(() => setBookings([]));
+  }, []);
+
+  async function loadMoreBookings() {
+    const page = Math.ceil((bookings?.length ?? 0) / 30);
+    setLoadingMoreBookings(true);
+    try {
+      const r = await listMyBookings(page);
+      setBookings((b) => [...(b ?? []), ...(r.items ?? [])]);
+      setHasMoreBookings(Boolean(r.hasNext));
+    } catch { /* keep loaded items */ } finally {
+      setLoadingMoreBookings(false);
+    }
+  }
 
   async function addPet(input: PetFormInput) {
     setSavingPet(true);
@@ -77,6 +96,30 @@ export function ProfilePage() {
           ) : null}
         </div>
       </section>
+
+      {bookings !== null && bookings.length > 0 ? (
+        <section className="pl-card p-5">
+          <h2 className="text-title">My bookings</h2>
+          <div className="mt-3 divide-y divide-line">
+            {bookings.map((b) => (
+              <div key={b.id} className="flex items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <p className="font-extrabold text-ink">{b.serviceName} <span className="font-semibold text-muted">· {b.partnerName}</span></p>
+                  <p className="text-caption text-muted">{b.petName} · {new Date(b.startsAt ?? '').toLocaleString()} · {b.status?.toLowerCase()}</p>
+                </div>
+                {b.status === 'REQUESTED' || b.status === 'CONFIRMED' ? (
+                  <Button variant="ghost" size="sm" onClick={() => b.id && cancelBooking(b.id).then(() => setBookings((l) => l?.map((x) => (x.id === b.id ? { ...x, status: 'CANCELLED' } : x)) ?? l)).catch(() => {})}>Cancel</Button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+          {hasMoreBookings ? (
+            <Button variant="secondary" size="sm" onClick={loadMoreBookings} disabled={loadingMoreBookings} className="mt-3 w-full">
+              {loadingMoreBookings ? 'Loading…' : 'Load more'}
+            </Button>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="pl-card p-5">
         <h2 className="text-title">Notifications</h2>

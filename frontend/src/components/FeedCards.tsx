@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import type { ReactionType } from '@petlife/design-tokens';
 import { addComment, getComments, react, recordAdEvent, unreact, type Comment, type FeedCard } from '../api/petlife';
 import { Avatar, Badge, ReactionBar, SponsoredLabel } from './ui';
+import { BookingSheet } from './BookingSheet';
+import { safeHref } from '../lib/validation';
 import { PawIcon } from './petVisuals';
 
 function timeAgo(iso?: string | null): string {
@@ -20,7 +22,7 @@ export function FeedHeader({ card }: { card: FeedCard }) {
   const a = card.author;
   if (!a) return null;
   const name = a.petName ?? a.ownerName ?? 'PetLife friend';
-  const meta = [a.petSpecies && a.petName ? a.petSpecies : null, a.neighborhood ?? a.ownerName !== name ? a.ownerName : null, timeAgo(card.publishedAt)].filter(Boolean).join(' · ');
+  const meta = [a.petSpecies && a.petName ? a.petSpecies : null, a.neighborhood ?? (a.ownerName !== name ? a.ownerName : null), timeAgo(card.publishedAt)].filter(Boolean).join(' · ');
   const inner = (
     <div className="flex items-center gap-3">
       <Avatar name={name} imageUrl={a.petAvatarUrl} size="sm" />
@@ -50,12 +52,14 @@ export function FeedItemCard({ card }: { card: FeedCard }) {
   const [commentCount, setCommentCount] = useState(card.commentCount ?? 0);
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
-  const adLogged = useRef(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const adLoggedFor = useRef<string | null>(null);
 
   useEffect(() => {
-    if (sponsored && card.sponsored?.campaignId && !adLogged.current) {
-      adLogged.current = true;
-      recordAdEvent(card.sponsored.campaignId, 'IMPRESSION').catch(() => {});
+    const campaignId = card.sponsored?.campaignId;
+    if (sponsored && campaignId && adLoggedFor.current !== campaignId) {
+      adLoggedFor.current = campaignId;
+      recordAdEvent(campaignId, 'IMPRESSION').catch(() => {});
     }
   }, [sponsored, card.sponsored?.campaignId]);
 
@@ -146,8 +150,15 @@ export function FeedItemCard({ card }: { card: FeedCard }) {
           <>
             <p className="text-title font-extrabold text-teal-dark">{s?.title}</p>
             <p className="text-body text-muted">{s?.description}</p>
-            {s?.ctaLabel ? (
-              <a href={s.ctaUrl ?? '#'} onClick={() => s?.campaignId && recordAdEvent(s.campaignId, 'CLICK').catch(() => {})}
+            {s?.ctaLabel && s?.ctaType === 'BOOKING' && s?.serviceId ? (
+              <button type="button"
+                onClick={() => { if (s.campaignId) recordAdEvent(s.campaignId, 'CLICK').catch(() => {}); setBookingOpen(true); }}
+                className="inline-flex min-h-11 items-center rounded-pill bg-coral px-5 text-label font-black text-coral-ink shadow-coral">
+                {s.ctaLabel}
+              </button>
+            ) : s?.ctaLabel && safeHref(s.ctaUrl) ? (
+              <a href={safeHref(s.ctaUrl)!} target="_blank" rel="noreferrer"
+                onClick={() => s?.campaignId && recordAdEvent(s.campaignId, 'CLICK').catch(() => {})}
                 className="inline-flex min-h-11 items-center rounded-pill bg-coral px-5 text-label font-black text-coral-ink shadow-coral">
                 {s.ctaLabel}
               </a>
@@ -184,6 +195,15 @@ export function FeedItemCard({ card }: { card: FeedCard }) {
           </div>
         ) : null}
       </div>
+      {s?.ctaType === 'BOOKING' && s?.serviceId ? (
+        <BookingSheet
+          open={bookingOpen}
+          onClose={() => setBookingOpen(false)}
+          serviceId={s.serviceId}
+          partnerName={s.partnerName}
+          campaignId={s.campaignId}
+        />
+      ) : null}
     </article>
   );
 }

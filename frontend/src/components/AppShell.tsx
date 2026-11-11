@@ -60,6 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavLink to="/app/map" className={linkClass}>Near me</NavLink>
             <NavLink to="/app/ai" className={linkClass}>PetLife AI</NavLink>
             <NavLink to="/app/discover" className={linkClass}>Discover</NavLink>
+            {owner?.role === 'ADMIN' ? <NavLink to="/app/admin" className={linkClass}>Review</NavLink> : null}
           </nav>
           <div className="flex items-center gap-2">
             <NavLink to="/app/notifications" aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`} className="relative grid h-11 w-11 place-items-center rounded-full bg-white text-teal shadow-card hover:bg-teal-light">

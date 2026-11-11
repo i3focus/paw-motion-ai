@@ -56,6 +56,7 @@ data class UpdateCampaignRequest(
     val targetLatitude: Double?,
     val targetLongitude: Double?,
     @field:Min(500) @field:Max(100000) val targetRadiusMeters: Int?,
+    val clearTargetLocation: Boolean? = false,
     @field:Size(max = 10) val targetSpecies: List<@Size(max = 32) String>?,
     @field:Size(max = 20) val targetBreeds: List<@Size(max = 80) String>?,
     @field:Size(max = 20) val targetInterests: List<@Size(max = 48) String>?,
@@ -105,6 +106,7 @@ data class UpdatePartnerProfileRequest(
     val longitude: Double?,
     @field:Size(max = 300) val openingHours: String?,
     @field:Size(max = 500) val coverUrl: String?,
+    val clearLocation: Boolean? = false,
 )
 
 data class AdminCampaignDto(
@@ -117,6 +119,9 @@ data class AdminCampaignDto(
     val description: String,
     val ctaLabel: String,
     val ctaType: String,
+    val ctaUrl: String?,
+    val serviceId: UUID?,
+    val mediaUrl: String?,
     val formats: List<String>,
     val startsAt: Instant,
     val endsAt: Instant,

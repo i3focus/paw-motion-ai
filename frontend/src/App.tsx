@@ -12,6 +12,7 @@ import { PetProfilePage } from './pages/app/PetProfilePage';
 import { ProfilePage } from './pages/app/ProfilePage';
 import { DiscoverPage } from './pages/app/DiscoverPage';
 import { NotificationsPage } from './pages/app/NotificationsPage';
+import { AdminAdsPage } from './pages/app/AdminAdsPage';
 import { PartnerFakeCheckoutPage } from './partner/PartnerFakeCheckoutPage';
 import { PartnerPortal } from './partner/PartnerPortal';
 
@@ -63,6 +64,7 @@ export default function App() {
             <Route path="discover" element={<DiscoverPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="admin" element={<AdminAdsPage />} />
             <Route path="*" element={<Navigate to="/app/feed" replace />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

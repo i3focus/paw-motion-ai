@@ -1,16 +1,17 @@
 import type { ReactNode } from 'react';
+import { NavLink } from 'react-router-dom';
 import { Avatar, Badge, BrandLogo } from '../components/ui';
 import { usePartnerAuth } from '../partnerAuth';
 
-export type PartnerPageKey = 'campaigns' | 'billing' | 'profile';
-
-const NAV_ITEMS: Array<{ key: PartnerPageKey; label: string }> = [
-  { key: 'campaigns', label: 'Campaigns' },
-  { key: 'billing', label: 'Credits & Billing' },
-  { key: 'profile', label: 'Profile' },
+const NAV_ITEMS: Array<{ to: string; label: string }> = [
+  { to: '/partner/campaigns', label: 'Campaigns' },
+  { to: '/partner/services', label: 'Services' },
+  { to: '/partner/bookings', label: 'Bookings' },
+  { to: '/partner/billing', label: 'Credits & Billing' },
+  { to: '/partner/profile', label: 'Profile' },
 ];
 
-export function PartnerLayout({ page, setPage, children }: { page: PartnerPageKey; setPage: (page: PartnerPageKey) => void; children: ReactNode }) {
+export function PartnerLayout({ children }: { children: ReactNode }) {
   const { partner, logout } = usePartnerAuth();
 
   return (
@@ -35,18 +36,17 @@ export function PartnerLayout({ page, setPage, children }: { page: PartnerPageKe
             </button>
           </div>
         </div>
-        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
+        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:px-6" aria-label="Partner sections">
           {NAV_ITEMS.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setPage(item.key)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-body font-semibold transition ${
-                page === item.key ? 'bg-teal text-white shadow-card' : 'bg-white/70 text-muted hover:bg-teal-light hover:text-teal'
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) => `whitespace-nowrap rounded-full px-4 py-2 text-body font-semibold transition ${
+                isActive ? 'bg-teal text-white shadow-card' : 'bg-white/70 text-muted hover:bg-teal-light hover:text-teal'
               }`}
             >
               {item.label}
-            </button>
+            </NavLink>
           ))}
         </nav>
       </header>

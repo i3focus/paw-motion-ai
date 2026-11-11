@@ -129,3 +129,19 @@ export const updateNotificationPreferences = (prefs: NotificationPreferences) =>
   request<NotificationPreferences>('/api/me/notification-preferences', { method: 'PATCH', body: JSON.stringify(prefs) });
 export const registerPushToken = (token: string, platform: 'IOS' | 'ANDROID' | 'WEB') =>
   request<void>('/api/devices/push-tokens', { method: 'POST', body: JSON.stringify({ token, platform }) });
+
+// Bookings (owner side)
+export const listMyBookings = (page = 0) => request<components['schemas']['PageResponseBookingDto']>(p('/api/bookings', { page, size: 30 }));
+export const createBooking = (input: components['schemas']['CreateBookingRequest']) =>
+  request<Booking>('/api/bookings', { method: 'POST', body: JSON.stringify(input) });
+export const cancelBooking = (bookingId: string) => request<Booking>(`/api/bookings/${bookingId}/cancel`, { method: 'POST' });
+
+// Admin review (owner token, requires ADMIN role)
+export type AdminCampaign = components['schemas']['AdminCampaignDto'];
+export const getAdminCampaignQueue = (status = 'IN_REVIEW', page = 0) =>
+  request<components['schemas']['PageResponseAdminCampaignDto']>(p('/api/admin/campaigns', { status, page }));
+export const approveCampaign = (campaignId: string) => request<AdminCampaign>(`/api/admin/campaigns/${campaignId}/approve`, { method: 'POST' });
+export const rejectCampaign = (campaignId: string, reason?: string) =>
+  request<AdminCampaign>(`/api/admin/campaigns/${campaignId}/reject`, { method: 'POST', body: JSON.stringify({ reason }) });
+export const verifyPartner = (partnerId: string, verified: boolean) =>
+  request<components['schemas']['PartnerProfileDto']>(p(`/api/admin/partners/${partnerId}/verify`, { verified }), { method: 'POST' });

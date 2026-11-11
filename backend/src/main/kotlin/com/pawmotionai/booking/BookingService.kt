@@ -107,8 +107,8 @@ class BookingService(private val jdbc: JdbcClient, private val petAccess: PetAcc
             .query(Long::class.java).single()
         if (overlapping > 0) throw ConflictException("This time slot is no longer available")
         val campaignId = request.campaignId?.takeIf { campaign ->
-            jdbc.sql("SELECT COUNT(*) FROM partner_campaigns WHERE id = :id AND partner_id = :partner")
-                .param("id", campaign).param("partner", svc.partnerId).query(Long::class.java).single() > 0
+            jdbc.sql("SELECT COUNT(*) FROM partner_campaigns WHERE id = :id AND partner_id = :partner AND status = 'ACTIVE' AND (service_id IS NULL OR service_id = :service)")
+                .param("id", campaign).param("partner", svc.partnerId).param("service", request.serviceId).query(Long::class.java).single() > 0
         }
         val effectiveSource = if (source == BookingSource.APP && campaignId != null) BookingSource.AD else source
         val id = UUID.randomUUID()

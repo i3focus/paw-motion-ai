@@ -241,10 +241,6 @@ export function loginPartner(email: string, password: string): Promise<AuthRespo
   }, null);
 }
 
-export function listCampaigns(): Promise<Campaign[]> {
-  return request<Campaign[]>('/api/partner/campaigns', {}, getStoredPartnerToken());
-}
-
 export function createCampaign(input: {
   title: string;
   description: string;
@@ -255,18 +251,6 @@ export function createCampaign(input: {
     method: 'POST',
     headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(input),
-  }, getStoredPartnerToken());
-}
-
-export function archiveCampaign(campaignId: string): Promise<Campaign> {
-  return request<Campaign>(`/api/partner/campaigns/${campaignId}/archive`, {
-    method: 'POST',
-  }, getStoredPartnerToken());
-}
-
-export function analyzeCampaign(campaignId: string): Promise<Campaign> {
-  return request<Campaign>(`/api/partner/campaigns/${campaignId}/analyze`, {
-    method: 'POST',
   }, getStoredPartnerToken());
 }
 
