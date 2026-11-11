@@ -7,6 +7,14 @@ import { colors, fonts } from './theme';
 const dogPortrait = require('../assets/dog-portrait.jpg');
 const dogWalk = require('../assets/dog-walk.jpg');
 
+export function PawMark({ size = 32 }: { size?: number }) {
+  return (
+    <View style={{ width: size, height: size, borderRadius: size * 0.32, backgroundColor: colors.teal, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: size * 0.55, marginTop: -size * 0.06 }} accessibilityElementsHidden>🐾</Text>
+    </View>
+  );
+}
+
 export function PetAvatar({ pet, size = 64 }: { pet: Pet; size?: number }) {
   if (pet.species === 'dog') {
     return (

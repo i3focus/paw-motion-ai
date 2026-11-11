@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Owner } from './types';
-import { clearSession, getCurrentOwner, getStoredOwner, getStoredToken, loginOwner, registerOwner, storeSession } from './api/client';
+import { ApiError, clearSession, getCurrentOwner, getStoredOwner, getStoredToken, loginOwner, registerOwner, storeSession } from './api/client';
 
 interface AuthContextValue {
   owner: Owner | null;
@@ -33,10 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setOwner(current ?? storedOwner);
         }
-      } catch {
-        await clearSession();
-        if (!cancelled) {
-          setOwner(null);
+      } catch (e) {
+        if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+          await clearSession();
+          if (!cancelled) {
+            setOwner(null);
+          }
+        } else if (!cancelled) {
+          setOwner(storedOwner);
         }
       } finally {
         if (!cancelled) {

@@ -41,7 +41,7 @@ export async function clearSession(): Promise<void> {
   await AsyncStorage.removeItem(OWNER_KEY);
 }
 
-async function request<T>(path: string, init: RequestInit = {}, token?: string | null): Promise<T> {
+export async function request<T>(path: string, init: RequestInit = {}, token?: string | null): Promise<T> {
   const authToken = token === undefined ? await getStoredToken() : token;
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
@@ -62,6 +62,9 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string |
     throw new ApiError(response.status, message);
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
   return (await response.json()) as T;
 }
 
