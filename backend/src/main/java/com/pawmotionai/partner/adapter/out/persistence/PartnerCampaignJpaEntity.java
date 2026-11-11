@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
+import com.pawmotionai.partner.domain.model.CampaignEndReason;
 import com.pawmotionai.partner.domain.model.CampaignStatus;
 
 @Entity
@@ -63,6 +64,10 @@ public class PartnerCampaignJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "end_reason")
+    private CampaignEndReason endReason;
+
     @Version
     private Long version;
 
@@ -97,6 +102,8 @@ public class PartnerCampaignJpaEntity {
     public String getTargetAudience() { return targetAudience; }
     public String getCallToAction() { return callToAction; }
     public CampaignStatus getStatus() { return status; }
+    public CampaignEndReason getEndReason() { return endReason; }
+    public void setEndReason(CampaignEndReason endReason) { this.endReason = endReason; }
     public String getAiTopics() { return aiTopics; }
     public Instant getAnalyzedAt() { return analyzedAt; }
     public long getCreditsCharged() { return creditsCharged; }

@@ -17,6 +17,7 @@ public class PartnerCampaign {
     private final Instant createdAt;
     private final Instant updatedAt;
     private CampaignStatus status;
+    private CampaignEndReason endReason;
     private String aiTopics;
     private Instant analyzedAt;
     private long creditsCharged;
@@ -89,7 +90,7 @@ public class PartnerCampaign {
     }
 
     public void applyAnalysis(List<String> topics, Instant analyzedAt) {
-        if (status == CampaignStatus.ARCHIVED || status == CampaignStatus.EXPIRED) {
+        if (status == CampaignStatus.ENDED) {
             throw new CampaignStateException("Campaign cannot be analyzed from status " + status);
         }
         if (topics == null || topics.isEmpty()) {
@@ -104,23 +105,25 @@ public class PartnerCampaign {
     }
 
     public void expire(Instant now) {
-        if (status == CampaignStatus.ARCHIVED || status == CampaignStatus.EXPIRED) {
+        if (status == CampaignStatus.ENDED) {
             throw new CampaignStateException("Campaign cannot expire from status " + status);
         }
         if (expiresAt == null || now.isBefore(expiresAt)) {
             throw new CampaignStateException("Campaign has not reached its expiration date");
         }
-        this.status = CampaignStatus.EXPIRED;
+        this.status = CampaignStatus.ENDED;
+        this.endReason = CampaignEndReason.EXPIRED;
     }
 
     public void archive(long refundAmount) {
-        if (status == CampaignStatus.ARCHIVED) {
+        if (isArchived()) {
             return;
         }
-        if (status == CampaignStatus.EXPIRED) {
-            throw new CampaignStateException("Expired campaigns cannot be archived for refund");
+        if (status == CampaignStatus.ENDED) {
+            throw new CampaignStateException("Ended campaigns cannot be archived for refund");
         }
-        this.status = CampaignStatus.ARCHIVED;
+        this.status = CampaignStatus.ENDED;
+        this.endReason = CampaignEndReason.ARCHIVED;
         this.creditsRefunded += Math.max(0, refundAmount);
     }
 
@@ -138,6 +141,15 @@ public class PartnerCampaign {
     public String getTargetAudience() { return targetAudience; }
     public String getCallToAction() { return callToAction; }
     public CampaignStatus getStatus() { return status; }
+    public CampaignEndReason getEndReason() { return endReason; }
+
+    public boolean isArchived() {
+        return status == CampaignStatus.ENDED && endReason == CampaignEndReason.ARCHIVED;
+    }
+
+    public void restoreEndReason(CampaignEndReason endReason) {
+        this.endReason = endReason;
+    }
     public Instant getAnalyzedAt() { return analyzedAt; }
     public long getCreditsCharged() { return creditsCharged; }
     public long getCreditsRefunded() { return creditsRefunded; }
