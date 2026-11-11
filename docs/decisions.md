@@ -19,3 +19,10 @@ Decisions that change scope, data model or cost during the PETLIFE refactor. Eac
 | D-013 | 2026-11-11 | Typography: Nunito (rounded, 600–900 weights) bundled via `@fontsource/nunito` on web and `@expo-google-fonts/nunito` on mobile, falling back to `ui-rounded`. Body text ≥ 15px. | References specify `ui-rounded, 'SF Pro Rounded', 'Nunito'`; bundling ensures consistency on Android/Linux. | Token change only. |
 | D-014 | 2026-11-11 | Push notifications use Expo's push HTTP API behind `PushGatewayPort`; tests use a stub gateway. | Brief requires Expo push. | — |
 | D-015 | 2026-11-11 | Coral `#FF6B57` is the only action color; button text on coral is `#3A0F09` (coral-ink, from the reference) — passes WCAG AA; white on coral is 2.8:1 and is banned (5.98:1). Teal secondary buttons use white text on `#0F5C5C` (7.76:1). | Brief + reference CSS. | Token change only. |
+
+## D-016 — Phase 2 schema deviations from the plan
+- `activities.share_to_paw_city` keeps its name. The API exposes it as `sharedToFeed`; renaming the column would only churn the JPA mapping.
+- `feed_items.type` stores `POST`/`ACTIVITY`/`ACHIEVEMENT` only. `SPONSORED` items come from campaigns and are interleaved when the feed is served, not persisted.
+- There is no separate `review_status` column: `IN_REVIEW` is a campaign status, and a rejected campaign returns to `DRAFT` with `rejection_reason`.
+- Levels and streaks are computed from `xp_events` and `activities` at read time. No read-model tables yet.
+- The new Kotlin modules use `JdbcClient` (no JPA entities), so PostGIS `geography` columns and arrays need no Hibernate types.
