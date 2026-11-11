@@ -20,3 +20,6 @@ mobile/dist/
 .DS_Store
 .idea/
 .vscode/
+
+# Local media uploads
+backend/data/

@@ -69,6 +69,8 @@ abstract class ApiIntegrationTest {
 
     protected fun json(response: Response): JsonNode = mapper.readTree(response.body)
 
+    protected fun JsonNode.elements(): List<JsonNode> = (0 until size()).map { get(it) }
+
     protected fun expect(status: Int, response: Response): JsonNode {
         check(response.status == status) { "Expected HTTP $status but got ${response.status}: ${response.body}" }
         return if (response.body.isBlank()) mapper.nullNode() else json(response)
