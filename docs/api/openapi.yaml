@@ -4,7 +4,7 @@ info:
   description: "Owner, partner and admin APIs for PETLIFE."
   version: v1
 servers:
-- url: http://localhost:62205
+- url: http://localhost:63464
   description: Generated server url
 security:
 - bearer: []
@@ -490,19 +490,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/PartnerServiceDto"
   /api/partner/campaigns:
-    get:
-      tags:
-      - partner-campaign-controller
-      operationId: list
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CampaignResponseDto"
     post:
       tags:
       - partner-campaign-controller
@@ -602,44 +589,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/CampaignV2Dto"
-  /api/partner/campaigns/{campaignId}/archive:
-    post:
-      tags:
-      - partner-campaign-controller
-      operationId: archive
-      parameters:
-      - name: campaignId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/CampaignResponseDto"
-  /api/partner/campaigns/{campaignId}/analyze:
-    post:
-      tags:
-      - partner-campaign-controller
-      operationId: analyze
-      parameters:
-      - name: campaignId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/CampaignResponseDto"
   /api/partner/bookings/{bookingId}/confirm:
     post:
       tags:
@@ -1618,76 +1567,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ActivityResponseDto"
-  /api/activities/{activityId}/reactions:
-    post:
-      tags:
-      - social-controller
-      operationId: toggleReaction
-      parameters:
-      - name: activityId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ToggleReactionRequest"
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ActivityPostDto"
-  /api/activities/{activityId}/comments:
-    get:
-      tags:
-      - social-controller
-      operationId: comments_1
-      parameters:
-      - name: activityId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ActivityCommentDto"
-    post:
-      tags:
-      - social-controller
-      operationId: addComment
-      parameters:
-      - name: activityId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AddCommentRequest"
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ActivityCommentDto"
   /api/pets/{petId}:
     get:
       tags:
@@ -1880,34 +1759,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/HealthPassportDto"
-  /api/recommendations:
-    get:
-      tags:
-      - owner-recommendations-controller
-      operationId: list_1
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/OwnerRecommendationDto"
-  /api/promotions:
-    get:
-      tags:
-      - owner-promotions-controller
-      operationId: list_2
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/OwnerPromotionDto"
   /api/places:
     get:
       tags:
@@ -2438,18 +2289,6 @@ paths:
               schema:
                 type: string
                 format: binary
-  /api/map/points:
-    get:
-      tags:
-      - social-controller
-      operationId: mapPoints
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/MapPointsDto"
   /api/feed:
     get:
       tags:
@@ -2620,35 +2459,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PageResponseAdminCampaignDto"
-  /api/activities/feed:
-    get:
-      tags:
-      - social-controller
-      operationId: feed_1
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 0
-      - name: size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 50
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ActivityPostDto"
   /api/posts/{postId}:
     delete:
       tags:
@@ -2894,6 +2704,32 @@ components:
     HttpHeaders:
       type: object
       properties:
+        accessControlAllowCredentials:
+          type: boolean
+        acceptLanguage:
+          type: array
+          items:
+            type: object
+            properties:
+              range:
+                type: string
+              weight:
+                type: number
+                format: double
+        accessControlMaxAge:
+          type: integer
+          format: int64
+        acceptCharset:
+          type: array
+          items:
+            type: string
+        contentDisposition:
+          $ref: "#/components/schemas/ContentDisposition"
+        contentLanguage:
+          type: string
+        ifUnmodifiedSince:
+          type: integer
+          format: int64
         acceptLanguageAsLocales:
           type: array
           items:
@@ -2918,6 +2754,8 @@ components:
             type: string
         accessControlRequestMethod:
           $ref: "#/components/schemas/HttpMethod"
+        cacheControl:
+          type: string
         range:
           type: array
           items:
@@ -2983,39 +2821,11 @@ components:
               type: boolean
             hostName:
               type: string
-        contentDisposition:
-          $ref: "#/components/schemas/ContentDisposition"
-        acceptCharset:
-          type: array
-          items:
-            type: string
-        cacheControl:
-          type: string
-        contentLanguage:
-          type: string
         etag:
           type: string
         basicAuth:
           type: string
           writeOnly: true
-        acceptLanguage:
-          type: array
-          items:
-            type: object
-            properties:
-              range:
-                type: string
-              weight:
-                type: number
-                format: double
-        accessControlMaxAge:
-          type: integer
-          format: int64
-        ifUnmodifiedSince:
-          type: integer
-          format: int64
-        accessControlAllowCredentials:
-          type: boolean
         accept:
           type: array
           items:
@@ -3080,16 +2890,16 @@ components:
         qualityValue:
           type: number
           format: double
+        wildcardSubtype:
+          type: boolean
+        subtypeSuffix:
+          type: string
         charset:
           type: string
         concrete:
           type: boolean
         wildcardType:
           type: boolean
-        wildcardSubtype:
-          type: boolean
-        subtypeSuffix:
-          type: string
     CreateStoryRequest:
       type: object
       properties:
@@ -3806,18 +3616,6 @@ components:
           type: string
         avatarUrl:
           type: string
-        businessName:
-          type: string
-        website:
-          type: string
-        partnerDescription:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
     LoginRequest:
       type: object
       properties:
@@ -4851,97 +4649,6 @@ components:
         longitude:
           type: number
           format: double
-    ToggleReactionRequest:
-      type: object
-      properties:
-        type:
-          type: string
-          maxLength: 16
-          minLength: 0
-      required:
-      - type
-    ActivityPostDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        ownerId:
-          type: string
-          format: uuid
-        ownerName:
-          type: string
-        ownerAvatarUrl:
-          type: string
-        petId:
-          type: string
-          format: uuid
-        petName:
-          type: string
-        petSpecies:
-          type: string
-        type:
-          type: string
-        startedAt:
-          type: string
-          format: date-time
-        durationSeconds:
-          type: integer
-          format: int64
-        distanceMeters:
-          type: number
-          format: double
-        notes:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        createdAt:
-          type: string
-          format: date-time
-        reactions:
-          type: object
-          additionalProperties:
-            type: integer
-            format: int64
-        commentCount:
-          type: integer
-          format: int64
-        viewerReaction:
-          type: string
-    AddCommentRequest:
-      type: object
-      properties:
-        body:
-          type: string
-          maxLength: 500
-          minLength: 0
-      required:
-      - body
-    ActivityCommentDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        activityId:
-          type: string
-          format: uuid
-        ownerId:
-          type: string
-          format: uuid
-        ownerName:
-          type: string
-        ownerAvatarUrl:
-          type: string
-        body:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
     UpdatePartnerProfileRequest:
       type: object
       properties:
@@ -5152,30 +4859,6 @@ components:
           type: string
           maxLength: 500
           minLength: 0
-        businessName:
-          type: string
-          maxLength: 160
-          minLength: 0
-        website:
-          type: string
-          maxLength: 300
-          minLength: 0
-        partnerDescription:
-          type: string
-          maxLength: 1000
-          minLength: 0
-        latitude:
-          type: number
-          format: double
-          maximum: 90
-          minimum: -90
-        longitude:
-          type: number
-          format: double
-          maximum: 180
-          minimum: -180
-        clearCoordinates:
-          type: boolean
     NotificationPreferencesDto:
       type: object
       properties:
@@ -5238,51 +4921,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/StoryDto"
-    OwnerRecommendationDto:
-      type: object
-      properties:
-        campaignId:
-          type: string
-          format: uuid
-        partnerName:
-          type: string
-        campaignTitle:
-          type: string
-        description:
-          type: string
-        callToAction:
-          type: string
-        recommendedTopics:
-          type: array
-          items:
-            type: string
-        analyzedAt:
-          type: string
-          format: date-time
-    OwnerPromotionDto:
-      type: object
-      properties:
-        campaignId:
-          type: string
-          format: uuid
-        partnerName:
-          type: string
-        partnerWebsite:
-          type: string
-        title:
-          type: string
-        description:
-          type: string
-        targetAudience:
-          type: string
-        callToAction:
-          type: string
-        expiresAt:
-          type: string
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
     PageResponsePlaceDto:
       type: object
       properties:
@@ -5833,57 +5471,6 @@ components:
           format: int32
         hasNext:
           type: boolean
-    ActivityMapPointDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        petId:
-          type: string
-          format: uuid
-        petName:
-          type: string
-        type:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        startedAt:
-          type: string
-          format: date-time
-    MapPointsDto:
-      type: object
-      properties:
-        partners:
-          type: array
-          items:
-            $ref: "#/components/schemas/PartnerMapPointDto"
-        activities:
-          type: array
-          items:
-            $ref: "#/components/schemas/ActivityMapPointDto"
-    PartnerMapPointDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        avatarUrl:
-          type: string
-        website:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
     AchievementContentDto:
       type: object
       properties:

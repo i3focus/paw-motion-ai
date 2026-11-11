@@ -40,7 +40,6 @@ class LegacyDataMigrationIT {
             jdbc.queryForList("SELECT type || ':' || legacy_type FROM reactions ORDER BY created_at", String::class.java),
         )
         assertEquals(1, count("SELECT COUNT(*) FROM comments"))
-        assertEquals(3, count("SELECT COUNT(*) FROM activity_reactions"), "legacy rows are kept until phase 6")
         assertEquals(3, count("SELECT COUNT(*) FROM xp_events"))
         assertTrue(count("SELECT COUNT(*) FROM pet_badges WHERE badge_code = 'FIRST_WALK'") == 1L)
 

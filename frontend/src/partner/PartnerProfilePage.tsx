@@ -33,23 +33,18 @@ export function PartnerProfilePage() {
       return;
     }
     setDisplayName(partner.displayName);
-    setBusinessName(partner.businessName ?? '');
-    setWebsite(partner.website ?? '');
-    setPartnerDescription(partner.partnerDescription ?? '');
     setBio(partner.bio ?? '');
     setPhone(partner.phone ?? '');
     setAvatarUrl(partner.avatarUrl ?? '');
-    setLatitude(partner.latitude?.toString() ?? '');
-    setLongitude(partner.longitude?.toString() ?? '');
   }, [partner]);
 
   useEffect(() => {
     getPartnerProfileV2()
       .then((p) => {
-        setBusinessName((b) => p.businessName || b);
+        setBusinessName(p.businessName || '');
         setCategory(p.category ?? 'OTHER');
-        setPartnerDescription((d) => p.description ?? d);
-        setWebsite((w) => p.website ?? w);
+        setPartnerDescription(p.description ?? '');
+        setWebsite(p.website ?? '');
         setPhone((ph) => p.phone ?? ph);
         setAddress(p.address ?? '');
         setLatitude((la) => p.latitude?.toString() ?? la);
@@ -99,15 +94,9 @@ export function PartnerProfilePage() {
     try {
       await updateProfile({
         displayName: displayName.trim(),
-        businessName: businessName.trim(),
-        website: normalizeUrl(website),
-        partnerDescription: partnerDescription.trim(),
         bio: bio.trim(),
         phone: phone.trim(),
         avatarUrl: normalizeUrl(avatarUrl),
-        latitude: latitude.trim() ? Number(latitude) : null,
-        longitude: longitude.trim() ? Number(longitude) : null,
-        clearCoordinates: !latitude.trim() && !longitude.trim(),
       }, getStoredPartnerToken());
       await updatePartnerProfileV2({
         businessName: businessName.trim(),

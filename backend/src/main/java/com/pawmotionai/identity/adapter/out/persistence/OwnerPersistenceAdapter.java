@@ -26,9 +26,8 @@ public class OwnerPersistenceAdapter implements OwnerRepository {
         OwnerJpaEntity entity = repository.findById(owner.getId())
             .orElseGet(() -> new OwnerJpaEntity(
                 owner.getId(), owner.getEmail(), owner.getPasswordHash(), owner.getDisplayName(), owner.getRole(),
-                owner.getStatus(), owner.getCreatedAt(), Instant.now(), null, null, null, null, null, null));
-        entity.updateProfile(owner.getDisplayName(), owner.getBio(), owner.getPhone(), owner.getAvatarUrl(),
-            owner.getBusinessName(), owner.getWebsite(), owner.getPartnerDescription(), owner.getLatitude(), owner.getLongitude());
+                owner.getStatus(), owner.getCreatedAt(), Instant.now(), null, null, null));
+        entity.updateProfile(owner.getDisplayName(), owner.getBio(), owner.getPhone(), owner.getAvatarUrl());
         try {
             return toDomain(repository.saveAndFlush(entity));
         } catch (DataIntegrityViolationException exception) {
@@ -62,7 +61,6 @@ public class OwnerPersistenceAdapter implements OwnerRepository {
     private Owner toDomain(OwnerJpaEntity entity) {
         return Owner.reconstitute(
             entity.getId(), entity.getEmail(), entity.getPasswordHash(), entity.getDisplayName(), entity.getRole(),
-            entity.getStatus(), entity.getCreatedAt(), entity.getBio(), entity.getPhone(), entity.getAvatarUrl(),
-            entity.getBusinessName(), entity.getWebsite(), entity.getPartnerDescription(), entity.getLatitude(), entity.getLongitude());
+            entity.getStatus(), entity.getCreatedAt(), entity.getBio(), entity.getPhone(), entity.getAvatarUrl());
     }
 }

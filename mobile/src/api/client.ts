@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import type { Activity, AuthResponse, DashboardSummary, Insight, Owner, OwnerRecommendation, Pet } from '../types';
+import type { Activity, AuthResponse, DashboardSummary, Insight, Owner, Pet } from '../types';
 
 const TOKEN_KEY = 'pawmotion.mobile.accessToken';
 const OWNER_KEY = 'pawmotion.mobile.owner';
@@ -44,6 +44,7 @@ export async function clearSession(): Promise<void> {
 export async function request<T>(path: string, init: RequestInit = {}, token?: string | null): Promise<T> {
   const authToken = token === undefined ? await getStoredToken() : token;
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    signal: init.signal ?? AbortSignal.timeout(15_000),
     ...init,
     headers: {
       'Content-Type': 'application/json',
@@ -159,6 +160,4 @@ export function generateInsight(input: { petId?: string; periodDays?: number } =
   });
 }
 
-export function listRecommendations(): Promise<OwnerRecommendation[]> {
-  return request<OwnerRecommendation[]>('/api/recommendations');
-}
+

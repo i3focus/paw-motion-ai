@@ -3,6 +3,7 @@ package com.pawmotionai.identity.application.usecase;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,13 +25,15 @@ public class RegisterPartnerService implements RegisterPartnerUseCase {
     private final PasswordHasher passwordHasher;
     private final TokenIssuer tokenIssuer;
     private final EnsureWalletUseCase ensureWalletUseCase;
+    private final JdbcTemplate jdbcTemplate;
 
     public RegisterPartnerService(OwnerRepository ownerRepository, PasswordHasher passwordHasher, TokenIssuer tokenIssuer,
-                                  EnsureWalletUseCase ensureWalletUseCase) {
+                                  EnsureWalletUseCase ensureWalletUseCase, JdbcTemplate jdbcTemplate) {
         this.ownerRepository = ownerRepository;
         this.passwordHasher = passwordHasher;
         this.tokenIssuer = tokenIssuer;
         this.ensureWalletUseCase = ensureWalletUseCase;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -43,8 +46,14 @@ public class RegisterPartnerService implements RegisterPartnerUseCase {
 
         Owner partner = Owner.registerPartner(
             UUID.randomUUID(), normalizedEmail, passwordHasher.hash(command.password()), command.displayName().trim(),
-            command.businessName(), command.website(), command.description(), Instant.now());
+            Instant.now());
         Owner saved = ownerRepository.save(partner);
+        jdbcTemplate.update(
+            "INSERT INTO partner_profiles (partner_id, business_name, website, description, created_at, updated_at) VALUES (?, ?, ?, ?, now(), now())",
+            saved.getId(),
+            command.businessName() == null || command.businessName().isBlank() ? saved.getDisplayName() : command.businessName().trim(),
+            command.website() == null || command.website().isBlank() ? null : command.website().trim(),
+            command.description() == null || command.description().isBlank() ? null : command.description().trim());
         ensureWalletUseCase.ensureWallet(saved.getId());
         TokenIssuer.IssuedToken token = tokenIssuer.issue(saved);
         return new AuthResponseDto(token.accessToken(), token.tokenType(), token.expiresInSeconds(), OwnerResponseDto.from(saved));

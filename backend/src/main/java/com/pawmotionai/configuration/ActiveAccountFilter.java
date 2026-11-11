@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class ActiveAccountFilter extends OncePerRequestFilter {
 
     private static final List<String> OWNER_ONLY_PREFIXES = List.of(
-        "/api/pets", "/api/activities", "/api/dashboard", "/api/insights", "/api/recommendations", "/api/promotions");
+        "/api/pets", "/api/activities", "/api/dashboard", "/api/insights");
 
     private final OwnerRepository ownerRepository;
 

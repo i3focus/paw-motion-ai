@@ -268,7 +268,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list"];
+        get?: never;
         put?: never;
         post: operations["create"];
         delete?: never;
@@ -335,38 +335,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["end"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/campaigns/{campaignId}/archive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["archive"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/campaigns/{campaignId}/analyze": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["analyze"];
         delete?: never;
         options?: never;
         head?: never;
@@ -952,38 +920,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/activities/{activityId}/reactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["toggleReaction"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/activities/{activityId}/comments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["comments_1"];
-        put?: never;
-        post: operations["addComment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/pets/{petId}": {
         parameters: {
             query?: never;
@@ -1073,38 +1009,6 @@ export interface paths {
         };
         /** Public read-only health passport for a vet share link */
         get: operations["shared"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/recommendations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list_1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/promotions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1452,22 +1356,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/map/points": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["mapPoints"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/feed": {
         parameters: {
             query?: never;
@@ -1597,22 +1485,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/activities/feed": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["feed_1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/posts/{postId}": {
         parameters: {
             query?: never;
@@ -1728,6 +1600,19 @@ export interface components {
             formData?: boolean;
         };
         HttpHeaders: {
+            accessControlAllowCredentials?: boolean;
+            acceptLanguage?: {
+                range?: string;
+                /** Format: double */
+                weight?: number;
+            }[];
+            /** Format: int64 */
+            accessControlMaxAge?: number;
+            acceptCharset?: string[];
+            contentDisposition?: components["schemas"]["ContentDisposition"];
+            contentLanguage?: string;
+            /** Format: int64 */
+            ifUnmodifiedSince?: number;
             acceptLanguageAsLocales?: string[];
             accessControlAllowHeaders?: string[];
             accessControlAllowMethods?: components["schemas"]["HttpMethod"][];
@@ -1735,6 +1620,7 @@ export interface components {
             accessControlExposeHeaders?: string[];
             accessControlRequestHeaders?: string[];
             accessControlRequestMethod?: components["schemas"]["HttpMethod"];
+            cacheControl?: string;
             range?: components["schemas"]["HttpRange"][];
             connection?: string[];
             contentType?: components["schemas"]["MediaType"];
@@ -1769,22 +1655,8 @@ export interface components {
                 unresolved?: boolean;
                 hostName?: string;
             };
-            contentDisposition?: components["schemas"]["ContentDisposition"];
-            acceptCharset?: string[];
-            cacheControl?: string;
-            contentLanguage?: string;
             etag?: string;
             basicAuth?: string;
-            acceptLanguage?: {
-                range?: string;
-                /** Format: double */
-                weight?: number;
-            }[];
-            /** Format: int64 */
-            accessControlMaxAge?: number;
-            /** Format: int64 */
-            ifUnmodifiedSince?: number;
-            accessControlAllowCredentials?: boolean;
             accept?: components["schemas"]["MediaType"][];
             acceptPatch?: components["schemas"]["MediaType"][];
             allow?: components["schemas"]["HttpMethod"][];
@@ -1815,11 +1687,11 @@ export interface components {
             };
             /** Format: double */
             qualityValue?: number;
+            wildcardSubtype?: boolean;
+            subtypeSuffix?: string;
             charset?: string;
             concrete?: boolean;
             wildcardType?: boolean;
-            wildcardSubtype?: boolean;
-            subtypeSuffix?: string;
         };
         CreateStoryRequest: {
             /** Format: uuid */
@@ -2127,13 +1999,6 @@ export interface components {
             bio?: string;
             phone?: string;
             avatarUrl?: string;
-            businessName?: string;
-            website?: string;
-            partnerDescription?: string;
-            /** Format: double */
-            latitude?: number;
-            /** Format: double */
-            longitude?: number;
         };
         LoginRequest: {
             /** Format: email */
@@ -2557,57 +2422,6 @@ export interface components {
             /** Format: double */
             longitude?: number;
         };
-        ToggleReactionRequest: {
-            type: string;
-        };
-        ActivityPostDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            ownerId?: string;
-            ownerName?: string;
-            ownerAvatarUrl?: string;
-            /** Format: uuid */
-            petId?: string;
-            petName?: string;
-            petSpecies?: string;
-            type?: string;
-            /** Format: date-time */
-            startedAt?: string;
-            /** Format: int64 */
-            durationSeconds?: number;
-            /** Format: double */
-            distanceMeters?: number;
-            notes?: string;
-            /** Format: double */
-            latitude?: number;
-            /** Format: double */
-            longitude?: number;
-            /** Format: date-time */
-            createdAt?: string;
-            reactions?: {
-                [key: string]: number;
-            };
-            /** Format: int64 */
-            commentCount?: number;
-            viewerReaction?: string;
-        };
-        AddCommentRequest: {
-            body: string;
-        };
-        ActivityCommentDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            activityId?: string;
-            /** Format: uuid */
-            ownerId?: string;
-            ownerName?: string;
-            ownerAvatarUrl?: string;
-            body?: string;
-            /** Format: date-time */
-            createdAt?: string;
-        };
         UpdatePartnerProfileRequest: {
             businessName?: string | null;
             /** @enum {string|null} */
@@ -2657,14 +2471,6 @@ export interface components {
             bio?: string;
             phone?: string;
             avatarUrl?: string;
-            businessName?: string;
-            website?: string;
-            partnerDescription?: string;
-            /** Format: double */
-            latitude?: number;
-            /** Format: double */
-            longitude?: number;
-            clearCoordinates?: boolean;
         };
         NotificationPreferencesDto: {
             healthReminders?: boolean;
@@ -2693,31 +2499,6 @@ export interface components {
             own?: boolean;
             allViewed?: boolean;
             stories?: components["schemas"]["StoryDto"][];
-        };
-        OwnerRecommendationDto: {
-            /** Format: uuid */
-            campaignId?: string;
-            partnerName?: string;
-            campaignTitle?: string;
-            description?: string;
-            callToAction?: string;
-            recommendedTopics?: string[];
-            /** Format: date-time */
-            analyzedAt?: string;
-        };
-        OwnerPromotionDto: {
-            /** Format: uuid */
-            campaignId?: string;
-            partnerName?: string;
-            partnerWebsite?: string;
-            title?: string;
-            description?: string;
-            targetAudience?: string;
-            callToAction?: string;
-            /** Format: date-time */
-            expiresAt?: string;
-            /** Format: date-time */
-            createdAt?: string;
         };
         PageResponsePlaceDto: {
             items?: components["schemas"]["PlaceDto"][];
@@ -2998,35 +2779,6 @@ export interface components {
             /** Format: int32 */
             size?: number;
             hasNext?: boolean;
-        };
-        ActivityMapPointDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            petId?: string;
-            petName?: string;
-            type?: string;
-            /** Format: double */
-            latitude?: number;
-            /** Format: double */
-            longitude?: number;
-            /** Format: date-time */
-            startedAt?: string;
-        };
-        MapPointsDto: {
-            partners?: components["schemas"]["PartnerMapPointDto"][];
-            activities?: components["schemas"]["ActivityMapPointDto"][];
-        };
-        PartnerMapPointDto: {
-            /** Format: uuid */
-            id?: string;
-            name?: string;
-            avatarUrl?: string;
-            website?: string;
-            /** Format: double */
-            latitude?: number;
-            /** Format: double */
-            longitude?: number;
         };
         AchievementContentDto: {
             badgeCode?: string;
@@ -3774,26 +3526,6 @@ export interface operations {
             };
         };
     };
-    list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignResponseDto"][];
-                };
-            };
-        };
-    };
     create: {
         parameters: {
             query?: never;
@@ -3904,50 +3636,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CampaignV2Dto"];
-                };
-            };
-        };
-    };
-    archive: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                campaignId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignResponseDto"];
-                };
-            };
-        };
-    };
-    analyze: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                campaignId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignResponseDto"];
                 };
             };
         };
@@ -5038,80 +4726,6 @@ export interface operations {
             };
         };
     };
-    toggleReaction: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                activityId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ToggleReactionRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityPostDto"];
-                };
-            };
-        };
-    };
-    comments_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                activityId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityCommentDto"][];
-                };
-            };
-        };
-    };
-    addComment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                activityId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AddCommentRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityCommentDto"];
-                };
-            };
-        };
-    };
     getPet: {
         parameters: {
             query?: never;
@@ -5358,46 +4972,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["HealthPassportDto"];
-                };
-            };
-        };
-    };
-    list_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["OwnerRecommendationDto"][];
-                };
-            };
-        };
-    };
-    list_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["OwnerPromotionDto"][];
                 };
             };
         };
@@ -5886,26 +5460,6 @@ export interface operations {
             };
         };
     };
-    mapPoints: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MapPointsDto"];
-                };
-            };
-        };
-    };
     feed: {
         parameters: {
             query?: {
@@ -6078,29 +5632,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageResponseAdminCampaignDto"];
-                };
-            };
-        };
-    };
-    feed_1: {
-        parameters: {
-            query?: {
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityPostDto"][];
                 };
             };
         };
