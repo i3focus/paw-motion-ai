@@ -21,8 +21,6 @@ import com.pawmotionai.partner.domain.model.PartnerCampaign;
 @Service
 public class ListOwnerPromotionsService implements ListOwnerPromotionsUseCase {
 
-    private static final int MAX_PROMOTIONS = 12;
-
     private final PartnerCampaignRepository campaignRepository;
     private final OwnerRepository ownerRepository;
 
@@ -38,7 +36,6 @@ public class ListOwnerPromotionsService implements ListOwnerPromotionsUseCase {
         List<PartnerCampaign> campaigns = campaignRepository.findByStatus(CampaignStatus.ACTIVE).stream()
             .filter(campaign -> campaign.getExpiresAt() == null || campaign.getExpiresAt().isAfter(now))
             .sorted(Comparator.comparing(PartnerCampaign::getCreatedAt).reversed())
-            .limit(MAX_PROMOTIONS)
             .toList();
 
         Map<UUID, String> partnerNames = new HashMap<>();
