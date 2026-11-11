@@ -118,6 +118,8 @@ function PetWeekCard({ summary, pets, activities }: { summary: DashboardSummary 
     });
   }, [recent]);
   const maxCount = Math.max(1, ...days.map((day) => day.count));
+  const chartedCount = days.reduce((total, day) => total + day.count, 0);
+  const weekIsComplete = activities.length > 0 || chartedCount >= (summary?.activityCountLast7Days ?? 0);
   const petCount = summary?.petCount ?? pets.length;
 
   return (
@@ -143,16 +145,22 @@ function PetWeekCard({ summary, pets, activities }: { summary: DashboardSummary 
           <p className="text-[11px] font-semibold uppercase tracking-wide text-cream-500">Streak</p>
         </div>
       </div>
-      <div className="mt-5 flex h-24 items-end gap-2">
-        {days.map((day) => (
-          <div key={day.date.toISOString()} className="flex flex-1 flex-col items-center gap-1">
-            <div className="flex h-16 w-full items-end rounded-2xl bg-cream-100">
-              <div className="w-full rounded-2xl bg-[linear-gradient(180deg,var(--color-accent),var(--color-primary))]" style={{ height: `${Math.max(12, (day.count / maxCount) * 100)}%` }} />
+      {weekIsComplete ? (
+        <div className="mt-5 flex h-24 items-end gap-2">
+          {days.map((day) => (
+            <div key={day.date.toISOString()} className="flex flex-1 flex-col items-center gap-1">
+              <div className="flex h-16 w-full items-end rounded-2xl bg-cream-100">
+                <div className="w-full rounded-2xl bg-[linear-gradient(180deg,var(--color-accent),var(--color-primary))]" style={{ height: `${Math.max(12, (day.count / maxCount) * 100)}%` }} />
+              </div>
+              <span className="text-[10px] font-bold text-cream-500">{day.label}</span>
             </div>
-            <span className="text-[10px] font-bold text-cream-500">{day.label}</span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-5 flex h-24 items-center justify-center rounded-2xl bg-cream-100 text-sm font-semibold text-cream-500">
+          Weekly detail unavailable
+        </div>
+      )}
     </section>
   );
 }
