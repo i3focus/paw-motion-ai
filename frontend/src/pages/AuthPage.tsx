@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import { useAuth } from '../auth';
-import { BrandLogo, Button, EmailInput, ErrorMessage, PasswordInput, TextInput } from '../components/ui';
+import { BrandLogo, Button, EmailInput, ErrorMessage, PoppyMark, PasswordInput, TextInput } from '../components/ui';
 import { isValidEmail, normalizeEmail } from '../lib/validation';
 
 export function AuthPage() {
@@ -48,8 +48,10 @@ export function AuthPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-cream-50 via-cream-100 to-accent/20 px-4">
-      <div className="w-full max-w-md rounded-3xl border border-cream-200 bg-white p-8 shadow-[0_30px_80px_-40px_rgba(54,39,20,0.5)]">
+    <main className="paw-city-bg relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+      <PoppyMark className="poppy-float pointer-events-none absolute left-[8%] top-[14%] h-24 w-24 text-accent/25" />
+      <PoppyMark className="poppy-float pointer-events-none absolute bottom-[12%] right-[9%] h-32 w-32 text-primary/15" style={{ animationDelay: '1.2s' }} />
+      <div className="relative w-full max-w-md rounded-[30px] border border-cream-200 bg-white/95 p-8 shadow-[0_35px_90px_-45px_rgba(54,39,20,0.6)] backdrop-blur">
         <BrandLogo className="text-sm uppercase tracking-wide" />
         <h1 className="mt-2 font-display text-2xl font-bold text-cream-900">Welcome back</h1>
         <p className="mt-1 text-sm text-cream-600">Track activity, progress, and wellness with your pet.</p>

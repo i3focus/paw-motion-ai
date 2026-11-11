@@ -22,12 +22,20 @@ public class PaymentTransaction {
     private PaymentStatus status;
     private String failureReason;
     private final String idempotencyKey;
+    private final String customerId;
     private final Instant createdAt;
     private Instant updatedAt;
 
     public PaymentTransaction(UUID id, UUID partnerId, BigDecimal amount, String currency, BigDecimal cppSnapshot,
                               long expectedCredits, UUID targetAccountId, String method, String provider,
                               String idempotencyKey, Instant createdAt) {
+        this(id, partnerId, amount, currency, cppSnapshot, expectedCredits, targetAccountId, method, provider,
+            idempotencyKey, createdAt, null);
+    }
+
+    public PaymentTransaction(UUID id, UUID partnerId, BigDecimal amount, String currency, BigDecimal cppSnapshot,
+                              long expectedCredits, UUID targetAccountId, String method, String provider,
+                              String idempotencyKey, Instant createdAt, String customerId) {
         this.id = id;
         this.partnerId = partnerId;
         this.amount = amount;
@@ -39,6 +47,7 @@ public class PaymentTransaction {
         this.provider = provider;
         this.status = PaymentStatus.PENDING;
         this.idempotencyKey = idempotencyKey;
+        this.customerId = customerId;
         this.createdAt = createdAt;
         this.updatedAt = createdAt;
     }
@@ -48,8 +57,19 @@ public class PaymentTransaction {
                                                   String method, String provider, String providerCheckoutId,
                                                   String providerCheckoutUrl, PaymentStatus status, String failureReason,
                                                   String idempotencyKey, Instant createdAt, Instant updatedAt) {
+        return reconstitute(id, partnerId, amount, currency, cppSnapshot, expectedCredits, targetAccountId, method,
+            provider, providerCheckoutId, providerCheckoutUrl, status, failureReason, idempotencyKey, createdAt,
+            updatedAt, null);
+    }
+
+    public static PaymentTransaction reconstitute(UUID id, UUID partnerId, BigDecimal amount, String currency,
+                                                  BigDecimal cppSnapshot, long expectedCredits, UUID targetAccountId,
+                                                  String method, String provider, String providerCheckoutId,
+                                                  String providerCheckoutUrl, PaymentStatus status, String failureReason,
+                                                  String idempotencyKey, Instant createdAt, Instant updatedAt,
+                                                  String customerId) {
         PaymentTransaction transaction = new PaymentTransaction(id, partnerId, amount, currency, cppSnapshot,
-            expectedCredits, targetAccountId, method, provider, idempotencyKey, createdAt);
+            expectedCredits, targetAccountId, method, provider, idempotencyKey, createdAt, customerId);
         transaction.providerCheckoutId = providerCheckoutId;
         transaction.providerCheckoutUrl = providerCheckoutUrl;
         transaction.status = status;
@@ -60,6 +80,17 @@ public class PaymentTransaction {
 
     public void attachCheckout(String providerCheckoutId, String providerCheckoutUrl, Instant updatedAt) {
         requirePendingForMutation();
+        this.providerCheckoutId = providerCheckoutId;
+        this.providerCheckoutUrl = providerCheckoutUrl;
+        this.updatedAt = updatedAt;
+    }
+
+    public void reopenForCheckout(String providerCheckoutId, String providerCheckoutUrl, Instant updatedAt) {
+        if (status != PaymentStatus.FAILED && status != PaymentStatus.EXPIRED && status != PaymentStatus.CANCELED) {
+            throw new InvalidPaymentStateException("Cannot retry checkout in status " + status);
+        }
+        this.status = PaymentStatus.PENDING;
+        this.failureReason = null;
         this.providerCheckoutId = providerCheckoutId;
         this.providerCheckoutUrl = providerCheckoutUrl;
         this.updatedAt = updatedAt;
@@ -142,6 +173,7 @@ public class PaymentTransaction {
     public PaymentStatus getStatus() { return status; }
     public String getFailureReason() { return failureReason; }
     public String getIdempotencyKey() { return idempotencyKey; }
+    public String getCustomerId() { return customerId; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

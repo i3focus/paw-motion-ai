@@ -10,5 +10,8 @@ public record RecordActivityCommand(
     Instant startedAt,
     long durationSeconds,
     Double distanceMeters,
-    String notes) {
+    String notes,
+    Double latitude,
+    Double longitude,
+    Boolean shareToPawCity) {
 }

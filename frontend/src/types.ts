@@ -9,6 +9,8 @@ export interface Owner {
   businessName: string | null;
   website: string | null;
   partnerDescription: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface AuthResponse {
@@ -41,6 +43,8 @@ export interface Activity {
   distanceMeters: number | null;
   notes: string | null;
   createdAt: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface DashboardSummary {
@@ -154,4 +158,40 @@ export interface OwnerRecommendation {
   callToAction: string;
   recommendedTopics: string[];
   analyzedAt: string | null;
+}
+
+export interface ActivityPost {
+  id: string;
+  ownerId: string;
+  ownerName: string;
+  ownerAvatarUrl: string | null;
+  petId: string;
+  petName: string;
+  petSpecies: string;
+  type: string;
+  startedAt: string;
+  durationSeconds: number;
+  distanceMeters: number | null;
+  notes: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  createdAt: string;
+  reactions: Record<string, number>;
+  commentCount: number;
+  viewerReaction: string | null;
+}
+
+export interface ActivityComment {
+  id: string;
+  activityId: string;
+  ownerId: string;
+  ownerName: string;
+  ownerAvatarUrl: string | null;
+  body: string;
+  createdAt: string;
+}
+
+export interface MapPoints {
+  partners: Array<{ id: string; name: string; avatarUrl: string | null; website: string | null; latitude: number; longitude: number }>;
+  activities: Array<{ id: string; petId: string; petName: string; type: string; latitude: number; longitude: number; startedAt: string }>;
 }

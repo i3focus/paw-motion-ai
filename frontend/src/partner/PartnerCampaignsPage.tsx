@@ -1,7 +1,24 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { analyzeCampaign, ApiError, archiveCampaign, createCampaign, listCampaigns } from '../api/client';
 import { Badge, Button, Card, EmptyState, ErrorMessage, SectionHeader, TextArea, TextInput } from '../components/ui';
 import type { Campaign } from '../types';
+
+function isExpired(campaign: Campaign): boolean {
+  return campaign.status === 'EXPIRED'
+    || (campaign.status !== 'ARCHIVED' && new Date(campaign.expiresAt).getTime() <= Date.now());
+}
+
+function vigencyLabel(campaign: Campaign): string {
+  if (campaign.status === 'ARCHIVED') {
+    return 'archived';
+  }
+  const expiresAt = new Date(campaign.expiresAt);
+  if (isExpired(campaign)) {
+    return `expired ${expiresAt.toLocaleDateString()}`;
+  }
+  const days = Math.max(1, Math.ceil((expiresAt.getTime() - Date.now()) / 86_400_000));
+  return `${days} day${days === 1 ? '' : 's'} left · expires ${expiresAt.toLocaleDateString()}`;
+}
 
 export function PartnerCampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -14,6 +31,7 @@ export function PartnerCampaignsPage() {
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const campaignKey = useRef<{ fingerprint: string; key: string } | null>(null);
 
   async function refresh() {
     setCampaigns(await listCampaigns());
@@ -57,13 +75,18 @@ export function PartnerCampaignsPage() {
 
     setError(null);
     setSubmitting(true);
+    const fingerprint = [trimmedTitle, trimmedDescription, trimmedAudience, trimmedCta].join('|');
+    if (!campaignKey.current || campaignKey.current.fingerprint !== fingerprint) {
+      campaignKey.current = { fingerprint, key: crypto.randomUUID() };
+    }
     try {
       await createCampaign({
         title: trimmedTitle,
         description: trimmedDescription,
         targetAudience: trimmedAudience,
         callToAction: trimmedCta,
-      });
+      }, campaignKey.current.key);
+      campaignKey.current = null;
       setTitle('');
       setDescription('');
       setTargetAudience('');
@@ -159,10 +182,10 @@ export function PartnerCampaignsPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-cream-900">{campaign.title}</h3>
-                        <Badge tone={campaign.status === 'ACTIVE' ? 'success' : 'neutral'}>{campaign.status}</Badge>
+                        <Badge tone={campaign.status === 'ACTIVE' ? 'success' : isExpired(campaign) ? 'danger' : 'neutral'}>{isExpired(campaign) ? 'EXPIRED' : campaign.status}</Badge>
                       </div>
                       <p className="mt-1 text-sm text-cream-500">Audience: {campaign.targetAudience}</p>
-                      <p className="mt-1 text-xs text-cream-500">{campaign.creditsCharged} credits charged · {campaign.creditsRefunded} refunded · expires {new Date(campaign.expiresAt).toLocaleDateString()}</p>
+                      <p className="mt-1 text-xs text-cream-500">{campaign.creditsCharged} credits charged · {campaign.creditsRefunded} refunded · {vigencyLabel(campaign)}</p>
                     </div>
                     <div className="flex gap-2">
                       {campaign.status !== 'ARCHIVED' && campaign.status !== 'EXPIRED' ? (

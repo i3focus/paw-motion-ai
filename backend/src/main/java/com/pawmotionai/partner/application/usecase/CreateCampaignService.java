@@ -40,7 +40,14 @@ public class CreateCampaignService implements CreateCampaignUseCase {
         if (idempotencyKey != null) {
             var existing = repository.findByPartnerIdAndIdempotencyKey(partnerId, idempotencyKey);
             if (existing.isPresent()) {
-                return CampaignResponseDto.from(existing.get(), postLedgerEntryUseCase.availableBalance(partnerId));
+                var existingCampaign = existing.get();
+                if (!existingCampaign.getTitle().equals(normalizedText(command.title()))
+                    || !existingCampaign.getDescription().equals(normalizedText(command.description()))
+                    || !existingCampaign.getTargetAudience().equals(normalizedText(command.targetAudience()))
+                    || !existingCampaign.getCallToAction().equals(normalizedText(command.callToAction()))) {
+                    throw new IllegalArgumentException("Idempotency key was already used for a different campaign");
+                }
+                return CampaignResponseDto.from(existingCampaign, postLedgerEntryUseCase.availableBalance(partnerId));
             }
         }
 
@@ -64,6 +71,10 @@ public class CreateCampaignService implements CreateCampaignUseCase {
             }
             throw exception;
         }
+    }
+
+    private String normalizedText(String value) {
+        return value == null ? null : value.trim();
     }
 
     private String requireText(String value, String field) {

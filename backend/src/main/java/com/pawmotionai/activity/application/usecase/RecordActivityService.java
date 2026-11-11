@@ -44,7 +44,10 @@ public class RecordActivityService implements RecordActivityUseCase {
             command.durationSeconds(),
             command.distanceMeters(),
             trimToNull(command.notes()),
-            Instant.now());
+            Instant.now(),
+            command.latitude(),
+            command.longitude(),
+            Boolean.TRUE.equals(command.shareToPawCity()));
         return ActivityResponseDto.from(activityRepository.save(activity));
     }
 

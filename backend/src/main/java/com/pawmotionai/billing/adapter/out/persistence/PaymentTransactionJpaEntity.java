@@ -60,6 +60,9 @@ public class PaymentTransactionJpaEntity {
     @Column(name = "idempotency_key")
     private String idempotencyKey;
 
+    @Column(name = "customer_id", length = 160)
+    private String customerId;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -75,6 +78,13 @@ public class PaymentTransactionJpaEntity {
     public PaymentTransactionJpaEntity(UUID id, UUID partnerId, BigDecimal amount, String currency, BigDecimal cppSnapshot,
                                        long expectedCredits, UUID targetAccountId, String method, String provider,
                                        String idempotencyKey, Instant createdAt) {
+        this(id, partnerId, amount, currency, cppSnapshot, expectedCredits, targetAccountId, method, provider,
+            idempotencyKey, createdAt, null);
+    }
+
+    public PaymentTransactionJpaEntity(UUID id, UUID partnerId, BigDecimal amount, String currency, BigDecimal cppSnapshot,
+                                       long expectedCredits, UUID targetAccountId, String method, String provider,
+                                       String idempotencyKey, Instant createdAt, String customerId) {
         this.id = id;
         this.partnerId = partnerId;
         this.amount = amount;
@@ -86,6 +96,7 @@ public class PaymentTransactionJpaEntity {
         this.provider = provider;
         this.status = PaymentStatus.PENDING;
         this.idempotencyKey = idempotencyKey;
+        this.customerId = customerId;
         this.createdAt = createdAt;
         this.updatedAt = createdAt;
     }
@@ -108,6 +119,7 @@ public class PaymentTransactionJpaEntity {
     public String getFailureReason() { return failureReason; }
     public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
     public String getIdempotencyKey() { return idempotencyKey; }
+    public String getCustomerId() { return customerId; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }

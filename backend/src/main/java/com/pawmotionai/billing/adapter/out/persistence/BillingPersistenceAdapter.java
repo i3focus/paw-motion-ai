@@ -30,7 +30,8 @@ public class BillingPersistenceAdapter implements PaymentTransactionRepository, 
             .orElseGet(() -> new PaymentTransactionJpaEntity(transaction.getId(), transaction.getPartnerId(),
                 transaction.getAmount(), transaction.getCurrency(), transaction.getCppSnapshot(),
                 transaction.getExpectedCredits(), transaction.getTargetAccountId(), transaction.getMethod(),
-                transaction.getProvider(), transaction.getIdempotencyKey(), transaction.getCreatedAt()));
+                transaction.getProvider(), transaction.getIdempotencyKey(), transaction.getCreatedAt(),
+                transaction.getCustomerId()));
         entity.setProviderCheckoutId(transaction.getProviderCheckoutId());
         entity.setProviderCheckoutUrl(transaction.getProviderCheckoutUrl());
         entity.setStatus(transaction.getStatus());
@@ -79,6 +80,7 @@ public class BillingPersistenceAdapter implements PaymentTransactionRepository, 
         return PaymentTransaction.reconstitute(entity.getId(), entity.getPartnerId(), entity.getAmount(), entity.getCurrency(),
             entity.getCppSnapshot(), entity.getExpectedCredits(), entity.getTargetAccountId(), entity.getMethod(),
             entity.getProvider(), entity.getProviderCheckoutId(), entity.getProviderCheckoutUrl(), entity.getStatus(),
-            entity.getFailureReason(), entity.getIdempotencyKey(), entity.getCreatedAt(), entity.getUpdatedAt());
+            entity.getFailureReason(), entity.getIdempotencyKey(), entity.getCreatedAt(), entity.getUpdatedAt(),
+            entity.getCustomerId());
     }
 }

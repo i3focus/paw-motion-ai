@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ApiError, createPurchase, getBillingPricing, getWallet, getWalletEntries, listPurchases } from '../api/client';
 import { Badge, Button, Card, EmptyState, ErrorMessage, SectionHeader, StatCard, TextInput } from '../components/ui';
 import type { BillingPricing, LedgerEntryPage, PaymentTransaction, Wallet } from '../types';
@@ -21,6 +21,7 @@ export function PartnerBillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const purchaseKey = useRef<{ fingerprint: string; key: string } | null>(null);
 
   const totalBalance = wallet?.totalBalance ?? 0;
 
@@ -80,15 +81,33 @@ export function PartnerBillingPage() {
       return;
     }
     setSubmitting(true);
+    const fingerprint = `${value}:${method}`;
+    let freshRetryAvailable = true;
     try {
-      const purchase = await createPurchase({ amount: value, method });
-      const fakeCheckout = purchase.provider === 'fake' || (purchase.providerCheckoutUrl ?? '').includes('/billing/fake');
-      if (!fakeCheckout && purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
-        window.location.assign(purchase.providerCheckoutUrl);
+      while (true) {
+        if (!purchaseKey.current || purchaseKey.current.fingerprint !== fingerprint) {
+          purchaseKey.current = { fingerprint, key: crypto.randomUUID() };
+        }
+        const purchase = await createPurchase({ amount: value, method }, purchaseKey.current.key);
+        if (['FAILED', 'EXPIRED', 'CANCELED'].includes(purchase.status)) {
+          purchaseKey.current = null;
+          if (freshRetryAvailable) {
+            freshRetryAvailable = false;
+            continue;
+          }
+          setError(`Purchase ${purchase.id} is ${purchase.status.toLowerCase()}. Submit again to create a new checkout.`);
+          await refresh();
+          return;
+        }
+        purchaseKey.current = null;
+        if (purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
+          window.location.assign(purchase.providerCheckoutUrl);
+          return;
+        }
+        setNotice(`Purchase ${purchase.id} is pending confirmation.`);
+        await refresh();
         return;
       }
-      setNotice(`Purchase ${purchase.id} is pending confirmation.`);
-      await refresh();
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to create purchase');
     } finally {
