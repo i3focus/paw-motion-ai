@@ -1,4 +1,4 @@
-import { useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SVGProps, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { useEffect, useId, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SVGProps, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 import { reactions, type ReactionType } from '@petlife/design-tokens';
 import { formatPhoneInput } from '../lib/validation';
 
@@ -215,20 +215,37 @@ export function ProgressBar({ value, max = 100, label }: { value: number; max?: 
 
 export function BottomSheet({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
   const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    if (!open) return;
+    const opener = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onCloseRef.current();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      opener?.focus();
+    };
+  }, [open]);
+
   if (!open) {
     return null;
   }
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-overlay" onClick={onClose}>
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         className="pl-fade-in w-full max-w-[430px] rounded-t-sheet bg-cream p-5 pb-8 shadow-raised"
         onClick={(event) => event.stopPropagation()}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') onClose();
-        }}
       >
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-pill bg-sand-deep" aria-hidden="true" />
         <div className="mb-4 flex items-center justify-between gap-3">
