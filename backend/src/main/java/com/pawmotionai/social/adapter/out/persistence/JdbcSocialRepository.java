@@ -20,6 +20,10 @@ import com.pawmotionai.social.application.dto.ActivityPostDto;
 import com.pawmotionai.social.application.dto.MapPointsDto;
 import com.pawmotionai.social.application.port.out.SocialRepository;
 
+/**
+ * Legacy activity-feed endpoints backed by the PETLIFE feed tables (V8). Reactions are stored with their
+ * typed value (PAW/HEART/LAUGH) and exposed with their legacy name (LIKE/LOVE/CHEER) until the old clients go away.
+ */
 @Repository
 public class JdbcSocialRepository implements SocialRepository {
 
@@ -30,6 +34,16 @@ public class JdbcSocialRepository implements SocialRepository {
         FROM activities a
         JOIN owners o ON o.id = a.owner_id
         JOIN pets p ON p.id = a.pet_id
+        """;
+
+    private static final String LEGACY_TYPE = "CASE r.type WHEN 'PAW' THEN 'LIKE' WHEN 'HEART' THEN 'LOVE' ELSE 'CHEER' END";
+
+    private static final String COMMENT_SELECT = """
+        SELECT c.id, f.ref_id AS activity_id, c.owner_id, o.display_name AS owner_name, o.avatar_url AS owner_avatar_url,
+               c.body, c.created_at
+        FROM comments c
+        JOIN feed_items f ON f.id = c.feed_item_id
+        JOIN owners o ON o.id = c.owner_id
         """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -55,54 +69,50 @@ public class JdbcSocialRepository implements SocialRepository {
 
     @Override
     public Optional<String> findViewerReaction(UUID activityId, UUID ownerId) {
-        return jdbcTemplate.query(
-                "SELECT type FROM activity_reactions WHERE activity_id = ?::uuid AND owner_id = ?::uuid",
-                (rs, rowNum) -> rs.getString("type"), activityId.toString(), ownerId.toString())
+        return jdbcTemplate.query("SELECT " + LEGACY_TYPE + """
+                 AS type FROM reactions r JOIN feed_items f ON f.id = r.feed_item_id
+                WHERE f.type = 'ACTIVITY' AND f.ref_id = ?::uuid AND r.owner_id = ?::uuid
+                """, (rs, rowNum) -> rs.getString("type"), activityId.toString(), ownerId.toString())
             .stream().findFirst();
     }
 
     @Override
     public void saveReaction(UUID activityId, UUID ownerId, String type) {
         jdbcTemplate.update("""
-            INSERT INTO activity_reactions (id, activity_id, owner_id, type, created_at, updated_at)
-            VALUES (?::uuid, ?::uuid, ?::uuid, ?, now(), now())
-            ON CONFLICT (activity_id, owner_id)
-            DO UPDATE SET type = EXCLUDED.type, updated_at = now()
-            """, UUID.randomUUID().toString(), activityId.toString(), ownerId.toString(), type);
+            INSERT INTO reactions (id, feed_item_id, owner_id, type, legacy_type, created_at, updated_at)
+            SELECT ?::uuid, f.id, ?::uuid, CASE ? WHEN 'LIKE' THEN 'PAW' WHEN 'LOVE' THEN 'HEART' ELSE 'LAUGH' END, ?, now(), now()
+            FROM feed_items f
+            WHERE f.type = 'ACTIVITY' AND f.ref_id = ?::uuid
+            ON CONFLICT (feed_item_id, owner_id)
+            DO UPDATE SET type = EXCLUDED.type, legacy_type = EXCLUDED.legacy_type, updated_at = now()
+            """, UUID.randomUUID().toString(), ownerId.toString(), type, type, activityId.toString());
     }
 
     @Override
     public void deleteReaction(UUID activityId, UUID ownerId) {
-        jdbcTemplate.update("DELETE FROM activity_reactions WHERE activity_id = ?::uuid AND owner_id = ?::uuid",
-            activityId.toString(), ownerId.toString());
+        jdbcTemplate.update("""
+            DELETE FROM reactions r USING feed_items f
+            WHERE r.feed_item_id = f.id AND f.type = 'ACTIVITY' AND f.ref_id = ?::uuid AND r.owner_id = ?::uuid
+            """, activityId.toString(), ownerId.toString());
     }
 
     @Override
     public List<ActivityCommentDto> findComments(UUID activityId) {
-        return jdbcTemplate.query("""
-            SELECT c.id, c.activity_id, c.owner_id, o.display_name AS owner_name, o.avatar_url AS owner_avatar_url,
-                   c.body, c.created_at
-            FROM activity_comments c
-            JOIN owners o ON o.id = c.owner_id
-            WHERE c.activity_id = ?::uuid
-            ORDER BY c.created_at ASC
-            """, (rs, rowNum) -> toComment(rs), activityId.toString());
+        return jdbcTemplate.query(COMMENT_SELECT + " WHERE f.type = 'ACTIVITY' AND f.ref_id = ?::uuid ORDER BY c.created_at ASC",
+            (rs, rowNum) -> toComment(rs), activityId.toString());
     }
 
     @Override
     public ActivityCommentDto addComment(UUID activityId, UUID ownerId, String body) {
         UUID id = UUID.randomUUID();
         jdbcTemplate.update("""
-            INSERT INTO activity_comments (id, activity_id, owner_id, body, created_at)
-            VALUES (?::uuid, ?::uuid, ?::uuid, ?, now())
-            """, id.toString(), activityId.toString(), ownerId.toString(), body);
-        return jdbcTemplate.query("""
-            SELECT c.id, c.activity_id, c.owner_id, o.display_name AS owner_name, o.avatar_url AS owner_avatar_url,
-                   c.body, c.created_at
-            FROM activity_comments c
-            JOIN owners o ON o.id = c.owner_id
-            WHERE c.id = ?::uuid
-            """, (rs, rowNum) -> toComment(rs), id.toString()).stream().findFirst()
+            INSERT INTO comments (id, feed_item_id, owner_id, body, created_at)
+            SELECT ?::uuid, f.id, ?::uuid, ?, now()
+            FROM feed_items f
+            WHERE f.type = 'ACTIVITY' AND f.ref_id = ?::uuid
+            """, id.toString(), ownerId.toString(), body, activityId.toString());
+        return jdbcTemplate.query(COMMENT_SELECT + " WHERE c.id = ?::uuid", (rs, rowNum) -> toComment(rs), id.toString())
+            .stream().findFirst()
             .orElseThrow(() -> new IllegalStateException("Comment was not persisted"));
     }
 
@@ -133,26 +143,19 @@ public class JdbcSocialRepository implements SocialRepository {
     @Override
     public boolean activityExists(UUID activityId) {
         Long count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM activities WHERE id = ?::uuid AND share_to_paw_city = TRUE", Long.class,
+            "SELECT COUNT(*) FROM feed_items WHERE type = 'ACTIVITY' AND ref_id = ?::uuid AND deleted_at IS NULL", Long.class,
             activityId.toString());
         return count != null && count > 0;
     }
 
     @Override
     public Map<String, Long> reactionCounts(UUID activityId) {
-        Map<String, Long> counts = new HashMap<>();
-        jdbcTemplate.queryForList(
-                "SELECT type, COUNT(*) AS total FROM activity_reactions WHERE activity_id = ?::uuid GROUP BY type",
-                activityId.toString())
-            .forEach(row -> counts.put((String) row.get("type"), ((Number) row.get("total")).longValue()));
-        return counts;
+        return reactionCountsByActivity(List.of(activityId.toString())).getOrDefault(activityId, Map.of());
     }
 
     @Override
     public long commentCount(UUID activityId) {
-        Long count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM activity_comments WHERE activity_id = ?::uuid", Long.class, activityId.toString());
-        return count == null ? 0 : count;
+        return commentCountsByActivity(List.of(activityId.toString())).getOrDefault(activityId, 0L);
     }
 
     private List<ActivityPostDto> withEngagement(List<ActivityPostDto> posts, UUID viewerId) {
@@ -174,12 +177,12 @@ public class JdbcSocialRepository implements SocialRepository {
 
     private Map<UUID, Map<String, Long>> reactionCountsByActivity(List<String> activityIds) {
         Map<UUID, Map<String, Long>> counts = new HashMap<>();
-        String sql = "SELECT activity_id, type, COUNT(*) AS total FROM activity_reactions WHERE activity_id IN ("
-            + placeholders(activityIds.size()) + ") GROUP BY activity_id, type";
+        String sql = "SELECT f.ref_id AS activity_id, " + LEGACY_TYPE + " AS type, COUNT(*) AS total "
+            + "FROM reactions r JOIN feed_items f ON f.id = r.feed_item_id "
+            + "WHERE f.type = 'ACTIVITY' AND f.ref_id IN (" + placeholders(activityIds.size()) + ") GROUP BY f.ref_id, r.type";
         jdbcTemplate.query(sql, rs -> {
             while (rs.next()) {
-                UUID activityId = rs.getObject("activity_id", UUID.class);
-                counts.computeIfAbsent(activityId, ignored -> new HashMap<>())
+                counts.computeIfAbsent(rs.getObject("activity_id", UUID.class), ignored -> new HashMap<>())
                     .put(rs.getString("type"), rs.getLong("total"));
             }
             return null;
@@ -189,8 +192,8 @@ public class JdbcSocialRepository implements SocialRepository {
 
     private Map<UUID, Long> commentCountsByActivity(List<String> activityIds) {
         Map<UUID, Long> counts = new HashMap<>();
-        String sql = "SELECT activity_id, COUNT(*) AS total FROM activity_comments WHERE activity_id IN ("
-            + placeholders(activityIds.size()) + ") GROUP BY activity_id";
+        String sql = "SELECT f.ref_id AS activity_id, COUNT(*) AS total FROM comments c JOIN feed_items f ON f.id = c.feed_item_id "
+            + "WHERE f.type = 'ACTIVITY' AND f.ref_id IN (" + placeholders(activityIds.size()) + ") GROUP BY f.ref_id";
         jdbcTemplate.query(sql, rs -> {
             while (rs.next()) {
                 counts.put(rs.getObject("activity_id", UUID.class), rs.getLong("total"));
@@ -202,10 +205,10 @@ public class JdbcSocialRepository implements SocialRepository {
 
     private Map<UUID, String> viewerReactionsByActivity(List<String> activityIds, UUID viewerId) {
         Map<UUID, String> reactions = new HashMap<>();
-        String sql = "SELECT activity_id, type FROM activity_reactions WHERE activity_id IN ("
-            + placeholders(activityIds.size()) + ") AND owner_id = ?::uuid";
-        List<Object> args = new ArrayList<>();
-        args.addAll(activityIds);
+        String sql = "SELECT f.ref_id AS activity_id, " + LEGACY_TYPE + " AS type "
+            + "FROM reactions r JOIN feed_items f ON f.id = r.feed_item_id "
+            + "WHERE f.type = 'ACTIVITY' AND f.ref_id IN (" + placeholders(activityIds.size()) + ") AND r.owner_id = ?::uuid";
+        List<Object> args = new ArrayList<>(activityIds);
         args.add(viewerId.toString());
         jdbcTemplate.query(sql, rs -> {
             while (rs.next()) {
