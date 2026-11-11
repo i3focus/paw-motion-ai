@@ -77,7 +77,7 @@ function PromotionCard({ promotion, index }: { promotion: OwnerPromotion; index:
 export function BusinessesPage() {
   const [promotions, setPromotions] = useState<OwnerPromotion[]>([]);
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('All');
+  const [category, setCategory] = useState('All offers');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,13 +92,13 @@ export function BusinessesPage() {
 
   const categories = useMemo(() => {
     const values = promotions.map((item) => item.targetAudience.trim()).filter(Boolean);
-    return ['All', ...Array.from(new Set(values))];
+    return ['All offers', ...Array.from(new Set(values))];
   }, [promotions]);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     return promotions.filter((item) => {
-      const matchesCategory = category === 'All' || item.targetAudience.trim() === category;
+      const matchesCategory = category === 'All offers' || item.targetAudience.trim() === category;
       const matchesQuery = !term || [item.partnerName, item.title, item.description, item.targetAudience]
         .some((value) => value.toLowerCase().includes(term));
       return matchesCategory && matchesQuery;
