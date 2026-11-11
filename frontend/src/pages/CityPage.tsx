@@ -5,13 +5,16 @@ import {
   getDashboardSummary,
   listActivityComments,
   listActivityFeed,
-  listMapPoints,
+  listActivities,
+  listPets,
+  listPromotions,
+  listRecommendations,
   toggleActivityReaction,
 } from '../api/client';
 import { useAuth } from '../auth';
-import { PawIcon } from '../components/petVisuals';
+import { PetAvatar, PawIcon } from '../components/petVisuals';
 import { Avatar, Badge, Button, EmptyState, ErrorMessage, PoppyMark, TextInput } from '../components/ui';
-import type { ActivityComment, ActivityPost, DashboardSummary, MapPoints } from '../types';
+import type { Activity, ActivityComment, ActivityPost, DashboardSummary, OwnerPromotion, OwnerRecommendation, Pet } from '../types';
 
 const REACTIONS = [
   { type: 'LIKE', label: 'Like', icon: '♡' },
@@ -54,138 +57,137 @@ function titleCase(value: string): string {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function levelInfo(summary: DashboardSummary | null) {
-  const activityCount = summary?.activityCountLast7Days ?? 0;
-  const distanceMeters = summary?.totalDistanceMetersLast7Days ?? 0;
-  const streak = summary?.currentStreakDays ?? 0;
-  const xp = activityCount * 120 + Math.round(distanceMeters / 100) * 10 + streak * 25;
-  const level = Math.floor(xp / 500) + 1;
-  const xpForLevel = 500;
-  const xpInLevel = xp % xpForLevel;
-  const coins = (summary?.petCount ?? 0) * 50 + activityCount * 15 + streak * 10;
-  return { level, xp, xpInLevel, xpForLevel, coins, streak, pets: summary?.petCount ?? 0, activities: activityCount };
+function sameDay(value: string, date: Date): boolean {
+  const activityDate = new Date(value);
+  return activityDate.getFullYear() === date.getFullYear()
+    && activityDate.getMonth() === date.getMonth()
+    && activityDate.getDate() === date.getDate();
 }
 
-function CityHero({ summary }: { summary: DashboardSummary | null }) {
-  const hud = levelInfo(summary);
+function PostAvatar({ post }: { post: ActivityPost }) {
+  if (post.petSpecies.toLowerCase().includes('dog')) {
+    return (
+      <span className="relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-full border border-cream-200 bg-cream-100">
+        <img src="/assets/dog-portrait.jpg" alt={`${post.petName} avatar`} className="h-full w-full object-cover" />
+        <PawIcon className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 text-white drop-shadow" />
+      </span>
+    );
+  }
   return (
-    <section className="game-card relative overflow-hidden p-5 sm:p-6">
-      <div className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-accent/20 blur-3xl" />
-      <div className="absolute -left-12 bottom-0 h-36 w-36 rounded-full bg-primary/10 blur-3xl" />
-      <PoppyMark className="float-slow pointer-events-none absolute right-8 top-6 h-20 w-20 text-accent/35" />
-      <PoppyMark className="poppy-float pointer-events-none absolute right-28 top-16 h-10 w-10 text-primary/25" />
-      <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-2xl">
-          <Badge tone="accent">Paw City · live city feed</Badge>
-          <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-cream-900 sm:text-5xl">Play, post, and explore with your pack.</h1>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-cream-600 sm:text-base">
-            Activities become city moments. React, comment, discover partners, and turn every walk into progress.
-          </p>
+    <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-white shadow-sm">
+      <PawIcon className="h-5 w-5" />
+    </span>
+  );
+}
+
+function StoriesRow({ pets, ownerName, ownerAvatarUrl }: { pets: Pet[]; ownerName: string; ownerAvatarUrl: string | null }) {
+  return (
+    <section className="game-card p-4">
+      <div className="flex gap-5 overflow-x-auto pb-1">
+        <div className="flex w-16 shrink-0 flex-col items-center gap-2">
+          <span className="relative inline-flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-accent bg-cream-50">
+            {ownerAvatarUrl ? <img src={ownerAvatarUrl} alt={ownerName} className="h-full w-full rounded-full object-cover" /> : <PawIcon className="h-7 w-7 text-primary" />}
+            <span className="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-sm">+</span>
+          </span>
+          <span className="w-full truncate text-center text-xs font-semibold text-cream-700">Your story</span>
         </div>
-        <div className="grid min-w-[280px] gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="hud-chip justify-between"><span>Level</span><strong className="text-primary">{hud.level}</strong></div>
-          <div className="hud-chip justify-between"><span>Paw XP</span><strong>{hud.xp}</strong></div>
-          <div className="hud-chip justify-between"><span>Paw coins</span><strong>{hud.coins}</strong></div>
-          <div className="hud-chip justify-between"><span>Streak</span><strong>{hud.streak}d</strong></div>
-        </div>
-      </div>
-      <div className="relative mt-5">
-        <div className="mb-2 flex items-center justify-between text-xs font-semibold text-cream-600">
-          <span>Weekly XP</span>
-          <span>{hud.xpInLevel} / {hud.xpForLevel}</span>
-        </div>
-        <div className="xp-track"><div className="xp-fill" style={{ width: `${Math.min(100, Math.round((hud.xpInLevel / hud.xpForLevel) * 100))}%` }} /></div>
+        {pets.map((pet) => (
+          <div key={pet.id} className="flex w-16 shrink-0 flex-col items-center gap-2">
+            <span className="rounded-full bg-gradient-to-br from-accent-soft to-cream-100 p-1">
+              <PetAvatar pet={pet} className="h-14 w-14" />
+            </span>
+            <span className="w-full truncate text-center text-xs font-semibold text-cream-700">{pet.name}</span>
+          </div>
+        ))}
       </div>
     </section>
   );
 }
 
-function CityMap({ points, compact = false }: { points: MapPoints; compact?: boolean }) {
-  const positioned = useMemo(() => {
-    const all = [
-      ...points.partners.map((partner) => ({ ...partner, kind: 'partner' as const })),
-      ...points.activities.map((activity) => ({ ...activity, kind: 'activity' as const, name: activity.petName })),
-    ];
-    if (all.length === 0) return [];
-    const lats = all.map((point) => point.latitude);
-    const lngs = all.map((point) => point.longitude);
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs);
-    const maxLng = Math.max(...lngs);
-    const latSpan = Math.max(0.01, maxLat - minLat);
-    const lngSpan = Math.max(0.01, maxLng - minLng);
-    return all.map((point) => ({
-      ...point,
-      left: `${8 + ((point.longitude - minLng) / lngSpan) * 84}%`,
-      top: `${82 - ((point.latitude - minLat) / latSpan) * 74}%`,
-    }));
-  }, [points]);
+function PetWeekCard({ summary, pets, activities }: { summary: DashboardSummary | null; pets: Pet[]; activities: Activity[] }) {
+  const recent = activities.length > 0 ? activities : (summary?.recentActivities ?? []);
+  const days = useMemo(() => {
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - index));
+      return {
+        date,
+        label: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][date.getDay()],
+        count: recent.filter((activity) => sameDay(activity.startedAt, date)).length,
+      };
+    });
+  }, [recent]);
+  const maxCount = Math.max(1, ...days.map((day) => day.count));
+  const chartedCount = days.reduce((total, day) => total + day.count, 0);
+  const weekIsComplete = activities.length > 0 || chartedCount >= (summary?.activityCountLast7Days ?? 0);
+  const petCount = summary?.petCount ?? pets.length;
 
   return (
-    <div className={`game-card relative overflow-hidden ${compact ? 'h-80' : 'h-[420px]'}`}>
-      <div className="city-map absolute inset-0 opacity-80" />
-      <div className="absolute inset-x-0 top-0 h-1/3 bg-[linear-gradient(180deg,rgba(255,249,240,0.9),transparent)]" />
-      <div className="absolute left-4 top-4 flex items-center gap-2">
-        <span className="hud-chip">Paw City map</span>
-        <span className="hud-chip">{points.partners.length} partners · {points.activities.length} pins</span>
-      </div>
-      <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
-        <span className="hud-chip"><span className="h-2.5 w-2.5 rounded-full bg-secondary" /> Partner</span>
-        <span className="hud-chip"><span className="h-2.5 w-2.5 rounded-full bg-primary" /> Activity</span>
-      </div>
-      {positioned.length === 0 ? (
-        <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-cream-600">
-          No city pins yet. Registered partners and located Paw City activities will appear here.
+    <section className="quest-card">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">Pack week</p>
+          <h2 className="mt-1 font-display text-2xl font-bold text-cream-900">{petCount === 1 ? 'Your pet' : 'Your pets'}&apos; week</h2>
         </div>
-      ) : positioned.map((point) => (
-        <div key={`${point.kind}-${point.id}`} className="absolute -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: point.left, top: point.top }}>
-          <span className={`relative mx-auto flex h-11 w-11 items-center justify-center rounded-full border-2 border-white text-white shadow-xl ${point.kind === 'partner' ? 'bg-secondary' : 'bg-primary'}`}>
-            {point.kind === 'activity' ? <span className="map-pulse absolute inset-0 rounded-full bg-accent/50" /> : null}
-            <PawIcon className="relative h-5 w-5" />
-          </span>
-          <span className="mt-1 block max-w-28 truncate rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-cream-900 shadow-sm">{point.name}</span>
+        <PoppyMark className="h-9 w-9 text-accent" />
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="rounded-2xl bg-cream-50 p-3 text-center">
+          <p className="text-lg font-bold text-cream-900">{summary?.activityCountLast7Days ?? 0}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-cream-500">Adventures</p>
         </div>
-      ))}
-    </div>
+        <div className="rounded-2xl bg-cream-50 p-3 text-center">
+          <p className="text-lg font-bold text-cream-900">{((summary?.totalDistanceMetersLast7Days ?? 0) / 1000).toFixed(1)}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-cream-500">Km</p>
+        </div>
+        <div className="rounded-2xl bg-cream-50 p-3 text-center">
+          <p className="text-lg font-bold text-cream-900">{summary?.currentStreakDays ?? 0}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-cream-500">Streak</p>
+        </div>
+      </div>
+      {weekIsComplete ? (
+        <div className="mt-5 flex h-24 items-end gap-2">
+          {days.map((day) => (
+            <div key={day.date.toISOString()} className="flex flex-1 flex-col items-center gap-1">
+              <div className="flex h-16 w-full items-end rounded-2xl bg-cream-100">
+                <div className="w-full rounded-2xl bg-[linear-gradient(180deg,var(--color-accent),var(--color-primary))]" style={{ height: `${Math.max(12, (day.count / maxCount) * 100)}%` }} />
+              </div>
+              <span className="text-[10px] font-bold text-cream-500">{day.label}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-5 flex h-24 items-center justify-center rounded-2xl bg-cream-100 text-sm font-semibold text-cream-500">
+          Weekly detail unavailable
+        </div>
+      )}
+    </section>
   );
 }
 
-function QuestPanel({ summary, points, sharedPostCount }: { summary: DashboardSummary | null; points: MapPoints; sharedPostCount: number }) {
-  const hud = levelInfo(summary);
-  const cityPins = points.partners.length + points.activities.length;
-  const quests = [
-    { title: 'First miles', description: 'Record 3 activities this week', progress: Math.min(hud.activities / 3, 1), reward: '+120 XP' },
-    { title: 'City explorer', description: 'Discover 5 partner or activity pins', progress: Math.min(cityPins / 5, 1), reward: '+90 XP' },
-    { title: 'Social pack', description: 'Share 3 activities to Paw City', progress: Math.min(sharedPostCount / 3, 1), reward: '+75 XP' },
-    { title: 'Streak keeper', description: 'Reach a 7-day activity streak', progress: Math.min(hud.streak / 7, 1), reward: '+150 XP' },
-  ];
+function AiSuggestionCard({ recommendations }: { recommendations: OwnerRecommendation[] }) {
+  const suggestions = recommendations.length > 0
+    ? recommendations.slice(0, 3).map((recommendation) => recommendation.recommendedTopics[0] ?? recommendation.campaignTitle)
+    : ['Find pet-friendly businesses', 'Summarize this week', 'Discover partner offers'];
 
   return (
-    <section className="game-card p-5">
+    <section className="quest-card">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">Trainer quests</p>
-          <h2 className="mt-1 font-display text-2xl font-bold text-cream-900">Daily pack missions</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">PetLife AI</p>
+          <h2 className="mt-1 font-display text-xl font-bold text-cream-900">Suggested for your pack</h2>
         </div>
-        <PoppyMark className="h-10 w-10 text-accent" />
+        <Badge tone="accent">AI</Badge>
       </div>
-      <div className="mt-4 space-y-3">
-        {quests.map((quest) => {
-          const complete = quest.progress >= 1;
-          return (
-            <article key={quest.title} className="quest-card">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-bold text-cream-900">{quest.title}</p>
-                  <p className="mt-1 text-sm text-cream-500">{quest.description}</p>
-                </div>
-                {complete ? <Badge tone="success">Done</Badge> : <Badge tone="accent">{quest.reward}</Badge>}
-              </div>
-              <div className="xp-track mt-3"><div className="xp-fill" style={{ width: `${Math.round(quest.progress * 100)}%` }} /></div>
-            </article>
-          );
-        })}
+      <div className="mt-4 space-y-2">
+        {suggestions.map((suggestion) => (
+          <div key={suggestion} className="flex items-center gap-3 rounded-2xl border border-cream-200 bg-white/80 px-3 py-3">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-primary">
+              <PawIcon className="h-4 w-4" />
+            </span>
+            <p className="text-sm font-semibold text-cream-800">{suggestion}</p>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -254,11 +256,11 @@ function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: 
   return (
     <article className="game-card feed-enter overflow-hidden">
       <header className="flex items-center gap-3 px-4 py-3">
-        <Avatar name={post.ownerName} src={post.ownerAvatarUrl} className="h-11 w-11" />
+        <PostAvatar post={post} />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-bold text-cream-900">{post.ownerName}</p>
+          <p className="truncate font-bold text-cream-900">{post.petName}</p>
           <p className="truncate text-xs text-cream-500">
-            {post.petName} · {titleCase(post.petSpecies)} · {post.latitude != null && post.longitude != null ? 'Pinned in Paw City' : timeAgo(post.startedAt)}
+            {post.ownerName} · {titleCase(post.petSpecies)} · {post.latitude != null && post.longitude != null ? 'Paw City' : timeAgo(post.startedAt)}
           </p>
         </div>
         <Badge tone="accent">{titleCase(post.type)}</Badge>
@@ -277,7 +279,7 @@ function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: 
           {duration(post.durationSeconds)}{distanceLabel(post.distanceMeters) ? ` · ${distanceLabel(post.distanceMeters)}` : ''}
         </div>
         <div className="absolute bottom-4 left-4 right-4 text-white">
-          <p className="font-display text-xl font-bold drop-shadow">{post.petName}'s {titleCase(post.type).toLowerCase()}</p>
+          <p className="font-display text-xl font-bold drop-shadow">{post.petName}&apos;s {titleCase(post.type).toLowerCase()}</p>
           <p className="text-sm text-white/85">{timeAgo(post.startedAt)}</p>
         </div>
       </div>
@@ -338,10 +340,62 @@ function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: 
   );
 }
 
+function NearbyPromotions({ promotions }: { promotions: OwnerPromotion[] }) {
+  if (promotions.length === 0) {
+    return null;
+  }
+  return (
+    <section className="quest-card">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">Nearby promotions</p>
+          <h2 className="mt-1 font-display text-xl font-bold text-cream-900">Partner offers</h2>
+        </div>
+        <Badge tone="accent">Ads</Badge>
+      </div>
+      <div className="mt-4 space-y-3">
+        {promotions.slice(0, 3).map((promotion) => {
+          const website = promotion.partnerWebsite?.trim();
+          const href = website ? (/^https?:\/\//i.test(website) ? website : `https://${website}`) : null;
+          return (
+            <article key={promotion.campaignId} className="overflow-hidden rounded-3xl border border-cream-200 bg-white/85">
+              <div className="relative flex h-20 items-center justify-center" style={{ background: 'linear-gradient(135deg, #825e31 0%, #d99c52 55%, #b07f43 100%)' }}>
+                <PoppyMark className="h-10 w-10 text-white/85" />
+                <div className="absolute left-3 top-3 flex gap-1.5">
+                  <Badge tone="accent">Pet-friendly</Badge>
+                  <Badge tone="danger">Promo</Badge>
+                </div>
+              </div>
+              <div className="p-3">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">{promotion.partnerName}</p>
+                <h3 className="mt-1 font-bold text-cream-900">{promotion.title}</h3>
+                <p className="mt-1 line-clamp-2 text-sm leading-5 text-cream-600">{promotion.description}</p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="text-xs font-semibold text-cream-500">{promotion.targetAudience}</span>
+                  {href ? (
+                    <a href={href} target="_blank" rel="noreferrer" className="rounded-xl bg-primary px-3 py-1.5 text-xs font-bold text-white hover:bg-secondary">
+                      {promotion.callToAction}
+                    </a>
+                  ) : (
+                    <span className="rounded-xl bg-cream-200 px-3 py-1.5 text-xs font-bold text-cream-600">{promotion.callToAction}</span>
+                  )}
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function CityPage() {
   const { owner } = useAuth();
   const [posts, setPosts] = useState<ActivityPost[]>([]);
-  const [points, setPoints] = useState<MapPoints>({ partners: [], activities: [] });
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [promotions, setPromotions] = useState<OwnerPromotion[]>([]);
+  const [recommendations, setRecommendations] = useState<OwnerRecommendation[]>([]);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -353,15 +407,21 @@ export function CityPage() {
     setLoading(true);
     setError(null);
     try {
-      const [feed, map, dashboard] = await Promise.all([
+      const [feed, activityList, petList, dashboard, promoList, recommendationList] = await Promise.all([
         listActivityFeed(0, FEED_PAGE_SIZE),
-        listMapPoints(),
+        listActivities().catch(() => [] as Activity[]),
+        listPets().catch(() => [] as Pet[]),
         getDashboardSummary().catch(() => null),
+        listPromotions().catch(() => [] as OwnerPromotion[]),
+        listRecommendations().catch(() => [] as OwnerRecommendation[]),
       ]);
       setPosts(feed);
       setPage(0);
       setHasMore(feed.length === FEED_PAGE_SIZE);
-      setPoints(map);
+      setActivities(activityList);
+      setPets(petList);
+      setPromotions(promoList);
+      setRecommendations(recommendationList);
       setSummary(dashboard);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to load Paw City');
@@ -397,14 +457,24 @@ export function CityPage() {
     setPosts((current) => current.map((post) => (post.id === updated.id ? updated : post)));
   }
 
-  const sharedPostCount = posts.filter((post) => post.ownerId === owner?.id).length;
-
   return (
-    <div className="space-y-6">
-      <CityHero summary={summary} />
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <Badge tone="accent">Paw City feed</Badge>
+          <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-cream-900">Welcome back, {owner?.displayName ?? 'trainer'}.</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-cream-600">
+            Stories, activity posts, partner offers, and AI suggestions for your pack.
+          </p>
+        </div>
+        <div className="hud-chip">{pets.length} pet{pets.length === 1 ? '' : 's'} · {summary?.activityCountLast7Days ?? 0} adventures this week</div>
+      </div>
+
       <ErrorMessage message={error} />
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
+          <StoriesRow pets={pets} ownerName={owner?.displayName ?? 'You'} ownerAvatarUrl={owner?.avatarUrl ?? null} />
           {loading ? (
             <div className="game-card p-8 text-sm text-cream-500">Loading Paw City…</div>
           ) : posts.length === 0 ? (
@@ -425,9 +495,11 @@ export function CityPage() {
             </>
           )}
         </div>
+
         <aside className="space-y-5 xl:sticky xl:top-28 xl:self-start">
-          <CityMap points={points} compact />
-          <QuestPanel summary={summary} points={points} sharedPostCount={sharedPostCount} />
+          <PetWeekCard summary={summary} pets={pets} activities={activities} />
+          <AiSuggestionCard recommendations={recommendations} />
+          <NearbyPromotions promotions={promotions} />
         </aside>
       </div>
     </div>

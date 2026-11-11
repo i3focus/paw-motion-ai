@@ -160,6 +160,18 @@ export interface OwnerRecommendation {
   analyzedAt: string | null;
 }
 
+export interface OwnerPromotion {
+  campaignId: string;
+  partnerName: string;
+  partnerWebsite: string | null;
+  title: string;
+  description: string;
+  targetAudience: string;
+  callToAction: string;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
 export interface ActivityPost {
   id: string;
   ownerId: string;

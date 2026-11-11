@@ -375,6 +375,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/OwnerRecommendationResponse'
+  /api/promotions:
+    get:
+      tags: [Promotions]
+      summary: List active partner promotions for pet owners
+      responses:
+        '200':
+          description: Active promotions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OwnerPromotionResponse'
   /api/pets:
     get:
       tags: [Pets]
@@ -743,6 +756,19 @@ components:
           type: array
           items: { type: string }
         analyzedAt: { type: string, format: date-time, nullable: true }
+    OwnerPromotionResponse:
+      type: object
+      required: [campaignId, partnerName, title, description, targetAudience, callToAction, createdAt]
+      properties:
+        campaignId: { type: string, format: uuid }
+        partnerName: { type: string }
+        partnerWebsite: { type: string, nullable: true }
+        title: { type: string }
+        description: { type: string }
+        targetAudience: { type: string }
+        callToAction: { type: string }
+        expiresAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
     CreatePetRequest:
       type: object
       required: [name, species, size]
