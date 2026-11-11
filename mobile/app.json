@@ -2,6 +2,7 @@
   "expo": {
     "name": "PETLIFE",
     "slug": "paw-motion-ai",
+    "scheme": "petlife",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -16,7 +17,9 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "expo-router",
+      "expo-notifications"
     ]
   }
 }

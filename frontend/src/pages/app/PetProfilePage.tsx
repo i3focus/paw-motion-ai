@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { createPlaydate, followPet, getPetAdventures, getPetBadges, getPetFriends, getPetPosts, getPetProfile, getHealthPassport, type Adventure, type BadgeDto, type HealthPassport, type PetFriend, type PetPost, type PetProfile } from '../../api/petlife';
+import { listPets } from '../../api/client';
+import type { Pet } from '../../types';
 import { Avatar, Badge, Button, EmptyState, LoadingState, ProgressBar } from '../../components/ui';
 import { PawIcon } from '../../components/petVisuals';
 
@@ -17,12 +19,14 @@ export function PetProfilePage() {
   const [friends, setFriends] = useState<PetFriend[] | null>(null);
   const [following, setFollowing] = useState(false);
   const [invited, setInvited] = useState(false);
+  const [myPets, setMyPets] = useState<Pet[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setProfile(null); setPosts(null); setAdventures(null); setBadges(null); setHealth(null); setFriends(null);
     getPetProfile(petId).then((p) => { setProfile(p); setFollowing(Boolean(p.following)); })
       .catch((e) => setError(e instanceof Error ? e.message : 'Could not load this profile'));
+    listPets().then(setMyPets).catch(() => setMyPets([]));
   }, [petId]);
 
   useEffect(() => {
@@ -69,7 +73,7 @@ export function PetProfilePage() {
                 <Button variant={following ? 'outline' : 'secondary'} onClick={() => followPet(petId, !following).then((s) => setFollowing(Boolean(s.following))).catch(() => {})}>
                   {following ? 'Following' : 'Follow'}
                 </Button>
-                <Button onClick={() => !invited && createPlaydate({ petId: null, mode: 'NOW', inviteePetIds: [petId] }).then(() => setInvited(true)).catch(() => {})}>
+                <Button disabled={myPets.length === 0} onClick={() => !invited && myPets[0] && createPlaydate({ petId: myPets[0].id, mode: 'NOW', inviteePetIds: [petId] }).then(() => setInvited(true)).catch(() => {})}>
                   🐶 {invited ? 'Invited!' : 'Playdate'}
                 </Button>
               </div>
