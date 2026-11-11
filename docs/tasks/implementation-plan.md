@@ -82,3 +82,9 @@ Slices 6 and 8 are independent and can run in parallel (backend ledger/billing v
 ## Next recommended slice (CR-2026-11)
 
 **Slice 6 (T-016 → T-017 → T-018 → T-020)** using the fake payment provider: it proves the ledger invariants (atomic, idempotent, non-negative) and the "campaign costs credits" rule end-to-end before a real payment provider is chosen. In parallel, T-027/T-028 deliver the mobile quick-start tracking.
+
+---
+
+> **Status note (2026-11):** delivered via the six-phase refactor
+> (`docs/refactor-plan.md` → `docs/refactor-report.md`). Each phase was one PR,
+> exactly per the vertical-slice strategy below.

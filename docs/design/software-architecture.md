@@ -100,3 +100,15 @@ Configuration is externalized through environment variables and Spring profiles:
 | `app.integration.token-encryption-key` | `INTEGRATION_TOKEN_ENCRYPTION_KEY` | Integration |
 
 All values are validated at startup (`@Validated @ConfigurationProperties`); `.env.example` gains placeholders when each slice is implemented.
+
+## As-built module inventory (post-refactor, 2026-11)
+
+The monolith now carries both Java (baseline hexagonal) and Kotlin (phase-2+) modules:
+
+- **Java**: `identity` (owner/partner auth, profile — identity fields only after ADR-0021), `pet`, `activity`, `aiinsights`, `partner` (campaigns v1 create), `billing` (purchases, webhooks), `ledger` (wallets, credit ledger), `configuration` (security, filters, error handling)
+- **Kotlin**: `ads` (campaigns v2 lifecycle + admin review), `assistant` (AI chat + action cards), `booking` (service bookings), `community`, `content` (posts/media pages), `engagement` (XP, streaks, badges, challenges, leaderboard), `feed` (typed `feed_items`, reactions, comments), `health` (pet health passport/reminders), `map` (places, playdates, lost pets), `media` (uploads), `notification`, `petprofile`, `shared`
+
+Cross-cutting: JWT auth filter, `ActiveAccountFilter`, `WriteRateLimitFilter`,
+structured error handler, OpenAPI export (`exportOpenapi` task) feeding
+`packages/api-client`. Removed in V19-era cleanup: the `social` package and the
+recommendation/promotion stacks.

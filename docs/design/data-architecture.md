@@ -66,3 +66,23 @@ Migrations are added per slice (`V4__ledger_and_billing.sql`, `V5__partner_publi
 | `payment_transactions`, `ledger_entries` | 5 years, personal fields anonymized after account deletion |
 | `campaign_clicks` raw | 13 months, then aggregates only |
 | Backups | Rotated within 35 days |
+
+## As-built schema (post-refactor, 2026-11)
+
+Flyway V1–V19 own all DDL (`ddl-auto: validate`). Notable tables by context:
+
+- **identity**: `owners` (identity only — partner columns dropped in V19), `partner_profiles` (business profile + PostGIS location + verified)
+- **pet/health**: `pets`, health passport + reminder tables (V9)
+- **activity**: `activities` (incl. `latitude`/`longitude` route points — retained)
+- **feed/engagement**: `feed_items` (typed: POST/ACTIVITY/ACHIEVEMENT/SPONSORED), `reactions` (typed paw/laugh/heart), `comments`, XP/badge/challenge tables (V8, V10)
+- **map**: `places`, playdate + lost-pet/sighting tables (V11–V12), PostGIS
+- **assistant**: conversation/message tables (V13)
+- **community**: communities/events (V14)
+- **booking**: partner services + bookings (V15)
+- **ads**: `partner_campaigns` v2 (lifecycle, targeting, formats, `submitted_at` V16/V18), campaign metrics/interactions
+- **billing/ledger**: `payment_transactions` (incl. `customer_id` V6), webhook events, `partner_wallets`, `ledger_entries` (append-only)
+- **notification**: notifications + push tokens (V17)
+
+Dropped in V19: `activity_reactions`, `activity_comments`,
+`owners.business_name/website/partner_description/latitude/longitude` — all
+backfilled into canonical tables first (see ADR-0023).

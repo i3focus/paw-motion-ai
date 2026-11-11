@@ -26,3 +26,14 @@ Decisions that change scope, data model or cost during the PETLIFE refactor. Eac
 - There is no separate `review_status` column: `IN_REVIEW` is a campaign status, and a rejected campaign returns to `DRAFT` with `rejection_reason`.
 - Levels and streaks are computed from `xp_events` and `activities` at read time. No read-model tables yet.
 - The new Kotlin modules use `JdbcClient` (no JPA entities), so PostGIS `geography` columns and arrays need no Hibernate types.
+
+## Refactor decisions (2026-11)
+
+| ID | Date | Decision | Why | Reversal path |
+|---|---|---|---|---|
+| D-REF-01 | 2026-11-11 | `owners` identity-only; partner business data → `partner_profiles` | stop `/api/me` mutating partner fields; cleaner auth boundary (ADR-0021) | re-add columns via new migration |
+| D-REF-02 | 2026-11-11 | Legacy social/owner columns kept through phases 2–5, dropped in V19 | zero-downtime cutover; `LegacyDataMigrationIT` proves loss-free (ADR-0023) | n/a — data was copied forward |
+| D-REF-03 | 2026-11-11 | `POST /api/partner/campaigns` (v1 create) retained; analyze/archive/list removed | create path still used; removed paths were dead or bypassed moderation | restore endpoints if a caller appears |
+| D-REF-04 | 2026-11-11 | Key-reuse mismatch returns 400 (not 422) | consistent with existing error handler | change mapper + client handling |
+| D-REF-05 | 2026-11-11 | Social creates (posts/comments/reactions/bookings) ship without idempotency keys | duplicates are UX noise; keys reserved for credit-moving creates (ADR-0024) | add `Idempotency-Key` handling per endpoint |
+| D-REF-06 | 2026-11-11 | Push tokens registered but delivery untested without EAS `projectId` | no Expo credentials in MVP env | run `eas init`, set `extra.eas.projectId` |

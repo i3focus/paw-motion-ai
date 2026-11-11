@@ -34,3 +34,21 @@
 | REQ-CAMP-004 | Must | Partner, Ledger | ADR-0014 | `partner`, `ledger`, partner portal | expiration job, prorated refund, double-archive tests |
 | REQ-LEDGER-004 | Must | Partner portal | ADR-0014 | partner portal | explainer renders config values |
 | REQ-CHAL-002 | Should | Engagement | ADR-0009 | `engagement`, admin | admin/AI authoring, many-owner award idempotency |
+
+## Delivered-state traceability (post-refactor, 2026-11)
+
+| Area | Code module | Tests |
+|---|---|---|
+| Auth (owner + partner) | `identity` (`AuthController`, `PartnerAuthController`, JWT filter) | backend IT + unit |
+| Pets & health | `pet`, `health`, `petprofile` | backend tests |
+| Activities & feed | `activity`, `feed`, `content`, `engagement` | backend IT (`LegacyDataMigrationIT` proves V6→V19 loss-free) |
+| Map & lost pets | `map` (places, playdates, sightings) | backend tests |
+| AI assistant | `assistant`, `aiinsights` | backend tests |
+| Communities | `community` | backend tests |
+| Bookings | `booking`, `ads` (service binding) | `AdsApiIT` |
+| Campaigns v2 + admin | `ads`, `partner`, `ledger` | `AdsApiIT`, domain tests |
+| Billing/payments | `billing`, `ledger` | backend IT |
+| Notifications | `notification` | backend tests |
+| Web UI | `frontend/src/pages`, `src/partner` | vitest (`validation`, `PartnerCampaignForm`) + `tsc --noUnusedLocals` |
+| Mobile | `mobile/app` (expo-router) | jest-expo (`client`, `validation`) |
+| API contract | `docs/api/openapi.yaml` → `packages/api-client` | generated from live app |
