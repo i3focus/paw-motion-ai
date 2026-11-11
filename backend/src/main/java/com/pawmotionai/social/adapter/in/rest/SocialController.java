@@ -46,7 +46,7 @@ public class SocialController {
         this.listMapPointsUseCase = listMapPointsUseCase;
     }
 
-    @GetMapping("/api/feed")
+    @GetMapping("/api/activities/feed")
     public List<ActivityPostDto> feed(@AuthenticationPrincipal Jwt jwt,
                                       @RequestParam(defaultValue = "0") int page,
                                       @RequestParam(defaultValue = "50") int size) {

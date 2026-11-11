@@ -34,7 +34,7 @@ class LegacySocialApiIT : ApiIntegrationTest() {
         assertEquals("Good boy!", comments[0]["body"].asString())
         assertEquals(activityId, comments[0]["activityId"].asString())
 
-        val feed = expect(200, call("GET", "/api/feed?page=0&size=10", bia.token))
+        val feed = expect(200, call("GET", "/api/activities/feed?page=0&size=10", bia.token))
         val post = feed.first { it["id"].asString() == activityId }
         assertEquals(1, post["commentCount"].asInt())
     }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.pawmotionai.activity.domain.exception.ActivityNotFoundException;
+import com.pawmotionai.shared.ApiException;
 import com.pawmotionai.activity.domain.exception.InvalidActivityException;
 import com.pawmotionai.identity.domain.exception.InvalidCredentialsException;
 import com.pawmotionai.identity.domain.exception.OwnerAlreadyExistsException;
@@ -39,6 +40,11 @@ public class ApiExceptionHandler {
             .map(error -> error.getField() + ": " + error.getDefaultMessage())
             .collect(Collectors.joining("; "));
         return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Validation failed", detail);
+    }
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ProblemDetail> handleApiException(ApiException exception) {
+        return problem(exception.getStatus(), exception.getTitle(), exception.getMessage());
     }
 
     @ExceptionHandler(OwnerAlreadyExistsException.class)

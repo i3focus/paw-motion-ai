@@ -38,6 +38,7 @@ INSERT INTO badges (code, name, description, emoji, criteria, threshold) VALUES
     ('PLAYDATE_PAL', 'Playdate pal', 'Joined 3 playdates', '🎾', 'PLAYDATE_COUNT', 3);
 
 CREATE TABLE pet_badges (
+    id UUID NOT NULL DEFAULT gen_random_uuid() UNIQUE,
     pet_id UUID NOT NULL REFERENCES pets(id) ON DELETE CASCADE,
     badge_code VARCHAR(48) NOT NULL REFERENCES badges(code),
     awarded_at TIMESTAMPTZ NOT NULL,
