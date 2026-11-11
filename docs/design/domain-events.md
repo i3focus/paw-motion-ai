@@ -37,3 +37,13 @@ All integration events use the common envelope defined in `docs/api/events/event
 - Payloads contain IDs and minimal business facts, not full aggregates.
 - Schema evolution is backward compatible: add optional fields only within a major version.
 - Money-related events (`CreditsPurchased.v1`, `CampaignCreditsDebited.v1`, `Payment*.v1`) are written to the outbox in the same transaction as the ledger posting/state change (ADR-0014, ADR-0015).
+
+## As-built note (post-refactor, 2026-11)
+
+The envelope schema and event catalog above remain the *target* contract. As built,
+contexts integrate via in-process calls and REST reads (ADR-0004 kept events as the
+cross-context-fact target; RabbitMQ transport per ADR-0005 is not deployed for the
+MVP). Domain side effects (XP on activity, notification on booking, ledger entries on
+payment/campaign transitions) are invoked synchronously inside the same transaction
+boundary. The event schema under `docs/api/events/` remains the contract for when
+the transport is introduced.

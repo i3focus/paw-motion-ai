@@ -18,3 +18,10 @@
 16. Strava publication is optional and asynchronous; the app prompts owners to connect Strava but works fully without it.
 17. Docker Compose is the primary deployment target.
 18. Purchases are in whole BRL amounts (AbacatePay checkout with a 1-BRL product and `quantity = amount`).
+
+## Post-refactor notes (2026-11)
+
+- Assumption 3 holds: modular monolith shipped; Kotlin modules were added alongside
+  Java inside the same deployment unit.
+- Assumption 5 holds: own JWT issuer shipped; Keycloak remains post-MVP.
+- Push delivery assumes Expo/EAS; production tokens need an EAS `projectId`.

@@ -36,3 +36,17 @@ flowchart LR
 - External AI providers are isolated behind `AiInsightProviderPort`.
 - Strava is isolated behind `StravaPort`; payment providers behind `PaymentGatewayPort`; geocoding behind `GeocodingPort`; map tiles are configuration only.
 - Frontend DTOs are API contracts, not domain models.
+
+## As-built relationships (post-refactor, 2026-11)
+
+- `feed` composes items from `content` (posts), `activity`, `engagement`
+  (achievements), and `ads` (sponsored cards) — read-time fan-out into typed
+  `feed_items`.
+- `ads` → `ledger` (campaign debit, prorated `CAMPAIGN_REFUND` on end) and →
+  `booking` (BOOKING CTAs bind a partner service).
+- `booking` → `ads` (optional `campaign_id` attribution) and → `notification`
+  (owner + partner notices).
+- `assistant` executes confirmed actions through other contexts' use cases
+  (confirmation-gated).
+- `map` consumes `partner_profiles` geolocation (ADR-0021) for discovery.
+- `identity` owns auth + role checks consumed by every context via security config.

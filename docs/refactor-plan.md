@@ -1,6 +1,6 @@
 # PETLIFE refactor plan
 
-Status: Phase 0 (audit) — this document is the contract for phases 1–6.
+Status: **Complete** — all phases 0–6 shipped (PRs #13–#17 merged 2026-11-11). Execution record in `docs/refactor-report.md`; validation in `docs/validation-skills.md`.
 Source of truth for design: `docs/design-reference/landing.html` and `docs/design-reference/app.html` (Brazilian Portuguese copy, translated to English during implementation). When existing code conflicts with the references, the references win. Scope, data-model and cost decisions are logged in [`docs/decisions.md`](decisions.md).
 
 ## 1. Current inventory (audit of `main` @ `dd6788e`)

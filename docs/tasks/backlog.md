@@ -40,3 +40,10 @@
 | T-036 | Admin/AI challenge and badge authoring, many-owner enrollment and awards | REQ-CHAL-002 | Engagement | L | T-011 | Planned |
 | T-037 | Admin wallet unblock/adjustments and partner block handling | REQ-BILL-002, REQ-LEDGER-001 | Ledger/Admin | M | T-019 | Done |
 | T-038 | Account deletion with grace period and retention jobs | REQ-NFR-001 | Platform | M | T-005 | Planned |
+
+---
+
+> **Status note (2026-11):** the refactor program (`docs/refactor-plan.md`) is
+> complete — see `docs/refactor-report.md` for shipped scope per phase. This
+> backlog reflects the original spec-phase plan; new work should be tracked in
+> issues, not appended here.

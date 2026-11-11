@@ -43,3 +43,17 @@
 - AbacatePay webhooks: verify `X-Webhook-Secret` with constant-time comparison and the `X-Webhook-Signature` HMAC-SHA256 over the raw body; reject events whose `devMode` does not match the environment; re-fetch the checkout before granting credits; never log the webhook URL query secret. API keys are scoped to checkout permissions only.
 - Optimistic (`@Version`) plus pessimistic (`SELECT … FOR UPDATE`) locking protect wallet balances against lost updates (ADR-0014).
 - `ADMIN` role required for challenge/badge authoring, wallet unblock, and credit adjustments; every admin action is audited.
+
+## As-built controls (post-refactor, 2026-11)
+
+- JWT bearer auth (`JWT_SECRET`/`JWT_ISSUER` env); `ActiveAccountFilter` blocks
+  suspended accounts; role checks gate `/api/partner/*` (PARTNER) and
+  `/api/admin/*` (ADMIN).
+- `WriteRateLimitFilter` throttles mutating routes.
+- `PATCH /api/me` is identity-only; partner business data requires the PARTNER role
+  on `/api/partner/profile` (ADR-0021).
+- Outbound URLs rendered as links (campaign CTA, partner website) pass a scheme
+  allowlist (`safeHref` — http/https only; tested).
+- Admin review mandatory before any sponsored content reaches feed/map (ADR-0022).
+- `Idempotency-Key` on financial creates (ADR-0024); payment webhook verifies HMAC
+  on the raw body.

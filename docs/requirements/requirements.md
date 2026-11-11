@@ -407,3 +407,19 @@ Source: product feedback received on 2026-11-10. It supersedes the earlier "part
 7. Cross-context atomicity between Partner (campaign) and Ledger (debit) is resolved with a single local database transaction inside the modular monolith (ADR-0014); splitting these contexts into services later would require a reservation/saga pattern.
 8. Background GPS tracking (required) and native MapLibre maps require an Expo development build (not Expo Go) and OS background-location permission review; this affects the mobile demo workflow.
 9. Strava publication requires a registered Strava API application and is subject to Strava rate limits and API terms; it must stay optional and asynchronous.
+
+## Delivery status (post-refactor, 2026-11)
+
+The MVP requirements above are **delivered** on `main`. The 2026-11 redesign
+(`docs/refactor-plan.md`) additionally shipped:
+
+- PETLIFE visual system across landing, web app, mobile, and partner portal
+- Feed (stories, typed reactions, sponsored cards), Map (places, playdates, lost
+  pets), AI assistant (confirmation-gated actions), pet profile + health passport,
+  gamification (XP/streaks/badges/leaderboard), communities, bookings
+- Partner portal (campaigns v2 + admin review, services, bookings, billing,
+  business profile) and admin moderation UI
+- Notifications (in-app + push pipeline) on web and mobile
+
+Requirement-to-code/test mapping is in `traceability-matrix.md` (delivered-state
+table below it). Execution evidence: `docs/refactor-report.md`.

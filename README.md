@@ -1,106 +1,47 @@
-# Paw Motion AI
+# PETLIFE (paw-motion-ai)
 
-**Problem:** Pet owners struggle to maintain consistent physical activity routines with their pets. Existing fitness tools primarily focus on humans, leaving pet owners without a simple, engaging way to track shared activities, understand progress, and stay motivated.
+AI-powered pet wellness platform: social feed, pet profiles, maps & lost-pet alerts, AI assistant, gamification, communities, partner campaigns, and service bookings.
 
-**Solution:** PawMotion AI is an AI-powered pet wellness companion that transforms walks, runs, and playtime into measurable, personalized, and rewarding experiences. Through activity tracking, intelligent insights, and gamified challenges, we help pets and their owners build healthier habits together.
+## Stack
 
-**Our mission:** Make every step count — for pets and the people who love them.
+| Layer | Tech |
+|---|---|
+| Backend | Spring Boot 4 / Java 21 + Kotlin modules, PostgreSQL + PostGIS, Flyway, JWT |
+| Web | React + TypeScript + Vite, react-router, Tailwind (PETLIFE design tokens) |
+| Mobile | Expo (expo-router file-based navigation), React Native |
+| Shared | `packages/design-tokens`, `packages/api-client` (generated from OpenAPI) |
 
-AI-powered activity companion for pets and their owners
-
-An intelligent activity tracker that helps pet owners record walks, understand exercise routines, and build healthier habits together with their pets.
-
-Category: **Saúde & bem-estar** (Health & Wellness).
-
-The regulations explicitly include physical activity and wellness projects. PawMotion AI fits because its main purpose is to encourage and track physical activity, rather than provide veterinary diagnosis.
-
-## MVP features
-1. Pet profile: Name, species, age, size, and activity preferences.
-2. Activity tracking: Record walks, runs, duration, distance, and frequency.
-3. AI Activity Coach: Generate weekly activity summaries and personalized, non-medical suggestions.
-4. Gamification: Walking streaks, badges, and weekly goals.
-5. Shareable activity cards: Generate attractive summaries that users can share externally.
-
-### Tech Stack
-1. Frontend	React + TypeScript + Tailwind CSS
-2. Backend	Java 21 + Spring Boot
-3. Database	PostgreSQL + PostGIS
-4. AI	OpenAI API (primary)
-5. Maps	MapLibre + OpenStreetMap
-6. Deployment	Vercel + Render/Fly.io
-7. Optional integration: Strava API
-
-## Repository structure
-
-- `docs/`: requirements, traceability, DDD design, ADRs, API/event contracts, backlog, implementation plan, and the [run-all-projects guide](docs/run-all-projects.md).
-- `backend/`: Spring Boot 4 modular monolith using hexagonal architecture per bounded context.
-- `frontend/`: React 19 + TypeScript + Vite + Tailwind CSS pet-owner web app and separate partner web portal under `/partner`.
-- `mobile/`: Expo React Native app for pet owners only.
-- `docker-compose.yml`: local PostgreSQL/PostGIS, backend, and frontend stack.
-
-## Current implementation slice
-
-Implemented platform slice:
-
-- Separate owner and partner account roles sharing the same identity store and JWT issuer.
-- Owner registration/login, profile management, pet profiles with add/edit flows, activity tracking, dashboard summary, AI insights, and AI-analyzed partner recommendations.
-- Validated web/mobile inputs for email, password, phone, URLs, dates, and numeric activity fields, plus warm PawMotion visual cards using local dog imagery.
-- Partner registration/login at `/partner`, profile management, campaign creation with credit debit, prorated archive refunds, expiration handling, and AI campaign topic analysis.
-- Partner credits ledger (`MAIN`/`BONUS`/`PARTNER` accounts), prepaid purchase pricing, hosted-checkout billing with fake/AbacatePay providers, webhook reconciliation, and a partner Credits & Billing portal page.
-- Expo mobile app for pet owners covering auth, dashboard, pets, activities, insights, recommendations, and profile.
-- OpenAPI contract and event schema under `docs/api/`.
-
-Partner analytics dashboards, partner public profiles/maps, GPS routes, and external AI provider adapters are planned in the backlog and are not part of the current runnable slice.
-
-Planned next (change request CR-2026-11, see `docs/requirements/requirements.md` and ADR-0014..0018):
-
-- Partner performance dashboard with campaign clicks, unique owners, and credits spent.
-- Owner-facing partner detail (area of operation, services, website, location map) when clicking a campaign, plus a partner discovery map.
-- Mobile Home quick-start live GPS tracking (Strava-style) with optional publication to Strava.
-
-## Local development
-
-Prerequisites: Docker with Compose.
+## Run
 
 ```bash
-cp .env.example .env
-# Set POSTGRES_PASSWORD and JWT_SECRET to random local values in .env
-./scripts/dev-up.sh
+cp .env.example .env            # fill DB creds + JWT_SECRET
+docker compose up -d postgres   # published on 127.0.0.1:5432
+cd backend && ./gradlew bootRun # http://localhost:8080 (health: /actuator/health)
+cd frontend && npm run dev      # http://localhost:5173
+cd mobile && npm run start      # Expo
 ```
 
-Open `http://localhost:5173`. The frontend is served by Nginx and proxies `/api` to the backend container. For the complete owner/partner/mobile runbook, use [docs/run-all-projects.md](docs/run-all-projects.md).
+Full instructions: `docs/run-all-projects.md`.
 
-For local frontend development against a locally running backend:
+## Test
 
 ```bash
-docker compose up postgres backend
-cd frontend
-npm install
-npm run dev
+cd backend && ./gradlew test    # unit + Testcontainers (needs Docker)
+cd frontend && npm test         # vitest
+cd mobile && npm test           # jest-expo
 ```
 
-The Vite dev server runs on `http://localhost:5173` and proxies `/api` to `http://localhost:8080`. PostgreSQL is only reachable inside the Compose network; use `docker compose exec postgres psql -U pawmotion -d pawmotion` for direct database access.
+## Docs
 
-## Verification
+- `docs/refactor-report.md` — what shipped in the 2026-11 redesign refactor (phases 0–6)
+- `docs/refactor-plan.md` — the refactor contract (now complete; re-run playbook)
+- `docs/validation-skills.md` — vendored audit skills + re-run instructions
+- `docs/design/` — architecture, data model, security, observability (each has an **As-built** section reflecting shipped state)
+- `docs/adr/` — architecture decision records
+- `docs/requirements/` — requirements + traceability
+- `docs/api/openapi.yaml` — generated API contract (`cd backend && ./gradlew exportOpenapi` to regenerate)
 
-```bash
-cd backend
-./gradlew build
+## Re-running audits or the refactor
 
-cd ../frontend
-npm install
-npm run typecheck
-npm run build
-
-cd ../mobile
-npm install
-npm run typecheck
-```
-
-CI runs backend Gradle build/tests, frontend install/build, and mobile install/typecheck on pushes and pull requests. Mobile defaults to `http://localhost:8080` on iOS/web and `http://10.0.2.2:8080` on Android emulators; set `EXPO_PUBLIC_API_BASE_URL` for physical devices or remote backends.
-
-## Architecture notes
-
-The backend is intentionally a Spring Boot modular monolith, not microservices. Each bounded context keeps domain models Spring-free, application use cases behind ports, and adapters for REST, persistence, and external providers. Client forms use shared validation helpers while the backend remains the authoritative validation boundary. See `docs/design/software-architecture.md`, `docs/adr/`, and `docs/run-all-projects.md` for the decisions and local runbook behind this structure.
-
-When deploying behind an HTTPS proxy or proxy chain, set `TRUSTED_PROXY_CIDRS` for the frontend Nginx container and `TRUSTED_PROXIES` for the backend to the explicit proxy IPs/CIDRs you trust. Nginx only rewrites the client address for configured upstreams, and the backend only trusts forwarding headers from configured proxies.
+Validation skills live in `.devin/skills/` — see `docs/validation-skills.md` for the
+checklists, live-diagnosis steps (jstall/JFR), and last results.

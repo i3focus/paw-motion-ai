@@ -35,3 +35,11 @@
 5. Does a dispute (`checkout.disputed`) block the partner immediately (current spec) or only after the dispute is lost?
 6. Does a partner need a CPF/CNPJ registered in the profile so checkouts skip the customer-data step (AbacatePay `customerId`), or is it collected on the checkout page?
 7. Recommended retention periods need validation by legal counsel before production.
+
+## Post-refactor additions (2026-11)
+
+| # | Question | Decision |
+|---|---|---|
+| — | Real payment gateway? | Fake provider for MVP; AbacatePay env vars wired but unconfigured (ADR-0015) |
+| — | Native maps library? | Positional placeholder pins; a maps lib needs an EAS dev build — deferred |
+| — | Browser e2e suite? | Not built; API flows covered by Testcontainers, UI logic by vitest/jest |

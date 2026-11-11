@@ -227,3 +227,23 @@ stateDiagram-v2
     Saved --> [*]
     Discarded --> [*]
 ```
+
+## As-built aggregates (post-refactor, 2026-11)
+
+New/changed aggregates beyond the baseline list:
+
+- **FeedItem** — typed (POST/ACTIVITY/ACHIEVEMENT/SPONSORED); reactions are typed
+  (`paw`/`laugh`/`heart`) on `reactions`; comments are canonical `comments`.
+- **PartnerProfile** — business profile + PostGIS location + `verified` (ADR-0021).
+- **PartnerService / Booking** — bookable services; booking lifecycle
+  PENDING → CONFIRMED → COMPLETED | CANCELLED; partner can confirm/complete/decline,
+  owner can cancel.
+- **Campaign v2** — lifecycle DRAFT → IN_REVIEW → ACTIVE ⇄ PAUSED → ENDED (+REJECTED),
+  targeting, formats, metrics, `submitted_at`; admin review is mandatory (ADR-0022).
+- **AssistantConversation / Message / ActionCard** — chat plus actionable suggestion
+  cards executed only after owner confirmation.
+- **HealthPassport / Reminder** — pet health records and scheduled reminders.
+- **Notification / PushToken** — in-app + push delivery.
+- **Community / Event, Place / Playdate / LostPet** — map & social discovery.
+- **Gamification** — XP events, levels, streaks, badges, challenges, neighborhood
+  leaderboard.

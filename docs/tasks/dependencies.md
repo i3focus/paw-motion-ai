@@ -61,3 +61,8 @@ CR-2026-11 critical path: Pricing config → Ledger → Campaign debit → Partn
 - Strava API application (client id/secret, redirect URI) (T-030).
 - OSM-based tile provider respecting usage policy; optional geocoding service (T-024, T-026).
 - Expo development build for background location and native maps (T-026, T-028).
+
+---
+
+> **Status note (2026-11):** refactor phases all merged; dependency order recorded
+> in `docs/refactor-report.md`. File retained for the original spec-phase record.

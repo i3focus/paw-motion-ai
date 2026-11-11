@@ -23,3 +23,13 @@
 - Every credit balance change goes through the Ledger inbound port; no other context writes ledger tables (ADR-0014).
 - Campaign creation and its credit debit, and payment confirmation and its credit, are the only cross-context writes allowed inside one local transaction (ADR-0014).
 - Owner routes and locations never leave the Activity context except to the owner and opt-in Strava publication.
+
+## As-built additions (post-refactor, 2026-11)
+
+The baseline contexts were extended during the refactor. Current bounded contexts
+(code packages in `com.pawmotionai`): identity, pet, activity, ai-insights, partner,
+billing, ledger (Java baseline) plus ads, assistant, booking, community, content,
+engagement, feed, health, map, media, notification, pet-profile (Kotlin).
+The legacy `social` context was deleted (V19). See `software-architecture.md` for
+the module inventory and ADR-0021/0022 for the two structural boundary changes
+(partner-profile split, campaign moderation).
