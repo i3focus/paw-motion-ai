@@ -5,6 +5,7 @@ import {
   getDashboardSummary,
   listActivityComments,
   listActivityFeed,
+  listActivities,
   listPets,
   listPromotions,
   listRecommendations,
@@ -13,7 +14,7 @@ import {
 import { useAuth } from '../auth';
 import { PetAvatar, PawIcon } from '../components/petVisuals';
 import { Avatar, Badge, Button, EmptyState, ErrorMessage, PoppyMark, TextInput } from '../components/ui';
-import type { ActivityComment, ActivityPost, DashboardSummary, OwnerPromotion, OwnerRecommendation, Pet } from '../types';
+import type { Activity, ActivityComment, ActivityPost, DashboardSummary, OwnerPromotion, OwnerRecommendation, Pet } from '../types';
 
 const REACTIONS = [
   { type: 'LIKE', label: 'Like', icon: '♡' },
@@ -103,8 +104,8 @@ function StoriesRow({ pets, ownerName, ownerAvatarUrl }: { pets: Pet[]; ownerNam
   );
 }
 
-function PetWeekCard({ summary, pets }: { summary: DashboardSummary | null; pets: Pet[] }) {
-  const recent = summary?.recentActivities ?? [];
+function PetWeekCard({ summary, pets, activities }: { summary: DashboardSummary | null; pets: Pet[]; activities: Activity[] }) {
+  const recent = activities;
   const days = useMemo(() => {
     return Array.from({ length: 7 }, (_, index) => {
       const date = new Date();
@@ -383,6 +384,7 @@ function NearbyPromotions({ promotions }: { promotions: OwnerPromotion[] }) {
 export function CityPage() {
   const { owner } = useAuth();
   const [posts, setPosts] = useState<ActivityPost[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [pets, setPets] = useState<Pet[]>([]);
   const [promotions, setPromotions] = useState<OwnerPromotion[]>([]);
   const [recommendations, setRecommendations] = useState<OwnerRecommendation[]>([]);
@@ -397,8 +399,9 @@ export function CityPage() {
     setLoading(true);
     setError(null);
     try {
-      const [feed, petList, dashboard, promoList, recommendationList] = await Promise.all([
+      const [feed, activityList, petList, dashboard, promoList, recommendationList] = await Promise.all([
         listActivityFeed(0, FEED_PAGE_SIZE),
+        listActivities().catch(() => [] as Activity[]),
         listPets().catch(() => [] as Pet[]),
         getDashboardSummary().catch(() => null),
         listPromotions().catch(() => [] as OwnerPromotion[]),
@@ -407,6 +410,7 @@ export function CityPage() {
       setPosts(feed);
       setPage(0);
       setHasMore(feed.length === FEED_PAGE_SIZE);
+      setActivities(activityList);
       setPets(petList);
       setPromotions(promoList);
       setRecommendations(recommendationList);
@@ -485,7 +489,7 @@ export function CityPage() {
         </div>
 
         <aside className="space-y-5 xl:sticky xl:top-28 xl:self-start">
-          <PetWeekCard summary={summary} pets={pets} />
+          <PetWeekCard summary={summary} pets={pets} activities={activities} />
           <AiSuggestionCard recommendations={recommendations} />
           <NearbyPromotions promotions={promotions} />
         </aside>
