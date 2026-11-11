@@ -82,24 +82,32 @@ export function PartnerBillingPage() {
     }
     setSubmitting(true);
     const fingerprint = `${value}:${method}`;
-    if (!purchaseKey.current || purchaseKey.current.fingerprint !== fingerprint) {
-      purchaseKey.current = { fingerprint, key: crypto.randomUUID() };
-    }
+    let freshRetryAvailable = true;
     try {
-      const purchase = await createPurchase({ amount: value, method }, purchaseKey.current.key);
-      if (['FAILED', 'EXPIRED', 'CANCELED'].includes(purchase.status)) {
+      while (true) {
+        if (!purchaseKey.current || purchaseKey.current.fingerprint !== fingerprint) {
+          purchaseKey.current = { fingerprint, key: crypto.randomUUID() };
+        }
+        const purchase = await createPurchase({ amount: value, method }, purchaseKey.current.key);
+        if (['FAILED', 'EXPIRED', 'CANCELED'].includes(purchase.status)) {
+          purchaseKey.current = null;
+          if (freshRetryAvailable) {
+            freshRetryAvailable = false;
+            continue;
+          }
+          setError(`Purchase ${purchase.id} is ${purchase.status.toLowerCase()}. Submit again to create a new checkout.`);
+          await refresh();
+          return;
+        }
         purchaseKey.current = null;
-        setError(`Purchase ${purchase.id} is ${purchase.status.toLowerCase()}. Submit again to create a new checkout.`);
+        if (purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
+          window.location.assign(purchase.providerCheckoutUrl);
+          return;
+        }
+        setNotice(`Purchase ${purchase.id} is pending confirmation.`);
         await refresh();
         return;
       }
-      purchaseKey.current = null;
-      if (purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
-        window.location.assign(purchase.providerCheckoutUrl);
-        return;
-      }
-      setNotice(`Purchase ${purchase.id} is pending confirmation.`);
-      await refresh();
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to create purchase');
     } finally {
