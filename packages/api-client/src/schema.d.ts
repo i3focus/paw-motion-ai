@@ -1323,6 +1323,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/partner/v2/campaigns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listV2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/partner/campaigns/{campaignId}/metrics": {
         parameters: {
             query?: never;
@@ -1758,8 +1774,17 @@ export interface components {
             cacheControl?: string;
             contentLanguage?: string;
             etag?: string;
-            accessControlAllowCredentials?: boolean;
             basicAuth?: string;
+            acceptLanguage?: {
+                range?: string;
+                /** Format: double */
+                weight?: number;
+            }[];
+            /** Format: int64 */
+            accessControlMaxAge?: number;
+            /** Format: int64 */
+            ifUnmodifiedSince?: number;
+            accessControlAllowCredentials?: boolean;
             accept?: components["schemas"]["MediaType"][];
             acceptPatch?: components["schemas"]["MediaType"][];
             allow?: components["schemas"]["HttpMethod"][];
@@ -1771,15 +1796,6 @@ export interface components {
             pragma?: string;
             upgrade?: string;
             vary?: string[];
-            acceptLanguage?: {
-                range?: string;
-                /** Format: double */
-                weight?: number;
-            }[];
-            /** Format: int64 */
-            accessControlMaxAge?: number;
-            /** Format: int64 */
-            ifUnmodifiedSince?: number;
             empty?: boolean;
             all?: {
                 [key: string]: string;
@@ -1801,9 +1817,9 @@ export interface components {
             qualityValue?: number;
             charset?: string;
             concrete?: boolean;
+            wildcardType?: boolean;
             wildcardSubtype?: boolean;
             subtypeSuffix?: string;
-            wildcardType?: boolean;
         };
         CreateStoryRequest: {
             /** Format: uuid */
@@ -2487,6 +2503,10 @@ export interface components {
             description?: string;
             ctaLabel?: string;
             ctaType?: string;
+            ctaUrl?: string | null;
+            /** Format: uuid */
+            serviceId?: string | null;
+            mediaUrl?: string | null;
             formats?: string[];
             /** Format: date-time */
             startsAt?: string;
@@ -2602,6 +2622,7 @@ export interface components {
             longitude?: number | null;
             openingHours?: string | null;
             coverUrl?: string | null;
+            clearLocation?: boolean | null;
         };
         UpdateCampaignRequest: {
             title?: string | null;
@@ -2625,6 +2646,7 @@ export interface components {
             targetLongitude?: number | null;
             /** Format: int32 */
             targetRadiusMeters?: number | null;
+            clearTargetLocation?: boolean | null;
             targetSpecies?: string[] | null;
             targetBreeds?: string[] | null;
             targetInterests?: string[] | null;
@@ -5683,6 +5705,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["LedgerEntryPage"];
+                };
+            };
+        };
+    };
+    listV2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignV2Dto"][];
                 };
             };
         };

@@ -101,7 +101,6 @@ public class PartnerCampaign {
         }
         this.aiTopics = String.join("\n", topics.stream().map(String::trim).filter(topic -> !topic.isEmpty()).toList());
         this.analyzedAt = analyzedAt;
-        this.status = CampaignStatus.ACTIVE;
     }
 
     public void expire(Instant now) {

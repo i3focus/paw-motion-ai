@@ -4,7 +4,7 @@ info:
   description: "Owner, partner and admin APIs for PETLIFE."
   version: v1
 servers:
-- url: http://localhost:58850
+- url: http://localhost:62205
   description: Generated server url
 security:
 - bearer: []
@@ -2276,6 +2276,20 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/LedgerEntryPage"
+  /api/partner/v2/campaigns:
+    get:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: listV2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CampaignV2Dto"
   /api/partner/campaigns/{campaignId}/metrics:
     get:
       tags:
@@ -2981,11 +2995,27 @@ components:
           type: string
         etag:
           type: string
-        accessControlAllowCredentials:
-          type: boolean
         basicAuth:
           type: string
           writeOnly: true
+        acceptLanguage:
+          type: array
+          items:
+            type: object
+            properties:
+              range:
+                type: string
+              weight:
+                type: number
+                format: double
+        accessControlMaxAge:
+          type: integer
+          format: int64
+        ifUnmodifiedSince:
+          type: integer
+          format: int64
+        accessControlAllowCredentials:
+          type: boolean
         accept:
           type: array
           items:
@@ -3021,22 +3051,6 @@ components:
           type: array
           items:
             type: string
-        acceptLanguage:
-          type: array
-          items:
-            type: object
-            properties:
-              range:
-                type: string
-              weight:
-                type: number
-                format: double
-        accessControlMaxAge:
-          type: integer
-          format: int64
-        ifUnmodifiedSince:
-          type: integer
-          format: int64
         empty:
           type: boolean
         all:
@@ -3070,12 +3084,12 @@ components:
           type: string
         concrete:
           type: boolean
+        wildcardType:
+          type: boolean
         wildcardSubtype:
           type: boolean
         subtypeSuffix:
           type: string
-        wildcardType:
-          type: boolean
     CreateStoryRequest:
       type: object
       properties:
@@ -4728,6 +4742,19 @@ components:
           type: string
         ctaType:
           type: string
+        ctaUrl:
+          type:
+          - string
+          - "null"
+        serviceId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        mediaUrl:
+          type:
+          - string
+          - "null"
         formats:
           type: array
           items:
@@ -4983,6 +5010,10 @@ components:
           - "null"
           maxLength: 500
           minLength: 0
+        clearLocation:
+          type:
+          - boolean
+          - "null"
     UpdateCampaignRequest:
       type: object
       properties:
@@ -5060,6 +5091,10 @@ components:
           format: int32
           maximum: 100000
           minimum: 500
+        clearTargetLocation:
+          type:
+          - boolean
+          - "null"
         targetSpecies:
           type:
           - array

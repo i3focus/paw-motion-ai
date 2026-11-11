@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getChallenges, getDiscover, getLeaderboard, joinChallenge, joinCommunity, rsvpEvent, type Challenge, type Discover, type Leaderboard } from '../../api/petlife';
+import { getChallenges, getDiscover, getLeaderboard, joinChallenge, joinCommunity, recordAdEvent, rsvpEvent, type Challenge, type Discover, type Leaderboard } from '../../api/petlife';
 import { listPets } from '../../api/client';
+import { safeHref } from '../../lib/validation';
 import type { Pet } from '../../types';
 import { Avatar, Badge, Button, Chip, LoadingState, SponsoredLabel } from '../../components/ui';
 
@@ -41,7 +42,11 @@ export function DiscoverPage() {
                 <div className="flex items-center justify-between"><SponsoredLabel />{s.verified ? <Badge tone="success">✓ Verified</Badge> : null}</div>
                 <p className="mt-2 font-extrabold text-teal-dark">{s.title ?? s.partnerName}</p>
                 <p className="text-body text-muted">{s.description}{s.partnerName && s.title ? ` · ${s.partnerName}` : ''}</p>
-                {s.ctaLabel && s.ctaUrl ? <a href={s.ctaUrl} className="mt-2 inline-flex min-h-11 items-center rounded-pill bg-coral px-4 text-label font-black text-coral-ink">{s.ctaLabel}</a> : null}
+                {s.ctaLabel && safeHref(s.ctaUrl) ? (
+                  <a href={safeHref(s.ctaUrl)!} target="_blank" rel="noreferrer"
+                    onClick={() => s.campaignId && recordAdEvent(s.campaignId, 'CLICK', 'DISCOVER_HIGHLIGHT').catch(() => {})}
+                    className="mt-2 inline-flex min-h-11 items-center rounded-pill bg-coral px-4 text-label font-black text-coral-ink">{s.ctaLabel}</a>
+                ) : null}
               </div>
             ))}
           </div>

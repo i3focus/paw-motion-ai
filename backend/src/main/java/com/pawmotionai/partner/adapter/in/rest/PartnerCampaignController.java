@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 
 import com.pawmotionai.partner.application.dto.CampaignResponseDto;
 import com.pawmotionai.partner.application.dto.CreateCampaignCommand;
+import com.pawmotionai.shared.CurrentUserKt;
 import com.pawmotionai.partner.application.port.in.AnalyzeCampaignUseCase;
 import com.pawmotionai.partner.application.port.in.ArchiveCampaignUseCase;
 import com.pawmotionai.partner.application.port.in.CreateCampaignUseCase;
@@ -43,6 +44,7 @@ public class PartnerCampaignController {
 
     @GetMapping
     public List<CampaignResponseDto> list(@AuthenticationPrincipal Jwt jwt) {
+        CurrentUserKt.requireRole(jwt, "PARTNER");
         return listCampaignsUseCase.listByPartner(UUID.fromString(jwt.getSubject()));
     }
 
@@ -50,6 +52,7 @@ public class PartnerCampaignController {
     public ResponseEntity<CampaignResponseDto> create(@AuthenticationPrincipal Jwt jwt,
                                                       @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
                                                       @Valid @RequestBody CreateCampaignRequest request) {
+        CurrentUserKt.requireRole(jwt, "PARTNER");
         CampaignResponseDto response = createCampaignUseCase.create(UUID.fromString(jwt.getSubject()),
             new CreateCampaignCommand(UUID.fromString(jwt.getSubject()), request.title(), request.description(),
                 request.targetAudience(), request.callToAction(), idempotencyKey));
@@ -58,11 +61,13 @@ public class PartnerCampaignController {
 
     @PostMapping("/{campaignId}/analyze")
     public CampaignResponseDto analyze(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID campaignId) {
+        CurrentUserKt.requireRole(jwt, "PARTNER");
         return analyzeCampaignUseCase.analyze(UUID.fromString(jwt.getSubject()), campaignId);
     }
 
     @PostMapping("/{campaignId}/archive")
     public CampaignResponseDto archive(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID campaignId) {
+        CurrentUserKt.requireRole(jwt, "PARTNER");
         return archiveCampaignUseCase.archive(UUID.fromString(jwt.getSubject()), campaignId);
     }
 }

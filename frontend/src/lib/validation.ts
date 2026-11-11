@@ -19,6 +19,11 @@ export function isValidHttpUrl(value: string): boolean {
   }
 }
 
+export function safeHref(value: string | null | undefined): string | null {
+  const trimmed = (value ?? '').trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : null;
+}
+
 export function normalizeUrl(value: string): string {
   const trimmed = value.trim();
   if (!trimmed || /^https?:\/\//i.test(trimmed)) {

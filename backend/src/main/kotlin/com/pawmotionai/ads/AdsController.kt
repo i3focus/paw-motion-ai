@@ -25,9 +25,15 @@ import java.util.UUID
 @Tag(name = "Partner campaigns v2 and profile")
 class AdsController(private val service: AdsService) {
 
+    @GetMapping("/partner/v2/campaigns")
+    fun listV2(@AuthenticationPrincipal jwt: Jwt): List<CampaignV2Dto> {
+        jwt.requireRole("PARTNER")
+        return service.listV2(jwt.ownerId)
+    }
+
     @GetMapping("/partner/campaigns/{campaignId}")
     fun campaign(@AuthenticationPrincipal jwt: Jwt, @PathVariable campaignId: UUID): CampaignV2Dto {
-        jwt.requireRole("PARTNER", "ADMIN")
+        jwt.requireRole("PARTNER")
         return service.campaign(jwt.ownerId, campaignId)
     }
 
