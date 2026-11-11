@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Avatar, Badge, BrandLogo, PoppyMark } from './ui';
+import { Avatar, Badge, BrandLogo } from './ui';
 import { PawIcon } from './petVisuals';
 import { useAuth } from '../auth';
 
@@ -43,10 +43,10 @@ export function Layout({ page, setPage, children }: { page: PageKey; setPage: (p
       key={item.key}
       type="button"
       onClick={() => setPage(item.key)}
-      className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+      className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-body font-semibold transition ${
         page === item.key
-          ? 'bg-primary text-white shadow-[0_16px_36px_-20px_rgba(130,94,49,1)]'
-          : 'text-cream-700 hover:bg-accent-soft hover:text-primary'
+          ? 'bg-teal text-white shadow-card'
+          : 'text-muted hover:bg-teal-light hover:text-teal'
       }`}
     >
       <NavIcon name={item.icon} />
@@ -55,12 +55,12 @@ export function Layout({ page, setPage, children }: { page: PageKey; setPage: (p
   );
 
   return (
-    <div className="paw-city-bg min-h-screen">
+    <div className="bg-cream min-h-screen">
       <div className="lg:hidden">
-        <header className="sticky top-0 z-30 border-b border-cream-200 bg-white/90 backdrop-blur">
+        <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
           <div className="flex items-center justify-between px-4 py-3">
             <BrandLogo className="text-lg" />
-            <button type="button" onClick={logout} className="rounded-2xl border border-cream-300 px-3 py-2 text-sm font-semibold text-cream-700 hover:bg-cream-50">
+            <button type="button" onClick={logout} className="rounded-2xl border border-line px-3 py-2 text-body font-semibold text-muted hover:bg-cream">
               Logout
             </button>
           </div>
@@ -68,32 +68,31 @@ export function Layout({ page, setPage, children }: { page: PageKey; setPage: (p
         </header>
       </div>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-cream-200 bg-white/90 px-5 py-6 backdrop-blur lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-line bg-white/90 px-5 py-6 backdrop-blur lg:flex">
         <div className="relative">
           <BrandLogo className="text-xl" />
-          <PoppyMark className="poppy-float pointer-events-none absolute -right-8 -top-3 h-9 w-9 text-accent/50" />
-          <p className="mt-1 text-sm text-cream-500">Move together. Live better.</p>
+          <p className="mt-1 text-body text-muted">Move together. Live better.</p>
         </div>
         <nav className="mt-8 space-y-2">{NAV_ITEMS.map(navButton)}</nav>
         <button
           type="button"
           onClick={() => setPage('activities')}
-          className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-white shadow-[0_18px_38px_-20px_rgba(130,94,49,1)] transition hover:bg-secondary"
+          className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-teal px-5 py-3 text-body font-bold text-white shadow-card transition hover:bg-teal-dark"
         >
           <span className="text-lg leading-none">+</span>
           Create activity
         </button>
-        <div className="mt-auto rounded-3xl border border-cream-200 bg-cream-50 p-4">
+        <div className="mt-auto rounded-3xl border border-line bg-cream p-4">
           <div className="flex items-center gap-3">
             <Avatar name={owner?.displayName ?? 'Owner'} src={owner?.avatarUrl} size="sm" />
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-cream-900">{owner?.displayName}</p>
-              <p className="truncate text-xs text-cream-500">{owner?.email}</p>
+              <p className="truncate text-body font-semibold text-ink">{owner?.displayName}</p>
+              <p className="truncate text-label text-muted">{owner?.email}</p>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between gap-2">
             <Badge tone="accent">Pet owner</Badge>
-            <button type="button" onClick={logout} className="rounded-2xl border border-cream-300 px-3 py-2 text-xs font-semibold text-cream-700 hover:bg-white">
+            <button type="button" onClick={logout} className="rounded-2xl border border-line px-3 py-2 text-label font-semibold text-muted hover:bg-white">
               Logout
             </button>
           </div>

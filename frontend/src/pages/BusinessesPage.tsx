@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ApiError, listPromotions } from '../api/client';
-import { Badge, EmptyState, ErrorMessage, PoppyMark, SectionHeader } from '../components/ui';
+import { Badge, EmptyState, ErrorMessage, PawMark, SectionHeader } from '../components/ui';
 import type { OwnerPromotion } from '../types';
 
 const GRADIENTS = [
-  'linear-gradient(135deg, #825e31 0%, #d99c52 55%, #b07f43 100%)',
-  'linear-gradient(135deg, #5e4424 0%, #b07f43 55%, #d99c52 100%)',
-  'linear-gradient(135deg, #362714 0%, #825e31 58%, #d99c52 100%)',
-  'linear-gradient(135deg, #825e31 0%, #b07f43 45%, #362714 100%)',
+  'var(--color-teal-light)',
+  'var(--color-mint)',
+  'var(--color-sand-deep)',
+  'var(--color-amber-soft)',
 ];
 
 function websiteHref(website: string | null): string | null {
@@ -36,37 +36,37 @@ function PromotionCard({ promotion, index }: { promotion: OwnerPromotion; index:
   const category = promotion.targetAudience.trim() || 'Pet-friendly';
   const location = websiteLabel(promotion.partnerWebsite);
   return (
-    <article className="game-card overflow-hidden">
+    <article className="pl-card overflow-hidden">
       <div className="relative flex h-40 items-center justify-center" style={{ background: GRADIENTS[index % GRADIENTS.length] }}>
-        <PoppyMark className="h-16 w-16 text-white/80" />
+        <PawMark className="h-16 w-16 text-white/80" />
         <div className="absolute left-3 top-3 flex gap-2">
           <Badge tone="accent">Pet-friendly</Badge>
           <Badge tone="danger">Promo</Badge>
         </div>
-        <div className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-cream-900 shadow-sm backdrop-blur">
+        <div className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-label font-bold text-ink shadow-sm backdrop-blur">
           {category}
         </div>
       </div>
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-cream-500">{promotion.partnerName}</p>
-            <h3 className="mt-2 truncate font-display text-xl font-bold text-cream-900">{promotion.title}</h3>
+            <p className="text-label font-bold uppercase tracking-[0.18em] text-muted">{promotion.partnerName}</p>
+            <h3 className="mt-2 truncate font-display text-xl font-bold text-ink">{promotion.title}</h3>
           </div>
           <Badge tone="neutral">{expiryLabel(promotion.expiresAt)}</Badge>
         </div>
-        <p className="mt-2 text-sm leading-6 text-cream-600">{promotion.description}</p>
+        <p className="mt-2 text-body leading-6 text-muted">{promotion.description}</p>
         <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="min-w-0 text-xs font-semibold text-cream-500">
+          <div className="min-w-0 text-label font-semibold text-muted">
             <span className="block truncate">{location ?? 'Partner offer'}</span>
             <span className="mt-1 inline-block">{promotion.callToAction}</span>
           </div>
           {href ? (
-            <a href={href} target="_blank" rel="noreferrer" className="inline-flex shrink-0 rounded-2xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-[0_14px_30px_-18px_rgba(130,94,49,1)] hover:bg-secondary">
+            <a href={href} target="_blank" rel="noreferrer" className="inline-flex shrink-0 rounded-2xl bg-teal px-4 py-2 text-body font-bold text-white shadow-card hover:bg-teal-dark">
               Visit
             </a>
           ) : (
-            <span className="inline-flex shrink-0 rounded-2xl bg-cream-200 px-4 py-2 text-sm font-bold text-cream-600">{promotion.callToAction}</span>
+            <span className="inline-flex shrink-0 rounded-2xl bg-sand-deep px-4 py-2 text-body font-bold text-muted">{promotion.callToAction}</span>
           )}
         </div>
       </div>
@@ -112,12 +112,12 @@ export function BusinessesPage() {
         subtitle="Discover pet-friendly partners and active campaigns near your pack's world."
         action={<Badge tone="accent">{promotions.length} active offers</Badge>}
       />
-      <div className="game-card p-4">
+      <div className="pl-card p-4">
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search businesses, offers, or categories"
-          className="w-full rounded-2xl border border-cream-200 bg-white px-4 py-3 text-sm text-cream-900 outline-none placeholder:text-cream-400 focus:border-primary"
+          className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-body text-ink outline-none placeholder:text-muted focus:border-teal"
         />
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
           {categories.map((item) => (
@@ -125,10 +125,10 @@ export function BusinessesPage() {
               key={item}
               type="button"
               onClick={() => setCategory(item)}
-              className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition ${
+              className={`shrink-0 rounded-full px-4 py-2 text-body font-bold transition ${
                 category === item
-                  ? 'bg-primary text-white shadow-[0_14px_30px_-18px_rgba(130,94,49,1)]'
-                  : 'border border-cream-200 bg-white text-cream-700 hover:border-accent hover:text-primary'
+                  ? 'bg-teal text-white shadow-card'
+                  : 'border border-line bg-white text-muted hover:border-amber hover:text-teal'
               }`}
             >
               {item}
@@ -138,7 +138,7 @@ export function BusinessesPage() {
       </div>
       <ErrorMessage message={error} />
       {loading ? (
-        <div className="game-card p-8 text-sm text-cream-500">Loading businesses…</div>
+        <div className="pl-card p-8 text-body text-muted">Loading businesses…</div>
       ) : filtered.length === 0 ? (
         <EmptyState title="No promotions yet" description="Partner campaigns will appear here when they are active." />
       ) : (

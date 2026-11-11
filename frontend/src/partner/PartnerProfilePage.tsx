@@ -103,10 +103,10 @@ export function PartnerProfilePage() {
         <Card>
           <div className="flex flex-col items-center text-center">
             <Avatar name={businessName || partner.displayName} src={avatarUrl || partner.avatarUrl} className="h-24 w-24 text-2xl" />
-            <h2 className="mt-4 text-xl font-bold text-cream-900">{businessName || partner.displayName}</h2>
-            <p className="text-sm text-cream-500">{partner.email}</p>
+            <h2 className="mt-4 text-xl font-bold text-ink">{businessName || partner.displayName}</h2>
+            <p className="text-body text-muted">{partner.email}</p>
             <div className="mt-3"><Badge tone="accent">Partner</Badge></div>
-            {website ? <a className="mt-3 text-sm font-semibold text-primary hover:text-secondary" href={website} target="_blank" rel="noreferrer">Visit website</a> : null}
+            {website ? <a className="mt-3 text-body font-semibold text-teal hover:text-teal-dark" href={website} target="_blank" rel="noreferrer">Visit website</a> : null}
           </div>
         </Card>
 
@@ -163,7 +163,7 @@ export function PartnerProfilePage() {
             </div>
             {fieldErrors.coordinates ? <ErrorMessage message={fieldErrors.coordinates} /> : null}
             <ErrorMessage message={error} />
-            {saved ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Profile updated.</p> : null}
+            {saved ? <p className="rounded-2xl bg-success-soft px-4 py-3 text-body text-success">Profile updated.</p> : null}
             <Button type="submit" disabled={submitting}>{submitting ? 'Saving…' : 'Save profile'}</Button>
           </form>
         </Card>

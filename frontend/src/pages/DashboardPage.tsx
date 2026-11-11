@@ -40,7 +40,7 @@ export function DashboardPage() {
           </Card>
         </>
       ) : !error ? (
-        <p className="text-cream-500">Loading dashboard…</p>
+        <p className="text-muted">Loading dashboard…</p>
       ) : null}
     </div>
   );

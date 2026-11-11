@@ -1,145 +1,85 @@
 @import "tailwindcss";
+@import "@fontsource/nunito/600.css";
+@import "@fontsource/nunito/700.css";
+@import "@fontsource/nunito/800.css";
+@import "@fontsource/nunito/900.css";
+@import "@petlife/design-tokens/tokens.css";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-display: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+@layer base {
+  :root {
+    color-scheme: light;
+  }
 
-  --color-primary: #825e31;
-  --color-secondary: #5e4424;
-  --color-dark: #362714;
-  --color-accent: #d99c52;
-  --color-supporting: #b07f43;
-  --color-accent-soft: #f6e7ce;
+  body {
+    @apply bg-cream font-sans text-body leading-normal font-semibold text-ink antialiased;
+  }
 
-  --color-cream-50: #fff9f0;
-  --color-cream-100: #f6efe4;
-  --color-cream-200: #efe3d3;
-  --color-cream-300: #e2d2bf;
-  --color-cream-400: #cbb694;
-  --color-cream-500: #a9825a;
-  --color-cream-600: #8a6f4d;
-  --color-cream-700: #6b5335;
-  --color-cream-800: #4a3826;
-  --color-cream-900: #362714;
+  h1,
+  h2,
+  h3 {
+    @apply font-extrabold tracking-[-0.01em] text-teal-dark;
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid var(--color-teal);
+    outline-offset: 2px;
+  }
 }
 
-:root {
-  color-scheme: light;
+.pl-card {
+  @apply relative overflow-hidden rounded-card bg-white shadow-card;
 }
 
-body {
-  @apply bg-cream-50 font-sans text-cream-900 antialiased;
+.pl-card-sand {
+  @apply relative overflow-hidden rounded-card bg-sand;
+}
+
+.pl-chip {
+  @apply inline-flex min-h-9 items-center gap-2 rounded-pill bg-white px-3 py-1.5 text-label font-bold text-teal shadow-card;
+}
+
+.pl-progress {
+  @apply h-2.5 overflow-hidden rounded-pill bg-sand-deep;
+}
+
+.pl-progress-fill {
+  @apply h-full rounded-pill bg-teal;
+}
+
+.pl-map-grid {
+  background-color: var(--color-teal-light);
   background-image:
-    radial-gradient(circle at 12% 8%, rgba(217, 156, 82, 0.16), transparent 28%),
-    radial-gradient(circle at 88% 4%, rgba(176, 127, 67, 0.14), transparent 26%),
-    radial-gradient(circle at 50% 100%, rgba(246, 231, 206, 0.75), transparent 42%);
-  background-attachment: fixed;
-}
-
-.paw-city-bg {
-  background-image:
-    radial-gradient(circle at 18% 12%, rgba(217, 156, 82, 0.18), transparent 24%),
-    radial-gradient(circle at 82% 8%, rgba(130, 94, 49, 0.12), transparent 26%),
-    radial-gradient(circle at 50% 96%, rgba(246, 231, 206, 0.9), transparent 46%);
-}
-
-.city-grid {
-  background-image:
-    linear-gradient(to right, rgba(130, 94, 49, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(130, 94, 49, 0.08) 1px, transparent 1px);
+    linear-gradient(to right, rgba(15, 92, 92, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 92, 92, 0.08) 1px, transparent 1px);
   background-size: 44px 44px;
 }
 
-.poppy-float {
-  animation: poppy-float 7s ease-in-out infinite;
+.pl-media {
+  @apply relative flex min-h-56 items-center justify-center overflow-hidden bg-sand;
 }
 
-.game-card {
-  @apply relative overflow-hidden rounded-[30px] border border-cream-200 bg-white/95 shadow-[0_30px_80px_-45px_rgba(54,39,20,0.55)];
+.pl-pulse {
+  animation: pl-pulse 2.8s ease-out infinite;
 }
 
-.game-card::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 6px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-accent), var(--color-supporting));
+.pl-fade-in {
+  animation: pl-fade-in 0.3s ease-out both;
 }
 
-.game-card > *:not(.absolute):not(.fixed) {
-  position: relative;
-  z-index: 1;
-}
-
-.hud-chip {
-  @apply inline-flex items-center gap-2 rounded-full border border-cream-200 bg-white/85 px-3 py-2 text-xs font-bold text-cream-800 shadow-[0_14px_30px_-22px_rgba(54,39,20,0.7)] backdrop-blur;
-}
-
-.xp-track {
-  @apply h-2.5 overflow-hidden rounded-full bg-cream-200;
-}
-
-.xp-fill {
-  @apply h-full rounded-full bg-[linear-gradient(90deg,var(--color-primary),var(--color-accent),var(--color-supporting))];
-  background-size: 200% 100%;
-  animation: xp-shine 3.2s linear infinite;
-}
-
-.city-map {
-  background-image:
-    linear-gradient(to right, rgba(130, 94, 49, 0.10) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(130, 94, 49, 0.10) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(176, 127, 67, 0.16) 0 34px, transparent 34px 66px);
-  background-size: 44px 44px, 44px 44px, 100% 18px;
-}
-
-.post-media {
-  @apply relative flex min-h-56 items-center justify-center overflow-hidden;
-}
-
-.quest-card {
-  @apply rounded-3xl border border-cream-200 bg-white/90 p-4 shadow-[0_18px_45px_-32px_rgba(54,39,20,0.65)];
-}
-
-.map-pulse {
-  animation: map-pulse 2.8s ease-out infinite;
-}
-
-.feed-enter {
-  animation: feed-enter 0.45s ease-out both;
-}
-
-.float-slow {
-  animation: poppy-float 9s ease-in-out infinite;
-}
-
-@keyframes poppy-float {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-10px) rotate(2deg); }
-}
-
-@keyframes xp-shine {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}
-
-@keyframes map-pulse {
+@keyframes pl-pulse {
   0% { transform: scale(0.75); opacity: 0.7; }
   70% { transform: scale(1.35); opacity: 0; }
   100% { transform: scale(1.35); opacity: 0; }
 }
 
-@keyframes feed-enter {
-  from { opacity: 0; transform: translateY(14px) scale(0.99); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes pl-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .poppy-float,
-  .float-slow,
-  .xp-fill,
-  .map-pulse,
-  .feed-enter {
+  .pl-pulse,
+  .pl-fade-in {
     animation: none;
   }
 }

@@ -4,7 +4,7 @@ import { ApiError, createActivity, listActivities, listPets } from '../api/clien
 import { Button, Card, EmptyState, ErrorText, Field, Input } from '../components';
 import { ActivityCard } from '../petVisuals';
 import type { Activity, Pet } from '../types';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 import { isNonNegativeNumber, isPositiveInteger } from '../validation';
 
 const activityTypes = ['walk', 'run', 'hike', 'bike_ride', 'swim', 'play'];
@@ -115,9 +115,9 @@ export function ActivitiesScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.cream50 },
+  screen: { flex: 1, backgroundColor: colors.cream },
   content: { padding: 20, gap: 16 },
-  title: { color: colors.cream900, fontSize: 30, fontWeight: '900' },
+  title: { color: colors.ink, fontSize: 30, fontFamily: fonts.w900 },
   petPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   history: { gap: 12 },
 });

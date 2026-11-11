@@ -177,15 +177,15 @@ export function PartnerCampaignsPage() {
           ) : (
             <div className="space-y-4">
               {campaigns.map((campaign) => (
-                <div key={campaign.id} className="rounded-3xl border border-cream-200 bg-cream-50 p-4">
+                <div key={campaign.id} className="rounded-3xl border border-line bg-cream p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-cream-900">{campaign.title}</h3>
+                        <h3 className="font-semibold text-ink">{campaign.title}</h3>
                         <Badge tone={campaign.status === 'ACTIVE' ? 'success' : isExpired(campaign) ? 'danger' : 'neutral'}>{isExpired(campaign) ? 'EXPIRED' : campaign.status}</Badge>
                       </div>
-                      <p className="mt-1 text-sm text-cream-500">Audience: {campaign.targetAudience}</p>
-                      <p className="mt-1 text-xs text-cream-500">{campaign.creditsCharged} credits charged · {campaign.creditsRefunded} refunded · {vigencyLabel(campaign)}</p>
+                      <p className="mt-1 text-body text-muted">Audience: {campaign.targetAudience}</p>
+                      <p className="mt-1 text-label text-muted">{campaign.creditsCharged} credits charged · {campaign.creditsRefunded} refunded · {vigencyLabel(campaign)}</p>
                     </div>
                     <div className="flex gap-2">
                       {campaign.status !== 'ARCHIVED' && campaign.status !== 'EXPIRED' ? (
@@ -200,17 +200,17 @@ export function PartnerCampaignsPage() {
                       ) : null}
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-cream-700">{campaign.description}</p>
-                  {campaign.callToAction ? <p className="mt-2 text-sm font-medium text-primary">CTA: {campaign.callToAction}</p> : null}
+                  <p className="mt-3 text-body text-muted">{campaign.description}</p>
+                  {campaign.callToAction ? <p className="mt-2 text-body font-medium text-teal">CTA: {campaign.callToAction}</p> : null}
                   {campaign.aiTopics.length ? (
                     <div className="mt-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-cream-500">Recommended owner topics</p>
+                      <p className="text-label font-semibold uppercase tracking-wide text-muted">Recommended owner topics</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {campaign.aiTopics.map((topic) => <Badge key={topic} tone="accent">{topic}</Badge>)}
                       </div>
                     </div>
                   ) : (
-                    <p className="mt-3 text-sm text-cream-500">Run AI analysis to activate owner recommendations.</p>
+                    <p className="mt-3 text-body text-muted">Run AI analysis to activate owner recommendations.</p>
                   )}
                 </div>
               ))}

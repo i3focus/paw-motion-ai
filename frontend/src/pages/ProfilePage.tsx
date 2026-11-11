@@ -72,8 +72,8 @@ export function ProfilePage() {
         <Card>
           <div className="flex flex-col items-center text-center">
             <Avatar name={displayName || owner.displayName} src={avatarUrl || owner.avatarUrl} className="h-24 w-24 text-2xl" />
-            <h2 className="mt-4 text-xl font-bold text-cream-900">{displayName || owner.displayName}</h2>
-            <p className="text-sm text-cream-500">{owner.email}</p>
+            <h2 className="mt-4 text-xl font-bold text-ink">{displayName || owner.displayName}</h2>
+            <p className="text-body text-muted">{owner.email}</p>
             <div className="mt-3"><Badge tone="accent">Pet owner</Badge></div>
           </div>
         </Card>
@@ -107,7 +107,7 @@ export function ProfilePage() {
               />
             </div>
             <ErrorMessage message={error} />
-            {saved ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Profile updated.</p> : null}
+            {saved ? <p className="rounded-2xl bg-success-soft px-4 py-3 text-body text-success">Profile updated.</p> : null}
             <Button type="submit" disabled={submitting}>{submitting ? 'Saving…' : 'Save profile'}</Button>
           </form>
         </Card>

@@ -1,20 +1,16 @@
-export const colors = {
-  primary: '#825E31',
-  secondary: '#5E4424',
-  dark: '#362714',
-  accent: '#D99C52',
-  supporting: '#B07F43',
-  accentSoft: '#F6E7CE',
-  cream50: '#FFF9F0',
-  cream100: '#F6EFE4',
-  cream200: '#EFE3D3',
-  cream300: '#E2D2BF',
-  cream500: '#A9825A',
-  cream600: '#8A6F4D',
-  cream700: '#6B5335',
-  cream800: '#4A3826',
-  cream900: '#362714',
-  white: '#FFFFFF',
-  danger: '#B42318',
-  success: '#067647',
-};
+import { colors, fontFamily, fontSize, radius, shadows, spacing, layout } from '@petlife/design-tokens';
+
+export { colors, fontSize, radius, spacing, layout };
+
+export const fonts = {
+  w600: fontFamily.native.semibold,
+  w700: fontFamily.native.bold,
+  w800: fontFamily.native.extrabold,
+  w900: fontFamily.native.black,
+} as const;
+
+export const shadow = {
+  card: shadows.card.native,
+  raised: shadows.raised.native,
+  coral: shadows.coral.native,
+} as const;

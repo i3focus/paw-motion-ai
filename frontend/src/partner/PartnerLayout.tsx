@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Avatar, Badge, BrandLogo, PoppyMark } from '../components/ui';
+import { Avatar, Badge, BrandLogo } from '../components/ui';
 import { usePartnerAuth } from '../partnerAuth';
 
 export type PartnerPageKey = 'campaigns' | 'billing' | 'profile';
@@ -14,24 +14,23 @@ export function PartnerLayout({ page, setPage, children }: { page: PartnerPageKe
   const { partner, logout } = usePartnerAuth();
 
   return (
-    <div className="min-h-screen paw-city-bg">
-      <header className="sticky top-0 z-20 border-b border-cream-200 bg-white/85 backdrop-blur">
+    <div className="min-h-screen bg-cream">
+      <header className="sticky top-0 z-20 border-b border-line bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="relative">
             <BrandLogo className="text-xl" />
-            <PoppyMark className="poppy-float pointer-events-none absolute -right-10 -top-4 h-8 w-8 text-accent/50" />
-            <p className="text-sm text-cream-500">Partner Portal</p>
+            <p className="text-body text-muted">Partner Portal</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-3 sm:flex">
               <Avatar name={partner?.businessName ?? partner?.displayName ?? 'Partner'} src={partner?.avatarUrl} className="h-10 w-10" />
               <div className="text-right">
-                <p className="text-sm font-semibold text-cream-900">{partner?.businessName ?? partner?.displayName}</p>
-                <p className="text-xs text-cream-500">{partner?.email}</p>
+                <p className="text-body font-semibold text-ink">{partner?.businessName ?? partner?.displayName}</p>
+                <p className="text-label text-muted">{partner?.email}</p>
               </div>
             </div>
             <Badge tone="accent">Partner</Badge>
-            <button type="button" onClick={logout} className="rounded-2xl border border-cream-300 px-3 py-2 text-sm font-semibold text-cream-700 hover:bg-cream-50">
+            <button type="button" onClick={logout} className="rounded-2xl border border-line px-3 py-2 text-body font-semibold text-muted hover:bg-cream">
               Logout
             </button>
           </div>
@@ -42,8 +41,8 @@ export function PartnerLayout({ page, setPage, children }: { page: PartnerPageKe
               key={item.key}
               type="button"
               onClick={() => setPage(item.key)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
-                page === item.key ? 'bg-primary text-white shadow-[0_16px_36px_-20px_rgba(130,94,49,1)]' : 'bg-white/70 text-cream-700 hover:bg-accent-soft hover:text-primary'
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-body font-semibold transition ${
+                page === item.key ? 'bg-teal text-white shadow-card' : 'bg-white/70 text-muted hover:bg-teal-light hover:text-teal'
               }`}
             >
               {item.label}

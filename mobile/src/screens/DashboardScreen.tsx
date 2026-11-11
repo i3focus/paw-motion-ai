@@ -4,7 +4,7 @@ import { ApiError, getDashboardSummary, listPets, listRecommendations } from '..
 import { Badge, Card, EmptyState, ErrorText } from '../components';
 import { ActivityCard } from '../petVisuals';
 import type { DashboardSummary, OwnerRecommendation, Pet } from '../types';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 
 export function DashboardScreen() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -81,19 +81,19 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.cream50 },
+  screen: { flex: 1, backgroundColor: colors.cream },
   content: { padding: 20, gap: 16 },
-  title: { color: colors.cream900, fontSize: 30, fontWeight: '900' },
-  subtitle: { color: colors.cream600, marginTop: -10, marginBottom: 4 },
+  title: { color: colors.ink, fontSize: 30, fontFamily: fonts.w900 },
+  subtitle: { color: colors.muted, marginTop: -10, marginBottom: 4 },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  stat: { flexGrow: 1, flexBasis: '30%', backgroundColor: colors.white, borderColor: colors.cream200, borderWidth: 1, borderRadius: 22, padding: 14 },
-  statLabel: { color: colors.cream500, fontSize: 12, fontWeight: '700' },
-  statValue: { color: colors.cream900, fontSize: 24, fontWeight: '900', marginTop: 6 },
+  stat: { flexGrow: 1, flexBasis: '30%', backgroundColor: colors.white, borderColor: colors.line, borderWidth: 1, borderRadius: 22, padding: 14 },
+  statLabel: { color: colors.muted, fontSize: 12, fontFamily: fonts.w700 },
+  statValue: { color: colors.ink, fontSize: 24, fontFamily: fonts.w900, marginTop: 6 },
   activityList: { gap: 10 },
   rowHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
-  rowTitle: { color: colors.cream900, fontWeight: '800' },
-  rowSubtitle: { color: colors.cream500, fontSize: 13, marginTop: 3 },
-  recommendation: { borderTopColor: colors.cream200, borderTopWidth: 1, paddingTop: 12, marginTop: 4 },
-  recommendationText: { color: colors.cream700, fontSize: 14, marginTop: 8, lineHeight: 20 },
+  rowTitle: { color: colors.ink, fontFamily: fonts.w800 },
+  rowSubtitle: { color: colors.muted, fontSize: 13, marginTop: 3 },
+  recommendation: { borderTopColor: colors.line, borderTopWidth: 1, paddingTop: 12, marginTop: 4 },
+  recommendationText: { color: colors.muted, fontSize: 14, marginTop: 8, lineHeight: 20 },
   topicRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
 });
