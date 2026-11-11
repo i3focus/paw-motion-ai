@@ -5,18 +5,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.pawmotionai.activity.application.port.out.ActivityRepository;
 import com.pawmotionai.activity.domain.model.Activity;
+import com.pawmotionai.engagement.EngagementService;
 
 @Repository
 public class ActivityPersistenceAdapter implements ActivityRepository {
 
     private final ActivityJpaRepository repository;
+    private final JdbcTemplate jdbcTemplate;
+    private final EngagementService engagement;
 
-    public ActivityPersistenceAdapter(ActivityJpaRepository repository) {
+    public ActivityPersistenceAdapter(ActivityJpaRepository repository, JdbcTemplate jdbcTemplate, EngagementService engagement) {
         this.repository = repository;
+        this.jdbcTemplate = jdbcTemplate;
+        this.engagement = engagement;
     }
 
     @Override
@@ -26,7 +32,24 @@ public class ActivityPersistenceAdapter implements ActivityRepository {
                 activity.getId(), activity.getOwnerId(), activity.getPetId(), activity.getType(), activity.getStartedAt(),
                 activity.getDurationSeconds(), activity.getDistanceMeters(), activity.getNotes(), activity.getCreatedAt(), Instant.now(),
                 activity.getLatitude(), activity.getLongitude(), activity.isShareToPawCity()));
-        return toDomain(repository.save(entity));
+        Activity saved = toDomain(repository.saveAndFlush(entity));
+        if (saved.isShareToPawCity()) {
+            publishToFeed(saved);
+        }
+        engagement.recordActivity(saved.getId(), saved.getOwnerId(), saved.getPetId(), saved.getDistanceMeters(), saved.getStartedAt());
+        return saved;
+    }
+
+    private void publishToFeed(Activity activity) {
+        jdbcTemplate.update("""
+            INSERT INTO feed_items (id, type, ref_id, author_owner_id, author_pet_id, location, published_at)
+            VALUES (?::uuid, 'ACTIVITY', ?::uuid, ?::uuid, ?::uuid,
+                    CASE WHEN ?::float8 IS NULL OR ?::float8 IS NULL THEN NULL
+                         ELSE ST_SetSRID(ST_MakePoint(?::float8, ?::float8), 4326)::geography END, ?)
+            ON CONFLICT (type, ref_id) DO NOTHING
+            """, UUID.randomUUID().toString(), activity.getId().toString(), activity.getOwnerId().toString(),
+            activity.getPetId().toString(), activity.getLongitude(), activity.getLatitude(), activity.getLongitude(),
+            activity.getLatitude(), java.sql.Timestamp.from(activity.getStartedAt()));
     }
 
     @Override

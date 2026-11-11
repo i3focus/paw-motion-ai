@@ -75,7 +75,8 @@ export interface Campaign {
   description: string;
   targetAudience: string;
   callToAction: string;
-  status: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'ARCHIVED' | 'EXPIRED' | string;
+  status: 'DRAFT' | 'IN_REVIEW' | 'ACTIVE' | 'PAUSED' | 'ENDED' | string;
+  endReason?: 'ARCHIVED' | 'EXPIRED' | 'ENDED_BY_PARTNER' | 'BUDGET_EXHAUSTED' | null;
   aiTopics: string[];
   analyzedAt: string | null;
   creditsCharged: number;

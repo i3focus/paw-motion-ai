@@ -31,6 +31,9 @@ public class PartnerCampaignPersistenceAdapter implements PartnerCampaignReposit
         entity.update(campaign.getTitle(), campaign.getDescription(), campaign.getTargetAudience(), campaign.getCallToAction(),
             campaign.getStatus(), joinTopics(campaign), campaign.getAnalyzedAt(), campaign.getCreditsCharged(),
             campaign.getCreditsRefunded(), campaign.getExpiresAt(), campaign.getIdempotencyKey(), Instant.now());
+        entity.setEndReason(campaign.getEndReason());
+        entity.setWindow(campaign.getCreatedAt(), campaign.getExpiresAt());
+        entity.setBudgetCredits(campaign.getCreditsCharged());
         return toDomain(repository.save(entity));
     }
 
@@ -64,9 +67,11 @@ public class PartnerCampaignPersistenceAdapter implements PartnerCampaignReposit
     }
 
     private PartnerCampaign toDomain(PartnerCampaignJpaEntity entity) {
-        return PartnerCampaign.reconstitute(entity.getId(), entity.getPartnerId(), entity.getTitle(), entity.getDescription(),
+        PartnerCampaign campaign = PartnerCampaign.reconstitute(entity.getId(), entity.getPartnerId(), entity.getTitle(), entity.getDescription(),
             entity.getTargetAudience(), entity.getCallToAction(), entity.getStatus(), entity.getAiTopics(),
             entity.getAnalyzedAt(), entity.getCreditsCharged(), entity.getCreditsRefunded(), entity.getExpiresAt(),
             entity.getIdempotencyKey(), entity.getCreatedAt(), entity.getUpdatedAt());
+        campaign.restoreEndReason(entity.getEndReason());
+        return campaign;
     }
 }

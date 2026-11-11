@@ -2,6 +2,8 @@ package com.pawmotionai.configuration;
 
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.pawmotionai.activity.domain.exception.ActivityNotFoundException;
+import com.pawmotionai.shared.ApiException;
 import com.pawmotionai.activity.domain.exception.InvalidActivityException;
 import com.pawmotionai.identity.domain.exception.InvalidCredentialsException;
 import com.pawmotionai.identity.domain.exception.OwnerAlreadyExistsException;
@@ -33,12 +36,19 @@ import com.pawmotionai.ledger.domain.exception.WalletNotFoundException;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException exception) {
         String detail = exception.getBindingResult().getFieldErrors().stream()
             .map(error -> error.getField() + ": " + error.getDefaultMessage())
             .collect(Collectors.joining("; "));
         return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Validation failed", detail);
+    }
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ProblemDetail> handleApiException(ApiException exception) {
+        return problem(exception.getStatus(), exception.getTitle(), exception.getMessage());
     }
 
     @ExceptionHandler(OwnerAlreadyExistsException.class)
@@ -112,6 +122,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleUnexpected(Exception exception) {
+        log.error("unhandled api exception", exception);
         return problem(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", "An unexpected error occurred");
     }
 

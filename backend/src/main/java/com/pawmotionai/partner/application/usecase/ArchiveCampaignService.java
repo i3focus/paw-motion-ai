@@ -50,7 +50,7 @@ public class ArchiveCampaignService implements ArchiveCampaignUseCase {
         if (!campaign.belongsTo(partnerId)) {
             throw new CampaignAccessDeniedException();
         }
-        if (campaign.getStatus() == CampaignStatus.ARCHIVED) {
+        if (campaign.isArchived()) {
             return CampaignResponseDto.from(campaign, postLedgerEntryUseCase.availableBalance(partnerId));
         }
         Instant now = Instant.now();

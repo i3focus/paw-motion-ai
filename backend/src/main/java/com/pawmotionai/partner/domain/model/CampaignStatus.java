@@ -3,13 +3,17 @@ package com.pawmotionai.partner.domain.model;
 public enum CampaignStatus {
 
     DRAFT,
+    IN_REVIEW,
     ACTIVE,
     PAUSED,
-    ARCHIVED,
-    EXPIRED;
+    ENDED;
 
     public static CampaignStatus fromValue(String value) {
-        return value == null || value.isBlank() ? DRAFT : valueOf(value.trim().toUpperCase());
+        if (value == null || value.isBlank()) {
+            return DRAFT;
+        }
+        String normalized = value.trim().toUpperCase();
+        return "ARCHIVED".equals(normalized) || "EXPIRED".equals(normalized) ? ENDED : valueOf(normalized);
     }
 
     public boolean isVisibleToOwners() {

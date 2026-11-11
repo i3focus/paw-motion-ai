@@ -4,12 +4,12 @@ import { Badge, Button, Card, EmptyState, ErrorMessage, SectionHeader, TextArea,
 import type { Campaign } from '../types';
 
 function isExpired(campaign: Campaign): boolean {
-  return campaign.status === 'EXPIRED'
-    || (campaign.status !== 'ARCHIVED' && new Date(campaign.expiresAt).getTime() <= Date.now());
+  return (campaign.status === 'ENDED' && campaign.endReason === 'EXPIRED')
+    || (campaign.status !== 'ENDED' && new Date(campaign.expiresAt).getTime() <= Date.now());
 }
 
 function vigencyLabel(campaign: Campaign): string {
-  if (campaign.status === 'ARCHIVED') {
+  if (campaign.status === 'ENDED' && campaign.endReason !== 'EXPIRED') {
     return 'archived';
   }
   const expiresAt = new Date(campaign.expiresAt);
@@ -188,12 +188,12 @@ export function PartnerCampaignsPage() {
                       <p className="mt-1 text-label text-muted">{campaign.creditsCharged} credits charged · {campaign.creditsRefunded} refunded · {vigencyLabel(campaign)}</p>
                     </div>
                     <div className="flex gap-2">
-                      {campaign.status !== 'ARCHIVED' && campaign.status !== 'EXPIRED' ? (
+                      {campaign.status !== 'ENDED' ? (
                         <Button type="button" variant="secondary" onClick={() => handleAnalyze(campaign.id)} disabled={analyzingId === campaign.id}>
                           {analyzingId === campaign.id ? 'Analyzing…' : campaign.aiTopics.length ? 'Re-analyze' : 'Analyze with AI'}
                         </Button>
                       ) : null}
-                      {campaign.status !== 'ARCHIVED' && campaign.status !== 'EXPIRED' ? (
+                      {campaign.status !== 'ENDED' ? (
                         <Button type="button" variant="ghost" onClick={() => handleArchive(campaign.id)} disabled={archivingId === campaign.id}>
                           {archivingId === campaign.id ? 'Archiving…' : 'Archive'}
                         </Button>

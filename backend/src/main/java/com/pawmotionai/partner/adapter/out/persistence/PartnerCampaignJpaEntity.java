@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
+import com.pawmotionai.partner.domain.model.CampaignEndReason;
 import com.pawmotionai.partner.domain.model.CampaignStatus;
 
 @Entity
@@ -63,6 +64,19 @@ public class PartnerCampaignJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "end_reason")
+    private CampaignEndReason endReason;
+
+    @Column(name = "starts_at", nullable = false)
+    private Instant startsAt;
+
+    @Column(name = "ends_at", nullable = false)
+    private Instant endsAt;
+
+    @Column(name = "budget_credits", nullable = false)
+    private long budgetCredits;
+
     @Version
     private Long version;
 
@@ -97,6 +111,8 @@ public class PartnerCampaignJpaEntity {
     public String getTargetAudience() { return targetAudience; }
     public String getCallToAction() { return callToAction; }
     public CampaignStatus getStatus() { return status; }
+    public CampaignEndReason getEndReason() { return endReason; }
+    public void setEndReason(CampaignEndReason endReason) { this.endReason = endReason; }
     public String getAiTopics() { return aiTopics; }
     public Instant getAnalyzedAt() { return analyzedAt; }
     public long getCreditsCharged() { return creditsCharged; }
@@ -105,6 +121,15 @@ public class PartnerCampaignJpaEntity {
     public String getIdempotencyKey() { return idempotencyKey; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+
+    public void setWindow(Instant startsAt, Instant endsAt) {
+        this.startsAt = startsAt;
+        this.endsAt = endsAt;
+    }
+
+    public void setBudgetCredits(long budgetCredits) {
+        this.budgetCredits = budgetCredits;
+    }
 
     public void update(String title, String description, String targetAudience, String callToAction,
                        CampaignStatus status, String aiTopics, Instant analyzedAt, long creditsCharged,

@@ -306,7 +306,7 @@ export function completeFakePurchase(transactionId: string): Promise<PaymentTran
 
 export function listActivityFeed(page = 0, size = 20): Promise<ActivityPost[]> {
   const params = new URLSearchParams({ page: String(page), size: String(size) });
-  return request<ActivityPost[]>(`/api/feed?${params.toString()}`);
+  return request<ActivityPost[]>(`/api/activities/feed?${params.toString()}`);
 }
 
 export function toggleActivityReaction(activityId: string, type: string): Promise<ActivityPost> {
