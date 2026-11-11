@@ -131,13 +131,13 @@ export function PartnerBillingPage() {
             <TextInput label={`Amount (${pricing?.currency ?? 'BRL'})`} required type="number" min={pricing?.minPurchaseAmount} max={pricing?.maxPurchaseAmount} step={1} value={amount} onChange={(event) => setAmount(event.target.value)} />
             <div className="flex gap-2">
               {(['PIX', 'CARD'] as const).map((option) => (
-                <button key={option} type="button" onClick={() => setMethod(option)} className={`flex-1 rounded-2xl border px-3 py-2 text-sm font-semibold ${method === option ? 'border-primary bg-primary text-white' : 'border-cream-300 text-cream-700'}`}>
+                <button key={option} type="button" onClick={() => setMethod(option)} className={`flex-1 rounded-2xl border px-3 py-2 text-body font-semibold ${method === option ? 'border-teal bg-teal text-white' : 'border-line text-muted'}`}>
                   {option}
                 </button>
               ))}
             </div>
             <ErrorMessage message={error} />
-            {notice ? <p className="rounded-2xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{notice}</p> : null}
+            {notice ? <p className="rounded-2xl bg-success-soft px-3 py-2 text-body text-success">{notice}</p> : null}
             <Button type="submit" disabled={submitting} className="w-full">{submitting ? 'Creating checkout…' : 'Buy credits'}</Button>
           </form>
         </Card>
@@ -145,13 +145,13 @@ export function PartnerBillingPage() {
         <Card title="Wallet accounts" description="MAIN is spent first, then BONUS, then PARTNER promotional credits.">
           <div className="space-y-3">
             {(wallet?.accounts ?? []).map((account) => (
-              <div key={account.id} className="flex items-center justify-between gap-3 rounded-2xl border border-cream-200 bg-cream-50 px-4 py-3">
+              <div key={account.id} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-cream px-4 py-3">
                 <div>
-                  <p className="font-semibold text-cream-900">{account.code}</p>
-                  <p className="text-xs text-cream-500">{account.status}</p>
+                  <p className="font-semibold text-ink">{account.code}</p>
+                  <p className="text-label text-muted">{account.status}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <p className="text-lg font-bold text-primary">{account.balance} credits</p>
+                  <p className="text-lg font-bold text-teal">{account.balance} credits</p>
                   <Button type="button" variant="ghost" onClick={() => loadStatement(account.id, 0)} disabled={statementLoading}>
                     Statement
                   </Button>
@@ -171,21 +171,21 @@ export function PartnerBillingPage() {
         {statementError ? (
           <ErrorMessage message={statementError} />
         ) : statementLoading ? (
-          <p className="text-sm text-cream-500">Loading statement…</p>
+          <p className="text-body text-muted">Loading statement…</p>
         ) : !statement || statement.content.length === 0 ? (
           <EmptyState title="No ledger movements" description="Credits and debits will appear here." />
         ) : (
           <div className="space-y-3">
             {statement.content.map((entry) => (
-              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cream-200 px-4 py-3">
+              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
                 <div>
                   <div className="flex items-center gap-2">
                     <Badge tone={entry.direction === 'CREDIT' ? 'success' : 'accent'}>{entry.direction}</Badge>
-                    <p className="font-semibold text-cream-900">{entry.referenceType}</p>
+                    <p className="font-semibold text-ink">{entry.referenceType}</p>
                   </div>
-                  <p className="mt-1 text-xs text-cream-500">{entry.description ?? 'Ledger movement'} · balance after {entry.balanceAfter} · {new Date(entry.occurredAt).toLocaleString()}</p>
+                  <p className="mt-1 text-label text-muted">{entry.description ?? 'Ledger movement'} · balance after {entry.balanceAfter} · {new Date(entry.occurredAt).toLocaleString()}</p>
                 </div>
-                <p className={`text-lg font-bold ${entry.direction === 'CREDIT' ? 'text-emerald-700' : 'text-primary'}`}>
+                <p className={`text-lg font-bold ${entry.direction === 'CREDIT' ? 'text-success' : 'text-teal'}`}>
                   {entry.direction === 'CREDIT' ? '+' : '-'}{entry.amount}
                 </p>
               </div>
@@ -193,7 +193,7 @@ export function PartnerBillingPage() {
             {statement.totalPages > 1 ? (
               <div className="flex items-center justify-between gap-3 pt-2">
                 <Button type="button" variant="ghost" disabled={statementLoading || statementPage === 0} onClick={() => changeStatementPage(-1)}>Previous</Button>
-                <p className="text-xs text-cream-500">Page {statementPage + 1} of {statement.totalPages}</p>
+                <p className="text-label text-muted">Page {statementPage + 1} of {statement.totalPages}</p>
                 <Button type="button" variant="ghost" disabled={statementLoading || statementPage >= statement.totalPages - 1} onClick={() => changeStatementPage(1)}>Next</Button>
               </div>
             ) : null}
@@ -207,10 +207,10 @@ export function PartnerBillingPage() {
         ) : (
           <div className="space-y-3">
             {purchases.map((purchase) => (
-              <div key={purchase.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cream-200 px-4 py-3">
+              <div key={purchase.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
                 <div>
-                  <p className="font-semibold text-cream-900">{money(purchase.currency, purchase.amount)}</p>
-                  <p className="text-xs text-cream-500">{purchase.expectedCredits} credits · {purchase.method ?? purchase.provider} · {new Date(purchase.createdAt).toLocaleString()}</p>
+                  <p className="font-semibold text-ink">{money(purchase.currency, purchase.amount)}</p>
+                  <p className="text-label text-muted">{purchase.expectedCredits} credits · {purchase.method ?? purchase.provider} · {new Date(purchase.createdAt).toLocaleString()}</p>
                 </div>
                 <Badge tone={purchase.status === 'CONFIRMED' ? 'success' : purchase.status === 'PENDING' ? 'accent' : 'neutral'}>{purchase.status}</Badge>
               </div>

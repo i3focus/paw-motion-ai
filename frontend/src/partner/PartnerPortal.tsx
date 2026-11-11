@@ -11,7 +11,7 @@ function PartnerShell() {
   const [page, setPage] = useState<PartnerPageKey>('campaigns');
 
   if (loading) {
-    return <main className="flex min-h-screen items-center justify-center text-cream-500">Loading Partner Portal…</main>;
+    return <main className="flex min-h-screen items-center justify-center text-muted">Loading Partner Portal…</main>;
   }
   if (!partner) {
     return <PartnerAuthPage />;

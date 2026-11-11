@@ -60,7 +60,7 @@ export function InsightsPage() {
 
           {insight ? (
             <Card title="Latest insight">
-              <p className="text-lg leading-7 text-cream-800">{insight.text}</p>
+              <p className="text-lg leading-7 text-ink">{insight.text}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Badge>Provider: {insight.provider}</Badge>
                 {insight.model ? <Badge>Model: {insight.model}</Badge> : null}
@@ -78,16 +78,16 @@ export function InsightsPage() {
           ) : (
             <div className="space-y-3">
               {recommendations.map((recommendation) => (
-                <div key={recommendation.campaignId} className="rounded-3xl border border-cream-200 bg-cream-50 p-4">
+                <div key={recommendation.campaignId} className="rounded-3xl border border-line bg-cream p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-cream-900">{recommendation.campaignTitle}</p>
-                      <p className="mt-1 text-sm text-cream-500">{recommendation.partnerName}</p>
+                      <p className="font-semibold text-ink">{recommendation.campaignTitle}</p>
+                      <p className="mt-1 text-body text-muted">{recommendation.partnerName}</p>
                     </div>
                     <Badge tone="accent">AI topics</Badge>
                   </div>
-                  <p className="mt-3 text-sm text-cream-700">{recommendation.description}</p>
-                  {recommendation.callToAction ? <p className="mt-2 text-sm font-medium text-primary">{recommendation.callToAction}</p> : null}
+                  <p className="mt-3 text-body text-muted">{recommendation.description}</p>
+                  {recommendation.callToAction ? <p className="mt-2 text-body font-medium text-teal">{recommendation.callToAction}</p> : null}
                   <div className="mt-3 flex flex-wrap gap-2">
                     {recommendation.recommendedTopics.map((topic) => <Badge key={topic} tone="neutral">{topic}</Badge>)}
                   </div>

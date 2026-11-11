@@ -117,9 +117,9 @@ export function ActivitiesPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Activities" subtitle="Log real walks, runs, play sessions, and outdoor time to earn Paw City progress." />
+      <SectionHeader title="Activities" subtitle="Log real walks, runs, play sessions, and outdoor time to earn PETLIFE progress." />
       <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
-        <Card title="Record activity" description="Real activity data powers insights and Paw City posts.">
+        <Card title="Record activity" description="Real activity data powers insights and PETLIFE posts.">
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <SelectInput
               label="Pet"
@@ -185,7 +185,7 @@ export function ActivitiesPage() {
             <Button type="button" variant="secondary" onClick={useCurrentLocation} disabled={locating} className="w-full">
               {locating ? 'Reading location…' : 'Use current location'}
             </Button>
-            <label className="flex items-start gap-3 rounded-2xl border border-cream-200 bg-cream-50 p-3 text-sm">
+            <label className="flex items-start gap-3 rounded-2xl border border-line bg-cream p-3 text-body">
               <input
                 type="checkbox"
                 checked={shareToPawCity}
@@ -193,8 +193,8 @@ export function ActivitiesPage() {
                 className="mt-1 h-4 w-4 accent-primary"
               />
               <span>
-                <span className="font-semibold text-cream-900">Share to Paw City</span>
-                <span className="block text-cream-500">Publish this activity as an Instagram-style post with reactions and comments.</span>
+                <span className="font-semibold text-ink">Share to PETLIFE</span>
+                <span className="block text-muted">Publish this activity as an Instagram-style post with reactions and comments.</span>
               </span>
             </label>
             <TextArea label="Notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} maxLength={500} />

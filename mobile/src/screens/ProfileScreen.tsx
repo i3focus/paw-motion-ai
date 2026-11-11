@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiError, updateProfile } from '../api/client';
 import { useAuth } from '../auth';
 import { Badge, Button, Card, ErrorText, Field, Input } from '../components';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 import { formatPhoneInput, isValidHttpUrl, isValidPhone, normalizeUrl } from '../validation';
 
 export function ProfileScreen() {
@@ -88,12 +88,12 @@ export function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.cream50 },
+  screen: { flex: 1, backgroundColor: colors.cream },
   content: { padding: 20, gap: 16 },
-  title: { color: colors.cream900, fontSize: 30, fontWeight: '900' },
-  name: { color: colors.cream900, fontSize: 22, fontWeight: '900', textAlign: 'center' },
-  email: { color: colors.cream500, textAlign: 'center', marginTop: 4 },
+  title: { color: colors.ink, fontSize: 30, fontFamily: fonts.w900 },
+  name: { color: colors.ink, fontSize: 22, fontFamily: fonts.w900, textAlign: 'center' },
+  email: { color: colors.muted, textAlign: 'center', marginTop: 4 },
   badgeRow: { alignItems: 'center', marginTop: 12 },
-  saved: { color: colors.success, fontWeight: '700', marginBottom: 12 },
+  saved: { color: colors.success, fontFamily: fonts.w700, marginBottom: 12 },
   logout: { marginTop: 10 },
 });

@@ -13,7 +13,7 @@ import {
 } from '../api/client';
 import { useAuth } from '../auth';
 import { PetAvatar, PawIcon } from '../components/petVisuals';
-import { Avatar, Badge, Button, EmptyState, ErrorMessage, PoppyMark, TextInput } from '../components/ui';
+import { Avatar, Badge, Button, EmptyState, ErrorMessage, PawMark, TextInput } from '../components/ui';
 import type { Activity, ActivityComment, ActivityPost, DashboardSummary, OwnerPromotion, OwnerRecommendation, Pet } from '../types';
 
 const REACTIONS = [
@@ -25,12 +25,12 @@ const REACTIONS = [
 const FEED_PAGE_SIZE = 12;
 
 const MEDIA_GRADIENTS: Record<string, string> = {
-  walk: 'linear-gradient(135deg, #825e31 0%, #d99c52 52%, #b07f43 100%)',
-  run: 'linear-gradient(135deg, #5e4424 0%, #b07f43 55%, #d99c52 100%)',
-  hike: 'linear-gradient(135deg, #362714 0%, #825e31 58%, #d99c52 100%)',
-  bike_ride: 'linear-gradient(135deg, #825e31 0%, #b07f43 45%, #362714 100%)',
-  swim: 'linear-gradient(135deg, #5e4424 0%, #d99c52 50%, #825e31 100%)',
-  play: 'linear-gradient(135deg, #b07f43 0%, #d99c52 55%, #5e4424 100%)',
+  walk: 'var(--color-teal-light)',
+  run: 'var(--color-mint)',
+  hike: 'var(--color-sand-deep)',
+  bike_ride: 'var(--color-amber-soft)',
+  swim: 'var(--color-coral-soft)',
+  play: 'var(--color-sand)',
 };
 
 function timeAgo(value: string): string {
@@ -67,14 +67,14 @@ function sameDay(value: string, date: Date): boolean {
 function PostAvatar({ post }: { post: ActivityPost }) {
   if (post.petSpecies.toLowerCase().includes('dog')) {
     return (
-      <span className="relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-full border border-cream-200 bg-cream-100">
+      <span className="relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-full border border-line bg-sand">
         <img src="/assets/dog-portrait.jpg" alt={`${post.petName} avatar`} className="h-full w-full object-cover" />
         <PawIcon className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 text-white drop-shadow" />
       </span>
     );
   }
   return (
-    <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-white shadow-sm">
+    <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal text-white shadow-sm">
       <PawIcon className="h-5 w-5" />
     </span>
   );
@@ -82,21 +82,21 @@ function PostAvatar({ post }: { post: ActivityPost }) {
 
 function StoriesRow({ pets, ownerName, ownerAvatarUrl }: { pets: Pet[]; ownerName: string; ownerAvatarUrl: string | null }) {
   return (
-    <section className="game-card p-4">
+    <section className="pl-card p-4">
       <div className="flex gap-5 overflow-x-auto pb-1">
         <div className="flex w-16 shrink-0 flex-col items-center gap-2">
-          <span className="relative inline-flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-accent bg-cream-50">
-            {ownerAvatarUrl ? <img src={ownerAvatarUrl} alt={ownerName} className="h-full w-full rounded-full object-cover" /> : <PawIcon className="h-7 w-7 text-primary" />}
-            <span className="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-sm">+</span>
+          <span className="relative inline-flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-amber bg-cream">
+            {ownerAvatarUrl ? <img src={ownerAvatarUrl} alt={ownerName} className="h-full w-full rounded-full object-cover" /> : <PawIcon className="h-7 w-7 text-teal" />}
+            <span className="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-teal text-white shadow-sm">+</span>
           </span>
-          <span className="w-full truncate text-center text-xs font-semibold text-cream-700">Your story</span>
+          <span className="w-full truncate text-center text-label font-semibold text-muted">Your story</span>
         </div>
         {pets.map((pet) => (
           <div key={pet.id} className="flex w-16 shrink-0 flex-col items-center gap-2">
-            <span className="rounded-full bg-gradient-to-br from-accent-soft to-cream-100 p-1">
+            <span className="rounded-full bg-teal-light p-1">
               <PetAvatar pet={pet} className="h-14 w-14" />
             </span>
-            <span className="w-full truncate text-center text-xs font-semibold text-cream-700">{pet.name}</span>
+            <span className="w-full truncate text-center text-label font-semibold text-muted">{pet.name}</span>
           </div>
         ))}
       </div>
@@ -123,41 +123,41 @@ function PetWeekCard({ summary, pets, activities }: { summary: DashboardSummary 
   const petCount = summary?.petCount ?? pets.length;
 
   return (
-    <section className="quest-card">
+    <section className="pl-card-sand">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">Pack week</p>
-          <h2 className="mt-1 font-display text-2xl font-bold text-cream-900">{petCount === 1 ? 'Your pet' : 'Your pets'}&apos; week</h2>
+          <p className="text-label font-semibold uppercase tracking-[0.18em] text-muted">Pack week</p>
+          <h2 className="mt-1 font-display text-2xl font-bold text-ink">{petCount === 1 ? 'Your pet' : 'Your pets'}&apos; week</h2>
         </div>
-        <PoppyMark className="h-9 w-9 text-accent" />
+        <PawMark className="h-9 w-9 text-amber-ink" />
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2">
-        <div className="rounded-2xl bg-cream-50 p-3 text-center">
-          <p className="text-lg font-bold text-cream-900">{summary?.activityCountLast7Days ?? 0}</p>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-cream-500">Adventures</p>
+        <div className="rounded-2xl bg-cream p-3 text-center">
+          <p className="text-lg font-bold text-ink">{summary?.activityCountLast7Days ?? 0}</p>
+          <p className="text-caption font-semibold uppercase tracking-wide text-muted">Adventures</p>
         </div>
-        <div className="rounded-2xl bg-cream-50 p-3 text-center">
-          <p className="text-lg font-bold text-cream-900">{((summary?.totalDistanceMetersLast7Days ?? 0) / 1000).toFixed(1)}</p>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-cream-500">Km</p>
+        <div className="rounded-2xl bg-cream p-3 text-center">
+          <p className="text-lg font-bold text-ink">{((summary?.totalDistanceMetersLast7Days ?? 0) / 1000).toFixed(1)}</p>
+          <p className="text-caption font-semibold uppercase tracking-wide text-muted">Km</p>
         </div>
-        <div className="rounded-2xl bg-cream-50 p-3 text-center">
-          <p className="text-lg font-bold text-cream-900">{summary?.currentStreakDays ?? 0}</p>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-cream-500">Streak</p>
+        <div className="rounded-2xl bg-cream p-3 text-center">
+          <p className="text-lg font-bold text-ink">{summary?.currentStreakDays ?? 0}</p>
+          <p className="text-caption font-semibold uppercase tracking-wide text-muted">Streak</p>
         </div>
       </div>
       {weekIsComplete ? (
         <div className="mt-5 flex h-24 items-end gap-2">
           {days.map((day) => (
             <div key={day.date.toISOString()} className="flex flex-1 flex-col items-center gap-1">
-              <div className="flex h-16 w-full items-end rounded-2xl bg-cream-100">
-                <div className="w-full rounded-2xl bg-[linear-gradient(180deg,var(--color-accent),var(--color-primary))]" style={{ height: `${Math.max(12, (day.count / maxCount) * 100)}%` }} />
+              <div className="flex h-16 w-full items-end rounded-2xl bg-sand">
+                <div className="w-full rounded-2xl bg-teal" style={{ height: `${Math.max(12, (day.count / maxCount) * 100)}%` }} />
               </div>
-              <span className="text-[10px] font-bold text-cream-500">{day.label}</span>
+              <span className="text-caption font-bold text-muted">{day.label}</span>
             </div>
           ))}
         </div>
       ) : (
-        <div className="mt-5 flex h-24 items-center justify-center rounded-2xl bg-cream-100 text-sm font-semibold text-cream-500">
+        <div className="mt-5 flex h-24 items-center justify-center rounded-2xl bg-sand text-body font-semibold text-muted">
           Weekly detail unavailable
         </div>
       )}
@@ -171,21 +171,21 @@ function AiSuggestionCard({ recommendations }: { recommendations: OwnerRecommend
     : ['Find pet-friendly businesses', 'Summarize this week', 'Discover partner offers'];
 
   return (
-    <section className="quest-card">
+    <section className="pl-card-sand">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">PetLife AI</p>
-          <h2 className="mt-1 font-display text-xl font-bold text-cream-900">Suggested for your pack</h2>
+          <p className="text-label font-semibold uppercase tracking-[0.18em] text-muted">PetLife AI</p>
+          <h2 className="mt-1 font-display text-xl font-bold text-ink">Suggested for your pack</h2>
         </div>
         <Badge tone="accent">AI</Badge>
       </div>
       <div className="mt-4 space-y-2">
         {suggestions.map((suggestion) => (
-          <div key={suggestion} className="flex items-center gap-3 rounded-2xl border border-cream-200 bg-white/80 px-3 py-3">
-            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-primary">
+          <div key={suggestion} className="flex items-center gap-3 rounded-2xl border border-line bg-white/80 px-3 py-3">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-teal-light text-teal">
               <PawIcon className="h-4 w-4" />
             </span>
-            <p className="text-sm font-semibold text-cream-800">{suggestion}</p>
+            <p className="text-body font-semibold text-ink">{suggestion}</p>
           </div>
         ))}
       </div>
@@ -254,33 +254,33 @@ function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: 
   }
 
   return (
-    <article className="game-card feed-enter overflow-hidden">
+    <article className="pl-card pl-fade-in overflow-hidden">
       <header className="flex items-center gap-3 px-4 py-3">
         <PostAvatar post={post} />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-bold text-cream-900">{post.petName}</p>
-          <p className="truncate text-xs text-cream-500">
-            {post.ownerName} · {titleCase(post.petSpecies)} · {post.latitude != null && post.longitude != null ? 'Paw City' : timeAgo(post.startedAt)}
+          <p className="truncate font-bold text-ink">{post.petName}</p>
+          <p className="truncate text-label text-muted">
+            {post.ownerName} · {titleCase(post.petSpecies)} · {post.latitude != null && post.longitude != null ? 'PETLIFE' : timeAgo(post.startedAt)}
           </p>
         </div>
         <Badge tone="accent">{titleCase(post.type)}</Badge>
       </header>
 
-      <div className="post-media border-y border-cream-100" style={isDog ? undefined : { background: mediaGradient }}>
+      <div className="pl-media border-y border-line" style={isDog ? undefined : { background: mediaGradient }}>
         {isDog ? <img src="/assets/dog-walk.jpg" alt="Dog activity" className="absolute inset-0 h-full w-full object-cover" /> : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark/65 via-dark/15 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-teal-dark/65 via-teal-dark/15 to-transparent" />
         <div className="absolute left-4 top-4 flex items-center gap-2">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 text-primary shadow-sm">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 text-teal shadow-sm">
             <PawIcon className="h-5 w-5" />
           </span>
           <Badge tone="accent">{titleCase(post.type)}</Badge>
         </div>
-        <div className="absolute right-4 top-4 rounded-full bg-white/85 px-3 py-1 text-xs font-bold text-cream-800 shadow-sm backdrop-blur">
+        <div className="absolute right-4 top-4 rounded-full bg-white/85 px-3 py-1 text-label font-bold text-ink shadow-sm backdrop-blur">
           {duration(post.durationSeconds)}{distanceLabel(post.distanceMeters) ? ` · ${distanceLabel(post.distanceMeters)}` : ''}
         </div>
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <p className="font-display text-xl font-bold drop-shadow">{post.petName}&apos;s {titleCase(post.type).toLowerCase()}</p>
-          <p className="text-sm text-white/85">{timeAgo(post.startedAt)}</p>
+          <p className="text-body text-white/85">{timeAgo(post.startedAt)}</p>
         </div>
       </div>
 
@@ -296,31 +296,31 @@ function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: 
                 title={reaction.label}
                 disabled={busy}
                 onClick={() => react(reaction.type)}
-                className={`inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-bold transition ${active ? 'bg-primary text-white shadow-sm' : 'text-cream-600 hover:bg-accent-soft hover:text-primary'}`}
+                className={`inline-flex items-center gap-1 rounded-full px-3 py-2 text-body font-bold transition ${active ? 'bg-teal text-white shadow-sm' : 'text-muted hover:bg-teal-light hover:text-teal'}`}
               >
                 <span>{reaction.icon}</span>
                 {count > 0 ? <span>{count}</span> : null}
               </button>
             );
           })}
-          <button type="button" onClick={toggleComments} className="ml-auto rounded-full px-3 py-2 text-sm font-bold text-cream-600 hover:bg-accent-soft hover:text-primary">
+          <button type="button" onClick={toggleComments} className="ml-auto rounded-full px-3 py-2 text-body font-bold text-muted hover:bg-teal-light hover:text-teal">
             {post.commentCount} comments
           </button>
         </div>
 
-        <p className="mt-2 text-sm text-cream-500"><strong className="text-cream-900">{likeCount}</strong> paw reactions</p>
+        <p className="mt-2 text-body text-muted"><strong className="text-ink">{likeCount}</strong> paw reactions</p>
         {post.notes ? (
-          <p className="mt-2 text-sm leading-6 text-cream-800"><strong className="font-bold">{post.ownerName}</strong> {post.notes}</p>
+          <p className="mt-2 text-body leading-6 text-ink"><strong className="font-bold">{post.ownerName}</strong> {post.notes}</p>
         ) : null}
         <ErrorMessage message={error} />
 
         {commentsOpen ? (
-          <div className="mt-3 space-y-3 rounded-3xl bg-cream-50 p-3">
-            {comments === null ? <p className="text-xs text-cream-500">Loading comments…</p> : comments.length === 0 ? <p className="text-xs text-cream-500">Be the first to comment.</p> : comments.map((item) => (
+          <div className="mt-3 space-y-3 rounded-3xl bg-cream p-3">
+            {comments === null ? <p className="text-label text-muted">Loading comments…</p> : comments.length === 0 ? <p className="text-label text-muted">Be the first to comment.</p> : comments.map((item) => (
               <div key={item.id} className="flex gap-2">
                 <Avatar name={item.ownerName} src={item.ownerAvatarUrl} size="sm" className="h-7 w-7" />
-                <div className="rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-sm text-cream-800 shadow-sm">
-                  <span className="mr-2 font-bold text-cream-900">{item.ownerName}</span>
+                <div className="rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-body text-ink shadow-sm">
+                  <span className="mr-2 font-bold text-ink">{item.ownerName}</span>
                   {item.body}
                 </div>
               </div>
@@ -331,7 +331,7 @@ function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: 
             </form>
           </div>
         ) : post.commentCount > 0 ? (
-          <button type="button" onClick={toggleComments} className="mt-2 text-xs font-semibold text-cream-500 hover:text-primary">
+          <button type="button" onClick={toggleComments} className="mt-2 text-label font-semibold text-muted hover:text-teal">
             View all {post.commentCount} comments
           </button>
         ) : null}
@@ -345,11 +345,11 @@ function NearbyPromotions({ promotions }: { promotions: OwnerPromotion[] }) {
     return null;
   }
   return (
-    <section className="quest-card">
+    <section className="pl-card-sand">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">Nearby promotions</p>
-          <h2 className="mt-1 font-display text-xl font-bold text-cream-900">Partner offers</h2>
+          <p className="text-label font-semibold uppercase tracking-[0.18em] text-muted">Nearby promotions</p>
+          <h2 className="mt-1 font-display text-xl font-bold text-ink">Partner offers</h2>
         </div>
         <Badge tone="accent">Ads</Badge>
       </div>
@@ -358,26 +358,26 @@ function NearbyPromotions({ promotions }: { promotions: OwnerPromotion[] }) {
           const website = promotion.partnerWebsite?.trim();
           const href = website ? (/^https?:\/\//i.test(website) ? website : `https://${website}`) : null;
           return (
-            <article key={promotion.campaignId} className="overflow-hidden rounded-3xl border border-cream-200 bg-white/85">
-              <div className="relative flex h-20 items-center justify-center" style={{ background: 'linear-gradient(135deg, #825e31 0%, #d99c52 55%, #b07f43 100%)' }}>
-                <PoppyMark className="h-10 w-10 text-white/85" />
+            <article key={promotion.campaignId} className="overflow-hidden rounded-3xl border border-line bg-white/85">
+              <div className="relative flex h-20 items-center justify-center" style={{ background: 'var(--color-teal-light)' }}>
+                <PawMark className="h-10 w-10 text-white/85" />
                 <div className="absolute left-3 top-3 flex gap-1.5">
                   <Badge tone="accent">Pet-friendly</Badge>
                   <Badge tone="danger">Promo</Badge>
                 </div>
               </div>
               <div className="p-3">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">{promotion.partnerName}</p>
-                <h3 className="mt-1 font-bold text-cream-900">{promotion.title}</h3>
-                <p className="mt-1 line-clamp-2 text-sm leading-5 text-cream-600">{promotion.description}</p>
+                <p className="text-label font-bold uppercase tracking-[0.16em] text-teal">{promotion.partnerName}</p>
+                <h3 className="mt-1 font-bold text-ink">{promotion.title}</h3>
+                <p className="mt-1 line-clamp-2 text-body leading-5 text-muted">{promotion.description}</p>
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold text-cream-500">{promotion.targetAudience}</span>
+                  <span className="text-label font-semibold text-muted">{promotion.targetAudience}</span>
                   {href ? (
-                    <a href={href} target="_blank" rel="noreferrer" className="rounded-xl bg-primary px-3 py-1.5 text-xs font-bold text-white hover:bg-secondary">
+                    <a href={href} target="_blank" rel="noreferrer" className="rounded-xl bg-teal px-3 py-1.5 text-label font-bold text-white hover:bg-teal-dark">
                       {promotion.callToAction}
                     </a>
                   ) : (
-                    <span className="rounded-xl bg-cream-200 px-3 py-1.5 text-xs font-bold text-cream-600">{promotion.callToAction}</span>
+                    <span className="rounded-xl bg-sand-deep px-3 py-1.5 text-label font-bold text-muted">{promotion.callToAction}</span>
                   )}
                 </div>
               </div>
@@ -424,7 +424,7 @@ export function CityPage() {
       setRecommendations(recommendationList);
       setSummary(dashboard);
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Unable to load Paw City');
+      setError(caught instanceof ApiError ? caught.message : 'Unable to load PETLIFE');
     } finally {
       setLoading(false);
     }
@@ -445,7 +445,7 @@ export function CityPage() {
       setPage((current) => current + 1);
       setHasMore(next.length === FEED_PAGE_SIZE);
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Unable to load more Paw City posts');
+      setError(caught instanceof ApiError ? caught.message : 'Unable to load more PETLIFE posts');
     } finally {
       setLoadingMore(false);
     }
@@ -461,13 +461,13 @@ export function CityPage() {
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Badge tone="accent">Paw City feed</Badge>
-          <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-cream-900">Welcome back, {owner?.displayName ?? 'trainer'}.</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-cream-600">
+          <Badge tone="accent">Feed</Badge>
+          <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-ink">Welcome back, {owner?.displayName ?? 'trainer'}.</h1>
+          <p className="mt-2 max-w-2xl text-body leading-6 text-muted">
             Stories, activity posts, partner offers, and AI suggestions for your pack.
           </p>
         </div>
-        <div className="hud-chip">{pets.length} pet{pets.length === 1 ? '' : 's'} · {summary?.activityCountLast7Days ?? 0} adventures this week</div>
+        <div className="pl-chip">{pets.length} pet{pets.length === 1 ? '' : 's'} · {summary?.activityCountLast7Days ?? 0} adventures this week</div>
       </div>
 
       <ErrorMessage message={error} />
@@ -476,11 +476,11 @@ export function CityPage() {
         <div className="space-y-5">
           <StoriesRow pets={pets} ownerName={owner?.displayName ?? 'You'} ownerAvatarUrl={owner?.avatarUrl ?? null} />
           {loading ? (
-            <div className="game-card p-8 text-sm text-cream-500">Loading Paw City…</div>
+            <div className="pl-card p-8 text-body text-muted">Loading PETLIFE…</div>
           ) : posts.length === 0 ? (
             <EmptyState
               title="The city is quiet"
-              description="Record an activity with a location and share it to Paw City to publish the first post."
+              description="Record an activity with a location and share it to PETLIFE to publish the first post."
             />
           ) : (
             <>

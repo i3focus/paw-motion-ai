@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { useAuth } from '../auth';
 import { Button, ErrorText, Field, Input } from '../components';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 import { isValidEmail, normalizeEmail } from '../validation';
 
 export function AuthScreen() {
@@ -51,7 +51,7 @@ export function AuthScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.hero}>
-        <Text style={styles.logo}>PawMotion <Text style={styles.logoAccent}>AI</Text></Text>
+        <Text style={styles.logo}>PETLIFE</Text>
         <Text style={styles.tagline}>Move together. Live better.</Text>
       </View>
       <View style={styles.card}>
@@ -75,12 +75,11 @@ export function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream50, justifyContent: 'center', padding: 20 },
+  container: { flex: 1, backgroundColor: colors.cream, justifyContent: 'center', padding: 20 },
   hero: { alignItems: 'center', marginBottom: 24 },
-  logo: { color: colors.secondary, fontSize: 34, fontWeight: '900' },
-  logoAccent: { color: colors.accent },
-  tagline: { color: colors.cream600, marginTop: 6 },
-  card: { backgroundColor: colors.white, borderRadius: 28, borderColor: colors.cream200, borderWidth: 1, padding: 20 },
+  logo: { color: colors.tealDark, fontSize: 34, fontFamily: fonts.w900 },
+  tagline: { color: colors.muted, marginTop: 6 },
+  card: { backgroundColor: colors.white, borderRadius: 28, borderColor: colors.line, borderWidth: 1, padding: 20 },
   tabs: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  footer: { color: colors.cream500, fontSize: 12, marginTop: 14, textAlign: 'center' },
+  footer: { color: colors.muted, fontSize: 12, marginTop: 14, textAlign: 'center' },
 });

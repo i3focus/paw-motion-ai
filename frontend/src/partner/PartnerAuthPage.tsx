@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import { usePartnerAuth } from '../partnerAuth';
-import { BrandLogo, Button, EmailInput, ErrorMessage, PoppyMark, PasswordInput, TextArea, TextInput, UrlInput } from '../components/ui';
+import { BrandLogo, Button, EmailInput, ErrorMessage, PasswordInput, TextArea, TextInput, UrlInput } from '../components/ui';
 import { isValidEmail, isValidHttpUrl, normalizeEmail, normalizeUrl } from '../lib/validation';
 
 export function PartnerAuthPage() {
@@ -66,17 +66,15 @@ export function PartnerAuthPage() {
   }
 
   return (
-    <main className="paw-city-bg relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
-      <PoppyMark className="poppy-float pointer-events-none absolute left-[7%] top-[12%] h-28 w-28 text-accent/25" />
-      <PoppyMark className="poppy-float pointer-events-none absolute bottom-[10%] right-[8%] h-36 w-36 text-primary/15" style={{ animationDelay: '1.4s' }} />
-      <div className="relative w-full max-w-lg rounded-[30px] border border-cream-200 bg-white/95 p-8 shadow-[0_35px_90px_-45px_rgba(54,39,20,0.6)] backdrop-blur">
-        <BrandLogo className="text-sm uppercase tracking-wide" />
-        <h1 className="mt-2 font-display text-2xl font-bold text-cream-900">Partner Portal</h1>
-        <p className="mt-1 text-sm text-cream-600">Register your business, publish campaigns, and let AI recommend topics to pet owners.</p>
+    <main className="bg-cream relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+      <div className="relative w-full max-w-lg rounded-[30px] border border-line bg-white/95 p-8 shadow-card backdrop-blur">
+        <BrandLogo className="text-body uppercase tracking-wide" />
+        <h1 className="mt-2 font-display text-2xl font-bold text-ink">Partner Portal</h1>
+        <p className="mt-1 text-body text-muted">Register your business, publish campaigns, and let AI recommend topics to pet owners.</p>
 
-        <div className="mt-6 grid grid-cols-2 rounded-2xl bg-cream-100 p-1 text-sm font-semibold">
-          <button type="button" onClick={() => setMode('login')} className={`rounded-xl py-2 transition ${mode === 'login' ? 'bg-white shadow-sm text-cream-900' : 'text-cream-600'}`}>Login</button>
-          <button type="button" onClick={() => setMode('register')} className={`rounded-xl py-2 transition ${mode === 'register' ? 'bg-white shadow-sm text-cream-900' : 'text-cream-600'}`}>Register</button>
+        <div className="mt-6 grid grid-cols-2 rounded-2xl bg-sand p-1 text-body font-semibold">
+          <button type="button" onClick={() => setMode('login')} className={`rounded-xl py-2 transition ${mode === 'login' ? 'bg-white shadow-sm text-ink' : 'text-muted'}`}>Login</button>
+          <button type="button" onClick={() => setMode('register')} className={`rounded-xl py-2 transition ${mode === 'register' ? 'bg-white shadow-sm text-ink' : 'text-muted'}`}>Register</button>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
@@ -129,8 +127,8 @@ export function PartnerAuthPage() {
           <Button type="submit" disabled={submitting} className="w-full">{submitting ? 'Please wait…' : mode === 'login' ? 'Login' : 'Register partner'}</Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-cream-600">
-          Pet owner? <a className="font-semibold text-primary hover:text-secondary" href="/">Open owner portal</a>
+        <p className="mt-6 text-center text-body text-muted">
+          Pet owner? <a className="font-semibold text-teal hover:text-teal-dark" href="/">Open owner portal</a>
         </p>
       </div>
     </main>

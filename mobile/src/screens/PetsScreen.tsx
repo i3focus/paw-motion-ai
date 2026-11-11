@@ -4,7 +4,7 @@ import { ApiError, createPet, listPets, updatePet } from '../api/client';
 import { Button, Card, EmptyState, ErrorText, Field, Input } from '../components';
 import { PetCard } from '../petVisuals';
 import type { Pet } from '../types';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 import { isNotFutureDate, isValidDateInput } from '../validation';
 
 const speciesOptions = ['dog', 'cat', 'bird', 'rabbit', 'other'];
@@ -145,8 +145,8 @@ export function PetsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.cream50 },
+  screen: { flex: 1, backgroundColor: colors.cream },
   content: { padding: 20, gap: 16 },
-  title: { color: colors.cream900, fontSize: 30, fontWeight: '900' },
+  title: { color: colors.ink, fontSize: 30, fontFamily: fonts.w900 },
   formButtons: { flexDirection: 'row', gap: 10 },
 });

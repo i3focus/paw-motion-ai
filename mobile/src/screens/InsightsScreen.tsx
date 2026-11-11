@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiError, generateInsight, listPets } from '../api/client';
 import { Badge, Button, Card, EmptyState, ErrorText, Field, Input } from '../components';
 import type { Insight, Pet } from '../types';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 
 export function InsightsScreen() {
   const [pets, setPets] = useState<Pet[]>([]);
@@ -75,11 +75,11 @@ export function InsightsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.cream50 },
+  screen: { flex: 1, backgroundColor: colors.cream },
   content: { padding: 20, gap: 16 },
-  title: { color: colors.cream900, fontSize: 30, fontWeight: '900' },
-  subtitle: { color: colors.cream600, marginTop: -10, marginBottom: 4 },
+  title: { color: colors.ink, fontSize: 30, fontFamily: fonts.w900 },
+  subtitle: { color: colors.muted, marginTop: -10, marginBottom: 4 },
   petPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  insightText: { color: colors.cream800, fontSize: 16, lineHeight: 24 },
+  insightText: { color: colors.ink, fontSize: 16, lineHeight: 24 },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
 });
