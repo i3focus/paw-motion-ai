@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Avatar, Badge, BrandLogo } from '../components/ui';
+import { Avatar, Badge, BrandLogo, PoppyMark } from '../components/ui';
 import { usePartnerAuth } from '../partnerAuth';
 
 export type PartnerPageKey = 'campaigns' | 'billing' | 'profile';
@@ -14,11 +14,12 @@ export function PartnerLayout({ page, setPage, children }: { page: PartnerPageKe
   const { partner, logout } = usePartnerAuth();
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <header className="sticky top-0 z-20 border-b border-cream-200 bg-white/90 backdrop-blur">
+    <div className="min-h-screen paw-city-bg">
+      <header className="sticky top-0 z-20 border-b border-cream-200 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-          <div>
+          <div className="relative">
             <BrandLogo className="text-xl" />
+            <PoppyMark className="poppy-float pointer-events-none absolute -right-10 -top-4 h-8 w-8 text-accent/50" />
             <p className="text-sm text-cream-500">Partner Portal</p>
           </div>
           <div className="flex items-center gap-3">
@@ -42,7 +43,7 @@ export function PartnerLayout({ page, setPage, children }: { page: PartnerPageKe
               type="button"
               onClick={() => setPage(item.key)}
               className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
-                page === item.key ? 'bg-primary text-white shadow-sm' : 'bg-cream-100 text-cream-700 hover:bg-cream-200'
+                page === item.key ? 'bg-primary text-white shadow-[0_16px_36px_-20px_rgba(130,94,49,1)]' : 'bg-white/70 text-cream-700 hover:bg-accent-soft hover:text-primary'
               }`}
             >
               {item.label}

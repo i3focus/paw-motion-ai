@@ -1,10 +1,24 @@
-import { useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SVGProps, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 import { formatPhoneInput } from '../lib/validation';
+
+export function PoppyMark({ className = '', ...props }: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true" {...props}>
+      <ellipse cx="12" cy="15.5" rx="4.8" ry="3.8" />
+      <circle cx="6.2" cy="10.2" r="1.9" />
+      <circle cx="10" cy="7.2" r="1.9" />
+      <circle cx="14" cy="7.2" r="1.9" />
+      <circle cx="17.8" cy="10.2" r="1.9" />
+    </svg>
+  );
+}
 
 export function BrandLogo({ compact = false, className = '' }: { compact?: boolean; className?: string }) {
   return (
     <span className={`inline-flex items-center gap-2 font-display font-bold tracking-tight text-cream-900 ${className || 'text-xl'}`}>
-      <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent text-white shadow-sm">P</span>
+      <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-supporting to-accent text-white shadow-[0_14px_30px_-18px_rgba(130,94,49,0.9)]">
+        <PoppyMark className="h-5 w-5" />
+      </span>
       {!compact ? <span>Paw<span className="text-accent">Motion</span> <span className="text-accent">AI</span></span> : null}
     </span>
   );
@@ -34,7 +48,7 @@ export function Badge({ children, tone = 'neutral' }: { children: ReactNode; ton
 
 export function Card({ children, className = '', title, description }: { children: ReactNode; className?: string; title?: string; description?: string }) {
   return (
-    <section className={`rounded-[28px] border border-cream-200 bg-white shadow-[0_24px_60px_-35px_rgba(54,39,20,0.4)] ${className}`}>
+    <section className={`rounded-[30px] border border-cream-200 bg-white shadow-[0_30px_80px_-45px_rgba(54,39,20,0.55)] ${className}`}>
       {title ? (
         <div className="border-b border-cream-100 px-5 py-4 sm:px-6">
           <h2 className="font-display text-lg font-bold text-cream-900">{title}</h2>
@@ -92,14 +106,8 @@ export function ErrorMessage({ message }: { message?: string | null }) {
 export function EmptyState({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
   return (
     <Card className="flex flex-col items-center justify-center p-8 text-center">
-      <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-accent-soft text-primary">
-        <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor" aria-hidden="true">
-          <ellipse cx="12" cy="15.5" rx="4.8" ry="3.8" />
-          <circle cx="6.2" cy="10.2" r="1.9" />
-          <circle cx="10" cy="7.2" r="1.9" />
-          <circle cx="14" cy="7.2" r="1.9" />
-          <circle cx="17.8" cy="10.2" r="1.9" />
-        </svg>
+      <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-gradient-to-br from-accent-soft to-cream-100 text-primary shadow-inner">
+        <PoppyMark className="h-7 w-7" />
       </div>
       <h3 className="mt-4 font-display text-xl font-bold text-cream-900">{title}</h3>
       <p className="mt-2 max-w-md text-sm text-cream-500">{description}</p>
@@ -117,7 +125,7 @@ export function Button({ children, variant = 'primary', className = '', ...props
     ghost: 'text-primary hover:bg-accent-soft disabled:text-cream-400',
     danger: 'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 disabled:text-red-300',
   };
-  return <button className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed ${variants[variant]} ${className}`} {...props}>{children}</button>;
+  return <button className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition active:scale-[0.98] disabled:cursor-not-allowed ${variants[variant]} ${className}`} {...props}>{children}</button>;
 }
 
 type FieldProps = {

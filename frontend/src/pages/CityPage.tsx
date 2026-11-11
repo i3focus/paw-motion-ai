@@ -7,7 +7,7 @@ import {
   listMapPoints,
   toggleActivityReaction,
 } from '../api/client';
-import { Avatar, Badge, Button, Card, EmptyState, ErrorMessage, SectionHeader, TextInput } from '../components/ui';
+import { Avatar, Badge, Button, Card, EmptyState, ErrorMessage, PoppyMark, SectionHeader, TextInput } from '../components/ui';
 import type { ActivityComment, ActivityPost, MapPoints } from '../types';
 
 const REACTIONS = [
@@ -30,18 +30,6 @@ function duration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const rest = seconds % 60;
   return minutes ? `${minutes}m ${rest}s` : `${rest}s`;
-}
-
-function PoppyMark({ className = '' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
-      <ellipse cx="12" cy="15.5" rx="4.8" ry="3.8" />
-      <circle cx="6.2" cy="10.2" r="1.9" />
-      <circle cx="10" cy="7.2" r="1.9" />
-      <circle cx="14" cy="7.2" r="1.9" />
-      <circle cx="17.8" cy="10.2" r="1.9" />
-    </svg>
-  );
 }
 
 function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: (post: ActivityPost) => void }) {
@@ -113,7 +101,7 @@ function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: 
       </header>
 
       <div className="relative flex min-h-44 items-center justify-center bg-[radial-gradient(circle_at_top_left,#f6e7ce,transparent_42%),linear-gradient(135deg,#fff9f0,#f6efe4)] px-5 py-6">
-        <PoppyMark className="h-16 w-16 text-primary/90" />
+        <PoppyMark className="poppy-float h-16 w-16 text-primary/90" />
         <div className="absolute right-4 top-4 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-cream-700 shadow-sm">
           {duration(post.durationSeconds)}{post.distanceMeters ? ` · ${(post.distanceMeters / 1000).toFixed(2)} km` : ''}
         </div>
@@ -186,10 +174,19 @@ function CityMap({ points }: { points: MapPoints }) {
   }, [points]);
 
   return (
-    <div className="relative h-80 overflow-hidden rounded-[28px] border border-cream-200 bg-[linear-gradient(135deg,#fff9f0,#f6efe4_55%,#efe3d3)] shadow-[0_24px_60px_-35px_rgba(54,39,20,0.4)]">
+    <div className="relative h-80 overflow-hidden rounded-[30px] border border-cream-200 bg-[linear-gradient(135deg,#fff9f0,#f6efe4_55%,#efe3d3)] shadow-[0_30px_80px_-45px_rgba(54,39,20,0.55)]">
+      <div className="city-grid absolute inset-0 opacity-60" />
       <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(circle at 20% 30%, #e2d2bf 0 2px, transparent 3px), radial-gradient(circle at 70% 60%, #d99c52 0 2px, transparent 3px)' }} />
       <div className="absolute left-5 top-5 rounded-2xl bg-white/85 px-3 py-2 text-xs font-semibold text-cream-700 shadow-sm backdrop-blur">
         Paw City · {points.partners.length} partners · {points.activities.length} activities
+      </div>
+      <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-3 py-1 text-[11px] font-semibold text-cream-700 shadow-sm backdrop-blur">
+          <span className="h-2.5 w-2.5 rounded-full bg-secondary" /> Partner
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-3 py-1 text-[11px] font-semibold text-cream-700 shadow-sm backdrop-blur">
+          <span className="h-2.5 w-2.5 rounded-full bg-primary" /> Activity
+        </span>
       </div>
       {positioned.length === 0 ? (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-cream-500">No map points yet. Partners and located activities will appear here.</div>
