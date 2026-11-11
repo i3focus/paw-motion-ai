@@ -23,3 +23,6 @@ mobile/dist/
 
 # Local media uploads
 backend/data/
+backend/bin/
+packages/*/node_modules/
+packages/*/dist/

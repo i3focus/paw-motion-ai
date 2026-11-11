@@ -68,6 +68,15 @@ public class PartnerCampaignJpaEntity {
     @Column(name = "end_reason")
     private CampaignEndReason endReason;
 
+    @Column(name = "starts_at", nullable = false)
+    private Instant startsAt;
+
+    @Column(name = "ends_at", nullable = false)
+    private Instant endsAt;
+
+    @Column(name = "budget_credits", nullable = false)
+    private long budgetCredits;
+
     @Version
     private Long version;
 
@@ -112,6 +121,15 @@ public class PartnerCampaignJpaEntity {
     public String getIdempotencyKey() { return idempotencyKey; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+
+    public void setWindow(Instant startsAt, Instant endsAt) {
+        this.startsAt = startsAt;
+        this.endsAt = endsAt;
+    }
+
+    public void setBudgetCredits(long budgetCredits) {
+        this.budgetCredits = budgetCredits;
+    }
 
     public void update(String title, String description, String targetAudience, String callToAction,
                        CampaignStatus status, String aiTopics, Instant analyzedAt, long creditsCharged,

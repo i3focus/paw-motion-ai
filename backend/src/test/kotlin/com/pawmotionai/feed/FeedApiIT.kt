@@ -40,13 +40,16 @@ class FeedApiIT : ApiIntegrationTest() {
         val page = expect(200, call("GET", "/api/feed?size=10", viewer.token))
         val types = page["items"].elements().map { it["type"].asString() }
 
-        assertEquals(10, types.count { it == "ACTIVITY" })
-        assertEquals(2, types.count { it == "SPONSORED" })
+        assertTrue(types.count { it != "SPONSORED" } >= 8, "expected organic cards, got $types")
+        assertTrue(types.any { it == "ACTIVITY" })
+        assertTrue(types.any { it == "ACHIEVEMENT" })
+        assertTrue(types.count { it == "SPONSORED" } >= 1)
         assertTrue(types.first() != "SPONSORED")
         types.zipWithNext().forEach { (a, b) -> assertTrue(a != "SPONSORED" || b != "SPONSORED") }
         val sponsored = page["items"].elements().filter { it["type"].asString() == "SPONSORED" }
         assertTrue(sponsored.all { it["sponsored"]["label"].asString() == "Sponsored" })
         assertTrue(sponsored.none { it["sponsored"]["title"].asString() == "Cats only" })
+        assertEquals(sponsored.size, sponsored.map { it["sponsored"]["campaignId"].asString() }.distinct().size)
         assertTrue(page["hasNext"].asBoolean())
 
         val itemId = page["items"][0]["id"].asString()

@@ -1,7 +1,10 @@
 package com.pawmotionai.map
 
+import com.pawmotionai.engagement.EngagementService
 import com.pawmotionai.feed.application.FeedService
 import com.pawmotionai.media.MediaService
+import com.pawmotionai.notification.NotificationType
+import com.pawmotionai.notification.Notifier
 import com.pawmotionai.shared.BadRequestException
 import com.pawmotionai.shared.ConflictException
 import com.pawmotionai.shared.ForbiddenException
@@ -20,7 +23,13 @@ import java.time.Instant
 import java.util.UUID
 
 @Service
-class MapService(private val jdbc: JdbcClient, private val petAccess: PetAccess, private val media: MediaService) {
+class MapService(
+    private val jdbc: JdbcClient,
+    private val petAccess: PetAccess,
+    private val media: MediaService,
+    private val engagement: EngagementService,
+    private val notifier: Notifier,
+) {
 
     private val log = LoggerFactory.getLogger(MapService::class.java)
 
@@ -77,6 +86,7 @@ class MapService(private val jdbc: JdbcClient, private val petAccess: PetAccess,
         val now = Instant.now()
         jdbc.sql("INSERT INTO check_ins (id, place_id, owner_id, pet_id, created_at) VALUES (:id, :place, :owner, :pet, :now)")
             .param("id", id).param("place", placeId).param("owner", ownerId).param("pet", petId).param("now", Timestamp.from(now)).update()
+        engagement.recordCheckIn(id, ownerId, petId)
         return CheckInDto(id, placeId, petId, now)
     }
 
@@ -99,6 +109,9 @@ class MapService(private val jdbc: JdbcClient, private val petAccess: PetAccess,
             .param("description", request.description!!.trim()).param("phone", request.contactPhone?.trim()?.ifEmpty { null })
             .param("lat", request.latitude).param("lng", request.longitude).param("seen", Timestamp.from(request.lastSeenAt))
             .param("radius", request.radiusMeters ?: 3000).update()
+        val petName = jdbc.sql("SELECT name FROM pets WHERE id = :id").param("id", request.petId).query(String::class.java).single()
+        notifier.notifyNearby(ownerId, request.latitude!!, request.longitude!!, request.radiusMeters ?: 3000, NotificationType.LOST_PET,
+            "Lost pet near you: $petName", request.description!!.trim().take(120), mapOf("alertId" to id.toString()))
         log.info("lost pet alert created alert={} pet={}", id, request.petId)
         return alert(id, null, null)
     }
@@ -164,7 +177,13 @@ class MapService(private val jdbc: JdbcClient, private val petAccess: PetAccess,
                 SELECT :id, :playdate, p.id, p.owner_id, 'PENDING', now() FROM pets p WHERE p.id = :pet
                 """,
             ).param("id", UUID.randomUUID()).param("playdate", id).param("pet", invitee).update()
+            jdbc.sql("SELECT owner_id FROM pets WHERE id = :pet").param("pet", invitee).query(UUID::class.java).optional()
+                .ifPresent { inviteeOwner ->
+                    notifier.notify(inviteeOwner, NotificationType.PLAYDATE, "Playdate invite",
+                        request.message?.take(120) ?: "You were invited to a playdate.", mapOf("playdateId" to id.toString()))
+                }
         }
+        engagement.recordPlaydate(id, ownerId, petId)
         return playdate(id)
     }
 
@@ -178,6 +197,15 @@ class MapService(private val jdbc: JdbcClient, private val petAccess: PetAccess,
             """,
         ).param("status", response.name).param("playdate", playdateId).param("pet", petId).param("owner", ownerId).update()
         if (updated == 0) throw NotFoundException("Invite not found")
+        if (response == InviteResponse.ACCEPTED) {
+            engagement.recordPlaydate(playdateId, ownerId, petId)
+            jdbc.sql("SELECT organizer_owner_id FROM playdates WHERE id = :id").param("id", playdateId).query(UUID::class.java).optional()
+                .ifPresent { organizer ->
+                    val petName = jdbc.sql("SELECT name FROM pets WHERE id = :pet").param("pet", petId).query(String::class.java).single()
+                    notifier.notify(organizer, NotificationType.PLAYDATE, "Playdate accepted", "$petName accepted your playdate invite.",
+                        mapOf("playdateId" to playdateId.toString()))
+                }
+        }
         return playdate(playdateId)
     }
 

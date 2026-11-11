@@ -10,16 +10,19 @@ import org.springframework.stereotype.Repository;
 
 import com.pawmotionai.activity.application.port.out.ActivityRepository;
 import com.pawmotionai.activity.domain.model.Activity;
+import com.pawmotionai.engagement.EngagementService;
 
 @Repository
 public class ActivityPersistenceAdapter implements ActivityRepository {
 
     private final ActivityJpaRepository repository;
     private final JdbcTemplate jdbcTemplate;
+    private final EngagementService engagement;
 
-    public ActivityPersistenceAdapter(ActivityJpaRepository repository, JdbcTemplate jdbcTemplate) {
+    public ActivityPersistenceAdapter(ActivityJpaRepository repository, JdbcTemplate jdbcTemplate, EngagementService engagement) {
         this.repository = repository;
         this.jdbcTemplate = jdbcTemplate;
+        this.engagement = engagement;
     }
 
     @Override
@@ -33,6 +36,7 @@ public class ActivityPersistenceAdapter implements ActivityRepository {
         if (saved.isShareToPawCity()) {
             publishToFeed(saved);
         }
+        engagement.recordActivity(saved.getId(), saved.getOwnerId(), saved.getPetId(), saved.getDistanceMeters(), saved.getStartedAt());
         return saved;
     }
 

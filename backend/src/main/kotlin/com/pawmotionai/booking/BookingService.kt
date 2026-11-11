@@ -1,5 +1,7 @@
 package com.pawmotionai.booking
 
+import com.pawmotionai.notification.NotificationType
+import com.pawmotionai.notification.Notifier
 import com.pawmotionai.shared.BadRequestException
 import com.pawmotionai.shared.ConflictException
 import com.pawmotionai.shared.ForbiddenException
@@ -19,7 +21,7 @@ import java.time.Instant
 import java.util.UUID
 
 @Service
-class BookingService(private val jdbc: JdbcClient, private val petAccess: PetAccess) {
+class BookingService(private val jdbc: JdbcClient, private val petAccess: PetAccess, private val notifier: Notifier) {
 
     private val log = LoggerFactory.getLogger(BookingService::class.java)
 
@@ -125,6 +127,9 @@ class BookingService(private val jdbc: JdbcClient, private val petAccess: PetAcc
             ).param("id", UUID.randomUUID()).param("campaign", campaignId)
                 .param("placement", if (source == BookingSource.AI) "AI_RECOMMENDATION" else "FEED_CARD").param("viewer", viewer).update()
         }
+        val petName = jdbc.sql("SELECT name FROM pets WHERE id = :id").param("id", petId).query(String::class.java).single()
+        notifier.notify(svc.partnerId, NotificationType.BOOKING, "New booking request",
+            "$petName requested a booking on ${startsAt}.", mapOf("bookingId" to id.toString()))
         log.info("booking requested booking={} partner={} source={} campaign={}", id, svc.partnerId, effectiveSource, campaignId)
         return booking(id)
     }
@@ -148,7 +153,11 @@ class BookingService(private val jdbc: JdbcClient, private val petAccess: PetAcc
         val current = lock(bookingId)
         if (actorId != current.ownerId && actorId != current.partnerId) throw ForbiddenException("Not your booking")
         if (current.status !in setOf(BookingStatus.REQUESTED, BookingStatus.CONFIRMED)) throw ConflictException("Booking can no longer be cancelled")
-        return transition(bookingId, BookingStatus.CANCELLED)
+        val updated = transition(bookingId, BookingStatus.CANCELLED)
+        val recipient = if (actorId == current.ownerId) current.partnerId else current.ownerId
+        notifier.notify(recipient, NotificationType.BOOKING, "Booking cancelled", "A booking for ${updated.petName} was cancelled.",
+            mapOf("bookingId" to bookingId.toString()))
+        return updated
     }
 
     @Transactional
@@ -161,7 +170,10 @@ class BookingService(private val jdbc: JdbcClient, private val petAccess: PetAcc
             else -> false
         }
         if (!allowed) throw ConflictException("Cannot move booking from ${current.status} to $target")
-        return transition(bookingId, target)
+        val updated = transition(bookingId, target)
+        notifier.notify(current.ownerId, NotificationType.BOOKING, "Booking ${target.name.lowercase()}",
+            "${updated.partnerName} ${target.name.lowercase()} the booking for ${updated.petName}.", mapOf("bookingId" to bookingId.toString()))
+        return updated
     }
 
     private fun transition(bookingId: UUID, target: BookingStatus): BookingDto {

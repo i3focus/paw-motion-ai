@@ -36,10 +36,11 @@ public class SecurityConfiguration {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/auth/**", "/api/partner/auth/**", "/api/webhooks/payments/**", "/actuator/health", "/actuator/health/**", "/error",
-                    "/v3/api-docs", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+                    "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/media/*", "/api/vet-share/*").permitAll()
                 .anyRequest().authenticated())
             .addFilterBefore(new AuthRateLimitFilter(trustedProxies), BearerTokenAuthenticationFilter.class)
+            .addFilterAfter(new WriteRateLimitFilter(), BearerTokenAuthenticationFilter.class)
             .addFilterAfter(new ActiveAccountFilter(ownerRepository), BearerTokenAuthenticationFilter.class)
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> { }));
         return http.build();

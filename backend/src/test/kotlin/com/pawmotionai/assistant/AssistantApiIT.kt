@@ -55,7 +55,7 @@ class AssistantApiIT : ApiIntegrationTest() {
     fun `free plan monthly quota returns 429`() {
         val ana = registerOwner("Ana")
         val conversation = expect(201, call("POST", "/api/assistant/conversations", ana.token))["id"].asString()
-        jdbc.update("INSERT INTO ai_usage (owner_id, period, messages) VALUES (?, to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM'), 30)", ana.ownerId)
+        jdbc.update("INSERT INTO ai_usage (owner_id, period, messages) VALUES (?, to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM'), 10)", ana.ownerId)
         expect(429, call("POST", "/api/assistant/conversations/$conversation/messages", ana.token, mapOf("content" to "hi")))
         jdbc.update("UPDATE owners SET plan = 'PREMIUM' WHERE id = ?", ana.ownerId)
         expect(200, call("POST", "/api/assistant/conversations/$conversation/messages", ana.token, mapOf("content" to "hi")))

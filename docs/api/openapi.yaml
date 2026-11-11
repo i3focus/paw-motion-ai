@@ -1,841 +1,6229 @@
 openapi: 3.1.0
 info:
-  title: PawMotion AI API
-  version: 0.1.0
-  description: Initial contract for the modular monolith MVP. Errors use RFC 9457 Problem Details.
+  title: PETLIFE API
+  description: "Owner, partner and admin APIs for PETLIFE."
+  version: v1
 servers:
-  - url: http://localhost:8080
-    description: Local backend
+- url: http://localhost:58850
+  description: Generated server url
 security:
-  - bearerAuth: []
-tags:
-  - name: Identity
-  - name: Pets
-  - name: Activities
-  - name: Dashboard
-  - name: AI Insights
-  - name: Profiles
-  - name: Partner Portal
-  - name: Recommendations
+- bearer: []
 paths:
-  /api/auth/register:
-    post:
-      tags: [Identity]
-      summary: Register an owner
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterOwnerRequest'
-      responses:
-        '201':
-          description: Owner registered
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '409':
-          $ref: '#/components/responses/Problem'
-        '422':
-          $ref: '#/components/responses/Problem'
-  /api/auth/login:
-    post:
-      tags: [Identity]
-      summary: Authenticate an owner
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-      responses:
-        '200':
-          description: Authentication token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '401':
-          $ref: '#/components/responses/Problem'
-  /api/partner/auth/register:
-    post:
-      tags: [Partner Portal]
-      summary: Register a partner account
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterPartnerRequest'
-      responses:
-        '201':
-          description: Partner registered
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '409':
-          $ref: '#/components/responses/Problem'
-        '422':
-          $ref: '#/components/responses/Problem'
-  /api/partner/auth/login:
-    post:
-      tags: [Partner Portal]
-      summary: Authenticate a partner
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-      responses:
-        '200':
-          description: Authentication token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '401':
-          $ref: '#/components/responses/Problem'
-  /api/me:
-    get:
-      tags: [Profiles]
-      summary: Get the authenticated owner or partner profile
-      responses:
-        '200':
-          description: Account profile
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OwnerResponse'
-    patch:
-      tags: [Profiles]
-      summary: Update the authenticated owner or partner profile
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateProfileRequest'
-      responses:
-        '200':
-          description: Updated account profile
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OwnerResponse'
-        '422':
-          $ref: '#/components/responses/Problem'
-  /api/partner/campaigns:
-    get:
-      tags: [Partner Portal]
-      summary: List campaigns for the authenticated partner
-      responses:
-        '200':
-          description: Campaigns
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CampaignResponse'
-    post:
-      tags: [Partner Portal]
-      summary: Create an advertisement or campaign
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateCampaignRequest'
-      responses:
-        '201':
-          description: Created campaign
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CampaignResponse'
-        '403':
-          $ref: '#/components/responses/Problem'
-        '422':
-          $ref: '#/components/responses/Problem'
-  /api/partner/campaigns/{campaignId}/analyze:
-    post:
-      tags: [Partner Portal]
-      summary: Analyze a campaign and generate owner-facing topics
+  /api/pets/{petId}/health/records/{recordId}:
+    put:
+      tags:
+      - Health passport
+      operationId: updateRecord
       parameters:
-        - name: campaignId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Analyzed campaign
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CampaignResponse'
-        '403':
-          $ref: '#/components/responses/Problem'
-        '404':
-          $ref: '#/components/responses/Problem'
-  /api/partner/campaigns/{campaignId}/archive:
-    post:
-      tags: [Partner Portal]
-      summary: Archive a campaign and refund prorated credits
-      parameters:
-        - name: campaignId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Archived campaign
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CampaignResponse'
-        '403': { $ref: '#/components/responses/Problem' }
-        '404': { $ref: '#/components/responses/Problem' }
-        '422': { $ref: '#/components/responses/Problem' }
-  /api/partner/wallet:
-    get:
-      tags: [Partner Portal]
-      summary: Get the authenticated partner wallet and account balances
-      responses:
-        '200':
-          description: Wallet
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WalletResponse'
-        '404': { $ref: '#/components/responses/Problem' }
-  /api/partner/wallet/accounts/{accountId}/entries:
-    get:
-      tags: [Partner Portal]
-      summary: List ledger entries for a wallet account
-      parameters:
-        - name: accountId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-        - name: page
-          in: query
-          required: false
-          schema: { type: integer, default: 0, minimum: 0 }
-        - name: size
-          in: query
-          required: false
-          schema: { type: integer, default: 20, minimum: 1 }
-      responses:
-        '200':
-          description: Ledger entry page
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LedgerEntryPage'
-        '404': { $ref: '#/components/responses/Problem' }
-  /api/partner/billing/pricing:
-    get:
-      tags: [Partner Billing]
-      summary: Get credit pricing and campaign pricing configuration
-      responses:
-        '200':
-          description: Pricing configuration
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PricingResponse'
-  /api/partner/billing/purchases:
-    get:
-      tags: [Partner Billing]
-      summary: List credit purchases for the authenticated partner
-      responses:
-        '200':
-          description: Purchases
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PaymentTransactionResponse'
-    post:
-      tags: [Partner Billing]
-      summary: Create a hosted-checkout credit purchase
-      parameters:
-        - name: Idempotency-Key
-          in: header
-          required: false
-          schema: { type: string, maxLength: 120 }
-      requestBody:
+      - name: petId
+        in: path
         required: true
+        schema:
+          type: string
+          format: uuid
+      - name: recordId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatePurchaseRequest'
+              $ref: "#/components/schemas/HealthRecordRequest"
+        required: true
       responses:
-        '201':
-          description: Purchase created
+        "200":
+          description: OK
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/PaymentTransactionResponse'
-        '402': { $ref: '#/components/responses/Problem' }
-        '423': { $ref: '#/components/responses/Problem' }
-        '422': { $ref: '#/components/responses/Problem' }
-  /api/partner/billing/purchases/{transactionId}:
-    get:
-      tags: [Partner Billing]
-      summary: Get one credit purchase
+                $ref: "#/components/schemas/HealthRecordDto"
+    delete:
+      tags:
+      - Health passport
+      operationId: deleteRecord
       parameters:
-        - name: transactionId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: recordId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
-        '200':
-          description: Purchase
+        "204":
+          description: No Content
+  /api/pets/{petId}/follow:
+    put:
+      tags:
+      - Posts and stories
+      operationId: follow
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/PaymentTransactionResponse'
-        '404': { $ref: '#/components/responses/Problem' }
+                $ref: "#/components/schemas/FollowStateDto"
+    delete:
+      tags:
+      - Posts and stories
+      operationId: unfollow
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/FollowStateDto"
+  /api/partner/services/{serviceId}:
+    put:
+      tags:
+      - Partners and bookings
+      operationId: updateService
+      parameters:
+      - name: serviceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerServiceRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PartnerServiceDto"
+  /api/feed/{itemId}/reaction:
+    put:
+      tags:
+      - Feed
+      operationId: react
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReactRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReactionSummaryDto"
+    delete:
+      tags:
+      - Feed
+      operationId: unreact
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReactionSummaryDto"
   /api/webhooks/payments/{provider}:
     post:
-      tags: [Partner Billing]
-      summary: Receive a payment provider webhook
+      tags:
+      - payment-webhook-controller
+      operationId: receive
       parameters:
-        - name: provider
-          in: path
-          required: true
-          schema: { type: string }
-      requestBody:
+      - name: provider
+        in: path
         required: true
-        content:
-          application/json:
-            schema: { type: object }
-      responses:
-        '200': { description: Webhook accepted }
-        '401': { $ref: '#/components/responses/Problem' }
-        '502': { $ref: '#/components/responses/Problem' }
-  /api/admin/partners/{partnerId}/wallet/unblock:
-    post:
-      tags: [Admin]
-      summary: Unblock a partner wallet (ADMIN)
-      parameters:
-        - name: partnerId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Wallet
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WalletResponse'
-        '403': { $ref: '#/components/responses/Problem' }
-  /api/admin/partners/{partnerId}/wallet/adjustments:
-    post:
-      tags: [Admin]
-      summary: Post a manual wallet adjustment (ADMIN)
-      parameters:
-        - name: partnerId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      requestBody:
+        schema:
+          type: string
+      - name: headers
+        in: header
         required: true
+        schema:
+          $ref: "#/components/schemas/HttpHeaders"
+      requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AdminAdjustmentRequest'
+              type: string
+              format: byte
+        required: true
       responses:
-        '201': { description: Adjustment posted }
-        '402': { $ref: '#/components/responses/Problem' }
-        '403': { $ref: '#/components/responses/Problem' }
-        '409': { $ref: '#/components/responses/Problem' }
-  /api/recommendations:
+        "200":
+          description: OK
+  /api/stories:
     get:
-      tags: [Recommendations]
-      summary: List AI-analyzed partner recommendations for pet owners
+      tags:
+      - Posts and stories
+      operationId: stories
       responses:
-        '200':
-          description: Recommendations
+        "200":
+          description: OK
           content:
-            application/json:
+            '*/*':
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OwnerRecommendationResponse'
-  /api/promotions:
-    get:
-      tags: [Promotions]
-      summary: List active partner promotions for pet owners
+                  $ref: "#/components/schemas/StoryGroupDto"
+    post:
+      tags:
+      - Posts and stories
+      operationId: createStory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStoryRequest"
+        required: true
       responses:
-        '200':
-          description: Active promotions
+        "201":
+          description: Created
           content:
-            application/json:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StoryDto"
+  /api/stories/{storyId}/view:
+    post:
+      tags:
+      - Posts and stories
+      operationId: viewStory
+      parameters:
+      - name: storyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/posts:
+    post:
+      tags:
+      - Posts and stories
+      operationId: createPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePostRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PostCreatedDto"
+  /api/playdates:
+    get:
+      tags:
+      - Map
+      operationId: playdates
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OwnerPromotionResponse'
+                  $ref: "#/components/schemas/PlaydateDto"
+    post:
+      tags:
+      - Map
+      operationId: createPlaydate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlaydateRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlaydateDto"
+  /api/playdates/{playdateId}/respond:
+    post:
+      tags:
+      - Map
+      operationId: respond
+      parameters:
+      - name: playdateId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RespondInviteRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlaydateDto"
+  /api/places/{placeId}/check-ins:
+    post:
+      tags:
+      - Map
+      operationId: checkIn
+      parameters:
+      - name: placeId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckInRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CheckInDto"
   /api/pets:
     get:
-      tags: [Pets]
-      summary: List pets owned by the authenticated owner
+      tags:
+      - pet-controller
+      operationId: listPets
       responses:
-        '200':
-          description: Pets
+        "200":
+          description: OK
           content:
-            application/json:
+            '*/*':
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PetResponse'
+                  $ref: "#/components/schemas/PetResponseDto"
     post:
-      tags: [Pets]
-      summary: Create a pet
+      tags:
+      - pet-controller
+      operationId: createPet
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatePetRequest'
-      responses:
-        '201':
-          description: Created pet
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PetResponse'
-        '422':
-          $ref: '#/components/responses/Problem'
-  /api/pets/{petId}:
-    get:
-      tags: [Pets]
-      summary: Get an owned pet
-      parameters:
-        - $ref: '#/components/parameters/PetId'
-      responses:
-        '200':
-          description: Pet
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PetResponse'
-        '404':
-          $ref: '#/components/responses/Problem'
-    patch:
-      tags: [Pets]
-      summary: Update an owned pet profile
-      parameters:
-        - $ref: '#/components/parameters/PetId'
-      requestBody:
+              $ref: "#/components/schemas/CreatePetRequest"
         required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PetResponseDto"
+  /api/pets/{petId}/weights:
+    post:
+      tags:
+      - Health passport
+      operationId: weight
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatePetRequest'
+              $ref: "#/components/schemas/WeightRequest"
+        required: true
       responses:
-        '200':
-          description: Updated pet
+        "200":
+          description: OK
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PetResponse'
-        '404':
-          $ref: '#/components/responses/Problem'
-        '422':
-          $ref: '#/components/responses/Problem'
-  /api/activities:
-    get:
-      tags: [Activities]
-      summary: List activities for the authenticated owner
-      parameters:
-        - name: petId
-          in: query
-          schema:
-            type: string
-            format: uuid
-        - name: from
-          in: query
-          schema:
-            type: string
-            format: date-time
-        - name: to
-          in: query
-          schema:
-            type: string
-            format: date-time
-      responses:
-        '200':
-          description: Activities
-          content:
-            application/json:
+            '*/*':
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ActivityResponse'
+                  $ref: "#/components/schemas/WeightDto"
+  /api/pets/{petId}/health/share:
     post:
-      tags: [Activities]
-      summary: Record an activity
-      requestBody:
+      tags:
+      - Health passport
+      summary: Create a read-only vet link; only a hash of the token is stored
+      operationId: share
+      parameters:
+      - name: petId
+        in: path
         required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateActivityRequest'
+              $ref: "#/components/schemas/ShareLinkRequest"
       responses:
-        '201':
-          description: Recorded activity
+        "201":
+          description: Created
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/ActivityResponse'
-        '403':
-          $ref: '#/components/responses/Problem'
-        '422':
-          $ref: '#/components/responses/Problem'
-  /api/dashboard/summary:
+                $ref: "#/components/schemas/ShareLinkDto"
+    delete:
+      tags:
+      - Health passport
+      operationId: revoke
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/pets/{petId}/health/records:
+    post:
+      tags:
+      - Health passport
+      operationId: addRecord
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HealthRecordRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HealthRecordDto"
+  /api/partner/services:
     get:
-      tags: [Dashboard]
-      summary: Get owner dashboard statistics
+      tags:
+      - Partners and bookings
+      operationId: partnerServices
       responses:
-        '200':
-          description: Dashboard summary
+        "200":
+          description: OK
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/DashboardSummaryResponse'
+                type: array
+                items:
+                  $ref: "#/components/schemas/PartnerServiceDto"
+    post:
+      tags:
+      - Partners and bookings
+      operationId: createService
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerServiceRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PartnerServiceDto"
+  /api/partner/campaigns:
+    get:
+      tags:
+      - partner-campaign-controller
+      operationId: list
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CampaignResponseDto"
+    post:
+      tags:
+      - partner-campaign-controller
+      operationId: create
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCampaignRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignResponseDto"
+  /api/partner/campaigns/{campaignId}/submit:
+    post:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: submit
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignV2Dto"
+  /api/partner/campaigns/{campaignId}/resume:
+    post:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: resume
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignV2Dto"
+  /api/partner/campaigns/{campaignId}/pause:
+    post:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: pause
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignV2Dto"
+  /api/partner/campaigns/{campaignId}/end:
+    post:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: end
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignV2Dto"
+  /api/partner/campaigns/{campaignId}/archive:
+    post:
+      tags:
+      - partner-campaign-controller
+      operationId: archive
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignResponseDto"
+  /api/partner/campaigns/{campaignId}/analyze:
+    post:
+      tags:
+      - partner-campaign-controller
+      operationId: analyze
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignResponseDto"
+  /api/partner/bookings/{bookingId}/confirm:
+    post:
+      tags:
+      - Partners and bookings
+      operationId: confirm
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingDto"
+  /api/partner/bookings/{bookingId}/complete:
+    post:
+      tags:
+      - Partners and bookings
+      operationId: complete
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingDto"
+  /api/partner/billing/purchases:
+    get:
+      tags:
+      - billing-controller
+      operationId: listPurchases
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentTransactionResponseDto"
+    post:
+      tags:
+      - billing-controller
+      operationId: createPurchase
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePurchaseRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentTransactionResponseDto"
+  /api/partner/billing/purchases/{transactionId}/fake-complete:
+    post:
+      tags:
+      - billing-controller
+      operationId: completeFakePurchase
+      parameters:
+      - name: transactionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentTransactionResponseDto"
+  /api/partner/auth/register:
+    post:
+      tags:
+      - partner-auth-controller
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterPartnerRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponseDto"
+  /api/partner/auth/login:
+    post:
+      tags:
+      - partner-auth-controller
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponseDto"
+  /api/notifications/{notificationId}/read:
+    post:
+      tags:
+      - Notifications and devices
+      operationId: read
+      parameters:
+      - name: notificationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/notifications/read-all:
+    post:
+      tags:
+      - Notifications and devices
+      operationId: readAll
+      responses:
+        "204":
+          description: No Content
+  /api/media:
+    post:
+      tags:
+      - Media
+      summary: "Upload a photo or short video (max 10 MB) for posts, stories and alerts"
+      operationId: upload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MediaDto"
+  /api/lost-pets:
+    get:
+      tags:
+      - Map
+      operationId: lostPets
+      parameters:
+      - name: lat
+        in: query
+        required: true
+        schema:
+          type: number
+          format: double
+      - name: lng
+        in: query
+        required: true
+        schema:
+          type: number
+          format: double
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LostPetAlertDto"
+    post:
+      tags:
+      - Map
+      operationId: createLostPet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLostPetAlertRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LostPetAlertDto"
+  /api/lost-pets/{alertId}/sightings:
+    post:
+      tags:
+      - Map
+      operationId: sighting
+      parameters:
+      - name: alertId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SightingRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /api/lost-pets/{alertId}/resolve:
+    post:
+      tags:
+      - Map
+      operationId: resolve
+      parameters:
+      - name: alertId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolveAlertRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LostPetAlertDto"
   /api/insights:
     post:
-      tags: [AI Insights]
-      summary: Generate an activity insight
+      tags:
+      - insight-controller
+      operationId: generateInsight
       requestBody:
-        required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GenerateInsightRequest'
+              $ref: "#/components/schemas/GenerateInsightRequest"
       responses:
-        '200':
-          description: Insight
+        "200":
+          description: OK
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/InsightResponse'
-        '503':
-          $ref: '#/components/responses/Problem'
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  parameters:
-    PetId:
-      name: petId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-  responses:
-    Problem:
-      description: RFC 9457 Problem Details
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetails'
-  schemas:
-    ProblemDetails:
-      type: object
-      required: [type, title, status]
-      properties:
-        type: { type: string, format: uri }
-        title: { type: string }
-        status: { type: integer }
-        detail: { type: string }
-        instance: { type: string }
-        correlationId: { type: string }
-    RegisterOwnerRequest:
-      type: object
-      required: [email, password, displayName]
-      properties:
-        email: { type: string, format: email }
-        password: { type: string, format: password, minLength: 8 }
-        displayName: { type: string, minLength: 1, maxLength: 120 }
-    LoginRequest:
-      type: object
-      required: [email, password]
-      properties:
-        email: { type: string, format: email }
-        password: { type: string, format: password }
-    AuthResponse:
-      type: object
-      required: [accessToken, tokenType, expiresInSeconds, owner]
-      properties:
-        accessToken: { type: string }
-        tokenType: { type: string, example: Bearer }
-        expiresInSeconds: { type: integer }
-        owner:
-          $ref: '#/components/schemas/OwnerResponse'
-    OwnerResponse:
-      type: object
-      required: [id, email, displayName, role]
-      properties:
-        id: { type: string, format: uuid }
-        email: { type: string, format: email }
-        displayName: { type: string }
-        role: { type: string, enum: [OWNER, PARTNER] }
-        bio: { type: string, nullable: true }
-        phone: { type: string, nullable: true }
-        avatarUrl: { type: string, nullable: true }
-        businessName: { type: string, nullable: true }
-        website: { type: string, nullable: true }
-        partnerDescription: { type: string, nullable: true }
-    RegisterPartnerRequest:
-      type: object
-      required: [email, password, displayName, businessName]
-      properties:
-        email: { type: string, format: email }
-        password: { type: string, format: password, minLength: 8 }
-        displayName: { type: string, minLength: 1, maxLength: 120 }
-        businessName: { type: string, minLength: 1, maxLength: 160 }
-        website: { type: string, maxLength: 300 }
-        partnerDescription: { type: string, maxLength: 1000 }
-    UpdateProfileRequest:
-      type: object
-      properties:
-        displayName: { type: string, minLength: 1, maxLength: 120 }
-        bio: { type: string, maxLength: 500 }
-        phone: { type: string, maxLength: 40 }
-        avatarUrl: { type: string, maxLength: 500 }
-        businessName: { type: string, maxLength: 160 }
-        website: { type: string, maxLength: 300 }
-        partnerDescription: { type: string, maxLength: 1000 }
-    CreateCampaignRequest:
-      type: object
-      required: [title, description, targetAudience, callToAction]
-      properties:
-        title: { type: string, minLength: 3, maxLength: 160 }
-        description: { type: string, minLength: 10, maxLength: 2000 }
-        targetAudience: { type: string, minLength: 2, maxLength: 160 }
-        callToAction: { type: string, minLength: 2, maxLength: 160 }
-    CampaignResponse:
-      type: object
-      required: [id, partnerId, title, description, targetAudience, callToAction, status, createdAt, updatedAt]
-      properties:
-        id: { type: string, format: uuid }
-        partnerId: { type: string, format: uuid }
-        title: { type: string }
-        description: { type: string }
-        targetAudience: { type: string }
-        callToAction: { type: string }
-        status: { type: string, enum: [DRAFT, ACTIVE, PAUSED, ARCHIVED, EXPIRED] }
-        aiTopics:
-          type: array
-          items: { type: string }
-        analyzedAt: { type: string, format: date-time, nullable: true }
-        creditsCharged: { type: integer, format: int64 }
-        creditsRefunded: { type: integer, format: int64 }
-        expiresAt: { type: string, format: date-time }
-        remainingBalance: { type: integer, format: int64, nullable: true }
-        createdAt: { type: string, format: date-time }
-        updatedAt: { type: string, format: date-time }
-    WalletAccountResponse:
-      type: object
-      required: [id, walletId, code, status, balance]
-      properties:
-        id: { type: string, format: uuid }
-        walletId: { type: string, format: uuid }
-        code: { type: string, enum: [MAIN, BONUS, PARTNER] }
-        status: { type: string, enum: [OPEN, CLOSED] }
-        balance: { type: integer, format: int64 }
-    WalletResponse:
-      type: object
-      required: [walletId, partnerId, status, accounts, totalBalance]
-      properties:
-        walletId: { type: string, format: uuid }
-        partnerId: { type: string, format: uuid }
-        status: { type: string, enum: [ACTIVE, BLOCKED] }
-        blockedReason: { type: string, nullable: true }
-        accounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/WalletAccountResponse'
-        totalBalance: { type: integer, format: int64 }
-    LedgerEntryResponse:
-      type: object
-      required: [id, accountId, accountCode, direction, amount, balanceAfter, referenceType, referenceId, occurredAt]
-      properties:
-        id: { type: string, format: uuid }
-        accountId: { type: string, format: uuid }
-        accountCode: { type: string, enum: [MAIN, BONUS, PARTNER], nullable: true }
-        direction: { type: string, enum: [CREDIT, DEBIT] }
-        amount: { type: integer, format: int64 }
-        balanceAfter: { type: integer, format: int64 }
-        referenceType: { type: string }
-        referenceId: { type: string, format: uuid }
-        description: { type: string, nullable: true }
-        occurredAt: { type: string, format: date-time }
-    LedgerEntryPage:
-      type: object
-      required: [content, page, size, totalElements, totalPages]
-      properties:
+                $ref: "#/components/schemas/InsightResponseDto"
+  /api/feed/{itemId}/comments:
+    get:
+      tags:
+      - Feed
+      operationId: comments
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseCommentDto"
+    post:
+      tags:
+      - Feed
+      operationId: comment
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
         content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentDto"
+  /api/events/{eventId}/rsvp:
+    post:
+      tags:
+      - Communities and events
+      operationId: rsvp
+      parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RsvpRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommunityEventDto"
+  /api/engagement/challenges/{challengeId}/join:
+    post:
+      tags:
+      - Gamification
+      operationId: join
+      parameters:
+      - name: challengeId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinChallengeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ChallengeDto"
+  /api/devices/push-tokens:
+    post:
+      tags:
+      - Notifications and devices
+      operationId: registerToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushTokenRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /api/communities:
+    get:
+      tags:
+      - Communities and events
+      operationId: communities
+      parameters:
+      - name: kind
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - BREED
+          - NEIGHBORHOOD
+          - CAUSE
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseCommunityDto"
+    post:
+      tags:
+      - Communities and events
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommunityRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommunityDto"
+  /api/communities/{communityId}/join:
+    post:
+      tags:
+      - Communities and events
+      operationId: join_1
+      parameters:
+      - name: communityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommunityDto"
+    delete:
+      tags:
+      - Communities and events
+      operationId: leave
+      parameters:
+      - name: communityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommunityDto"
+  /api/communities/{communityId}/events:
+    get:
+      tags:
+      - Communities and events
+      operationId: events
+      parameters:
+      - name: communityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: upcoming
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseCommunityEventDto"
+    post:
+      tags:
+      - Communities and events
+      operationId: createEvent
+      parameters:
+      - name: communityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEventRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommunityEventDto"
+  /api/bookings:
+    get:
+      tags:
+      - Partners and bookings
+      operationId: myBookings
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseBookingDto"
+    post:
+      tags:
+      - Partners and bookings
+      operationId: book
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingDto"
+  /api/bookings/{bookingId}/cancel:
+    post:
+      tags:
+      - Partners and bookings
+      operationId: cancel
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingDto"
+  /api/auth/register:
+    post:
+      tags:
+      - auth-controller
+      operationId: register_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterOwnerRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponseDto"
+  /api/auth/login:
+    post:
+      tags:
+      - auth-controller
+      operationId: login_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponseDto"
+  /api/assistant/conversations:
+    get:
+      tags:
+      - AI assistant
+      operationId: conversations
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseConversationDto"
+    post:
+      tags:
+      - AI assistant
+      operationId: create_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateConversationRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConversationDto"
+  /api/assistant/conversations/{conversationId}/messages:
+    get:
+      tags:
+      - AI assistant
+      operationId: messages
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiMessageDto"
+    post:
+      tags:
+      - AI assistant
+      summary: Send a message; the reply may carry a PROPOSED action that only runs
+        after explicit confirmation
+      operationId: send
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SendMessageResponse"
+  /api/assistant/actions/{actionId}/confirm:
+    post:
+      tags:
+      - AI assistant
+      operationId: confirm_1
+      parameters:
+      - name: actionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AiActionDto"
+  /api/assistant/actions/{actionId}/cancel:
+    post:
+      tags:
+      - AI assistant
+      operationId: cancel_1
+      parameters:
+      - name: actionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AiActionDto"
+  /api/ads/{campaignId}/events:
+    post:
+      tags:
+      - Feed
+      summary: Record a sponsored impression or click; repeated impressions within
+        30 minutes are ignored
+      operationId: adEvent
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdEventRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /api/admin/partners/{partnerId}/wallet/unblock:
+    post:
+      tags:
+      - admin-wallet-controller
+      operationId: unblock
+      parameters:
+      - name: partnerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WalletResponseDto"
+  /api/admin/partners/{partnerId}/wallet/adjustments:
+    post:
+      tags:
+      - admin-wallet-controller
+      operationId: adjust
+      parameters:
+      - name: partnerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminAdjustmentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+  /api/admin/partners/{partnerId}/verify:
+    post:
+      tags:
+      - Admin moderation
+      operationId: verify
+      parameters:
+      - name: partnerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: verified
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PartnerProfileDto"
+  /api/admin/challenges:
+    post:
+      tags:
+      - Gamification
+      operationId: createChallenge
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChallengeRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ChallengeDto"
+  /api/admin/campaigns/{campaignId}/reject:
+    post:
+      tags:
+      - Admin moderation
+      operationId: reject
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectCampaignRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AdminCampaignDto"
+  /api/admin/campaigns/{campaignId}/approve:
+    post:
+      tags:
+      - Admin moderation
+      operationId: approve
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AdminCampaignDto"
+  /api/activities:
+    get:
+      tags:
+      - activity-controller
+      operationId: listActivities
+      parameters:
+      - name: petId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityResponseDto"
+    post:
+      tags:
+      - activity-controller
+      operationId: recordActivity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateActivityRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ActivityResponseDto"
+  /api/activities/{activityId}/reactions:
+    post:
+      tags:
+      - social-controller
+      operationId: toggleReaction
+      parameters:
+      - name: activityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ToggleReactionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ActivityPostDto"
+  /api/activities/{activityId}/comments:
+    get:
+      tags:
+      - social-controller
+      operationId: comments_1
+      parameters:
+      - name: activityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityCommentDto"
+    post:
+      tags:
+      - social-controller
+      operationId: addComment
+      parameters:
+      - name: activityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCommentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ActivityCommentDto"
+  /api/pets/{petId}:
+    get:
+      tags:
+      - pet-controller
+      operationId: getPet
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PetResponseDto"
+    patch:
+      tags:
+      - pet-controller
+      operationId: updatePet
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePetRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PetResponseDto"
+  /api/partner/profile:
+    get:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: profile
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PartnerProfileDto"
+    patch:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: updateProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePartnerProfileRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PartnerProfileDto"
+  /api/partner/campaigns/{campaignId}:
+    get:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: campaign
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignV2Dto"
+    patch:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: update
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCampaignRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignV2Dto"
+  /api/me:
+    get:
+      tags:
+      - owner-controller
+      operationId: currentOwner
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OwnerResponseDto"
+    patch:
+      tags:
+      - owner-controller
+      operationId: updateProfile_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OwnerResponseDto"
+  /api/me/notification-preferences:
+    get:
+      tags:
+      - Notifications and devices
+      operationId: preferences
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/NotificationPreferencesDto"
+    patch:
+      tags:
+      - Notifications and devices
+      operationId: updatePreferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationPreferencesDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/NotificationPreferencesDto"
+  /api/vet-share/{token}:
+    get:
+      tags:
+      - Health passport
+      summary: Public read-only health passport for a vet share link
+      operationId: shared
+      parameters:
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HealthPassportDto"
+  /api/recommendations:
+    get:
+      tags:
+      - owner-recommendations-controller
+      operationId: list_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OwnerRecommendationDto"
+  /api/promotions:
+    get:
+      tags:
+      - owner-promotions-controller
+      operationId: list_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OwnerPromotionDto"
+  /api/places:
+    get:
+      tags:
+      - Map
+      summary: "Places within a radius (meters, max 50 km), filtered by category and\
+        \ name"
+      operationId: places
+      parameters:
+      - name: lat
+        in: query
+        required: true
+        schema:
+          type: number
+          format: double
+      - name: lng
+        in: query
+        required: true
+        schema:
+          type: number
+          format: double
+      - name: radius
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: category
+        in: query
+        required: false
+        schema:
           type: array
           items:
-            $ref: '#/components/schemas/LedgerEntryResponse'
-        page: { type: integer }
-        size: { type: integer }
-        totalElements: { type: integer, format: int64 }
-        totalPages: { type: integer }
-    PricingResponse:
+            type: string
+            enum:
+            - PARK
+            - VET
+            - CAFE
+            - HOTEL
+            - GROOMING
+            - PET_SHOP
+            - TRAINING
+            - OTHER
+          uniqueItems: true
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponsePlaceDto"
+  /api/places/{placeId}:
+    get:
+      tags:
+      - Map
+      operationId: place
+      parameters:
+      - name: placeId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: lat
+        in: query
+        required: false
+        schema:
+          type: number
+          format: double
+      - name: lng
+        in: query
+        required: false
+        schema:
+          type: number
+          format: double
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlaceDto"
+  /api/pets/{petId}/profile:
+    get:
+      tags:
+      - Pet profile
+      operationId: profile_1
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PetProfileDto"
+  /api/pets/{petId}/posts:
+    get:
+      tags:
+      - Pet profile
+      operationId: posts
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponsePetPostDto"
+  /api/pets/{petId}/health:
+    get:
+      tags:
+      - Health passport
+      operationId: passport
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HealthPassportDto"
+  /api/pets/{petId}/friends:
+    get:
+      tags:
+      - Pet profile
+      operationId: friends
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponsePetFriendDto"
+  /api/pets/{petId}/engagement:
+    get:
+      tags:
+      - Gamification
+      operationId: engagement
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PetEngagementDto"
+  /api/pets/{petId}/badges:
+    get:
+      tags:
+      - Gamification
+      operationId: badges
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BadgeDto"
+  /api/pets/{petId}/adventures:
+    get:
+      tags:
+      - Pet profile
+      operationId: adventures
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseAdventureDto"
+  /api/pets/nearby:
+    get:
+      tags:
+      - Map
+      summary: Pets near a point; distances are rounded to 100 m and exact owner locations
+        are never returned
+      operationId: nearbyPets
+      parameters:
+      - name: lat
+        in: query
+        required: true
+        schema:
+          type: number
+          format: double
+      - name: lng
+        in: query
+        required: true
+        schema:
+          type: number
+          format: double
+      - name: radius
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NearbyPetDto"
+  /api/partners/{partnerId}:
+    get:
+      tags:
+      - Partners and bookings
+      operationId: partner
+      parameters:
+      - name: partnerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PartnerProfileDto"
+  /api/partner/wallet:
+    get:
+      tags:
+      - partner-wallet-controller
+      operationId: get
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WalletResponseDto"
+  /api/partner/wallet/accounts/{accountId}/entries:
+    get:
+      tags:
+      - partner-wallet-controller
+      operationId: entries
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LedgerEntryPage"
+  /api/partner/campaigns/{campaignId}/metrics:
+    get:
+      tags:
+      - Partner campaigns v2 and profile
+      operationId: metrics
+      parameters:
+      - name: campaignId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignMetricsDto"
+  /api/partner/bookings:
+    get:
+      tags:
+      - Partners and bookings
+      operationId: partnerBookings
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseBookingDto"
+  /api/partner/billing/purchases/{transactionId}:
+    get:
+      tags:
+      - billing-controller
+      operationId: getPurchase
+      parameters:
+      - name: transactionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentTransactionResponseDto"
+  /api/partner/billing/pricing:
+    get:
+      tags:
+      - billing-controller
+      operationId: pricing
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PricingResponseDto"
+  /api/notifications:
+    get:
+      tags:
+      - Notifications and devices
+      operationId: notifications
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseNotificationDto"
+  /api/notifications/unread-count:
+    get:
+      tags:
+      - Notifications and devices
+      operationId: unreadCount
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+                  format: int64
+  /api/media/{mediaId}:
+    get:
+      tags:
+      - Media
+      summary: Public media download by unguessable id
+      operationId: download
+      parameters:
+      - name: mediaId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /api/map/points:
+    get:
+      tags:
+      - social-controller
+      operationId: mapPoints
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MapPointsDto"
+  /api/feed:
+    get:
+      tags:
+      - Feed
+      summary: Ranked home feed with at most one sponsored card per five organic cards
+      operationId: feed
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: lat
+        in: query
+        required: false
+        schema:
+          type: number
+          format: double
+      - name: lng
+        in: query
+        required: false
+        schema:
+          type: number
+          format: double
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseFeedCardDto"
+  /api/engagement/leaderboard:
+    get:
+      tags:
+      - Gamification
+      operationId: leaderboard
+      parameters:
+      - name: scope
+        in: query
+        required: false
+        schema:
+          type: string
+          default: neighborhood
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LeaderboardDto"
+  /api/engagement/challenges:
+    get:
+      tags:
+      - Gamification
+      operationId: challenges
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChallengeDto"
+  /api/discover:
+    get:
+      tags:
+      - Communities and events
+      operationId: discover
+      parameters:
+      - name: lat
+        in: query
+        required: false
+        schema:
+          type: number
+          format: double
+      - name: lng
+        in: query
+        required: false
+        schema:
+          type: number
+          format: double
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DiscoverDto"
+  /api/dashboard/summary:
+    get:
+      tags:
+      - activity-controller
+      operationId: dashboardSummary
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DashboardSummaryDto"
+  /api/communities/{communityId}:
+    get:
+      tags:
+      - Communities and events
+      operationId: community
+      parameters:
+      - name: communityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommunityDto"
+  /api/assistant/usage:
+    get:
+      tags:
+      - AI assistant
+      operationId: usage
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AiUsageDto"
+  /api/admin/campaigns:
+    get:
+      tags:
+      - Admin moderation
+      operationId: queue
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          default: IN_REVIEW
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseAdminCampaignDto"
+  /api/activities/feed:
+    get:
+      tags:
+      - social-controller
+      operationId: feed_1
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityPostDto"
+  /api/posts/{postId}:
+    delete:
+      tags:
+      - Posts and stories
+      operationId: deletePost
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/devices/push-tokens/{token}:
+    delete:
+      tags:
+      - Notifications and devices
+      operationId: removeToken
+      parameters:
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+components:
+  schemas:
+    HealthRecordRequest:
       type: object
-      required: [currency, creditsPerCurrencyUnit, minPurchaseAmount, maxPurchaseAmount, campaignPriceAmount, campaignCreationCostCredits, campaignDurationDays, paymentProvider]
       properties:
-        currency: { type: string, example: BRL }
-        creditsPerCurrencyUnit: { type: number }
-        minPurchaseAmount: { type: number }
-        maxPurchaseAmount: { type: number }
-        campaignPriceAmount: { type: number }
-        campaignCreationCostCredits: { type: integer, format: int64 }
-        campaignDurationDays: { type: integer }
-        paymentProvider: { type: string }
-    CreatePurchaseRequest:
+        type:
+          type:
+          - string
+          - "null"
+          enum:
+          - VACCINE
+          - DEWORMING
+          - VET_VISIT
+          - MEDICATION
+        name:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        administeredOn:
+          type:
+          - string
+          - "null"
+          format: date
+        dueOn:
+          type:
+          - string
+          - "null"
+          format: date
+        vetName:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        clinicName:
+          type:
+          - string
+          - "null"
+          maxLength: 160
+          minLength: 0
+        notes:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+      required:
+      - name
+      - type
+    HealthRecordDto:
       type: object
-      required: [amount]
       properties:
-        amount: { type: number, minimum: 0.01 }
-        method: { type: string, enum: [PIX, CARD], nullable: true }
-        customerId: { type: string, nullable: true }
-    PaymentTransactionResponse:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+          - VACCINE
+          - DEWORMING
+          - VET_VISIT
+          - MEDICATION
+        name:
+          type: string
+        administeredOn:
+          type:
+          - string
+          - "null"
+          format: date
+        dueOn:
+          type:
+          - string
+          - "null"
+          format: date
+        vetName:
+          type:
+          - string
+          - "null"
+        clinicName:
+          type:
+          - string
+          - "null"
+        notes:
+          type:
+          - string
+          - "null"
+        status:
+          type: string
+          enum:
+          - DONE
+          - UPCOMING
+          - DUE_SOON
+          - OVERDUE
+    FollowStateDto:
       type: object
-      required: [id, partnerId, amount, currency, expectedCredits, provider, status, createdAt, updatedAt]
       properties:
-        id: { type: string, format: uuid }
-        partnerId: { type: string, format: uuid }
-        amount: { type: number }
-        currency: { type: string }
-        expectedCredits: { type: integer, format: int64 }
-        method: { type: string, nullable: true }
-        provider: { type: string }
-        status: { type: string, enum: [PENDING, CONFIRMED, FAILED, EXPIRED, CANCELED, DISPUTED, REFUNDED] }
-        providerCheckoutUrl: { type: string, nullable: true }
-        failureReason: { type: string, nullable: true }
-        createdAt: { type: string, format: date-time }
-        updatedAt: { type: string, format: date-time }
-    AdminAdjustmentRequest:
+        petId:
+          type: string
+          format: uuid
+        following:
+          type: boolean
+        followers:
+          type: integer
+          format: int64
+    PartnerServiceRequest:
       type: object
-      required: [accountCode, direction, amount, reason]
       properties:
-        accountCode: { type: string, enum: [MAIN, BONUS, PARTNER] }
-        direction: { type: string, enum: [CREDIT, DEBIT] }
-        amount: { type: integer, format: int64, minimum: 1 }
-        reason: { type: string }
-    OwnerRecommendationResponse:
+        name:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+        durationMinutes:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 1440
+          minimum: 5
+        priceCents:
+          type:
+          - integer
+          - "null"
+          format: int64
+          minimum: 0
+        active:
+          type:
+          - boolean
+          - "null"
+      required:
+      - durationMinutes
+      - name
+      - priceCents
+    PartnerServiceDto:
       type: object
-      required: [campaignId, campaignTitle, partnerName, description, callToAction, recommendedTopics, analyzedAt]
       properties:
-        campaignId: { type: string, format: uuid }
-        campaignTitle: { type: string }
-        partnerName: { type: string }
-        description: { type: string }
-        callToAction: { type: string }
-        recommendedTopics:
+        id:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type:
+          - string
+          - "null"
+        durationMinutes:
+          type: integer
+          format: int32
+        priceCents:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        active:
+          type: boolean
+    ReactRequest:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - "null"
+          enum:
+          - PAW
+          - LAUGH
+          - HEART
+      required:
+      - type
+    ReactionSummaryDto:
+      type: object
+      properties:
+        counts:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        viewerReaction:
+          type:
+          - string
+          - "null"
+          enum:
+          - PAW
+          - LAUGH
+          - HEART
+    ContentDisposition:
+      type: object
+      properties:
+        type:
+          type: string
+        name:
+          type: string
+        filename:
+          type: string
+        charset:
+          type: string
+        inline:
+          type: boolean
+        attachment:
+          type: boolean
+        formData:
+          type: boolean
+    HttpHeaders:
+      type: object
+      properties:
+        acceptLanguageAsLocales:
           type: array
-          items: { type: string }
-        analyzedAt: { type: string, format: date-time, nullable: true }
-    OwnerPromotionResponse:
+          items:
+            type: string
+        accessControlAllowHeaders:
+          type: array
+          items:
+            type: string
+        accessControlAllowMethods:
+          type: array
+          items:
+            $ref: "#/components/schemas/HttpMethod"
+        accessControlAllowOrigin:
+          type: string
+        accessControlExposeHeaders:
+          type: array
+          items:
+            type: string
+        accessControlRequestHeaders:
+          type: array
+          items:
+            type: string
+        accessControlRequestMethod:
+          $ref: "#/components/schemas/HttpMethod"
+        range:
+          type: array
+          items:
+            $ref: "#/components/schemas/HttpRange"
+        connection:
+          type: array
+          items:
+            type: string
+        contentType:
+          $ref: "#/components/schemas/MediaType"
+        contentLength:
+          type: integer
+          format: int64
+        ifModifiedSince:
+          type: integer
+          format: int64
+        origin:
+          type: string
+        location:
+          type: string
+          format: uri
+        host:
+          type: object
+          properties:
+            hostString:
+              type: string
+            address:
+              type: object
+              properties:
+                hostAddress:
+                  type: string
+                address:
+                  type: string
+                  format: byte
+                hostName:
+                  type: string
+                linkLocalAddress:
+                  type: boolean
+                anyLocalAddress:
+                  type: boolean
+                multicastAddress:
+                  type: boolean
+                loopbackAddress:
+                  type: boolean
+                siteLocalAddress:
+                  type: boolean
+                mcglobal:
+                  type: boolean
+                mcnodeLocal:
+                  type: boolean
+                mclinkLocal:
+                  type: boolean
+                mcsiteLocal:
+                  type: boolean
+                mcorgLocal:
+                  type: boolean
+                canonicalHostName:
+                  type: string
+            port:
+              type: integer
+              format: int32
+            unresolved:
+              type: boolean
+            hostName:
+              type: string
+        contentDisposition:
+          $ref: "#/components/schemas/ContentDisposition"
+        acceptCharset:
+          type: array
+          items:
+            type: string
+        cacheControl:
+          type: string
+        contentLanguage:
+          type: string
+        etag:
+          type: string
+        accessControlAllowCredentials:
+          type: boolean
+        basicAuth:
+          type: string
+          writeOnly: true
+        accept:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaType"
+        acceptPatch:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaType"
+        allow:
+          type: array
+          items:
+            $ref: "#/components/schemas/HttpMethod"
+          uniqueItems: true
+        bearerAuth:
+          type: string
+          writeOnly: true
+        expires:
+          type: integer
+          format: int64
+        ifMatch:
+          type: array
+          items:
+            type: string
+        ifNoneMatch:
+          type: array
+          items:
+            type: string
+        pragma:
+          type: string
+        upgrade:
+          type: string
+        vary:
+          type: array
+          items:
+            type: string
+        acceptLanguage:
+          type: array
+          items:
+            type: object
+            properties:
+              range:
+                type: string
+              weight:
+                type: number
+                format: double
+        accessControlMaxAge:
+          type: integer
+          format: int64
+        ifUnmodifiedSince:
+          type: integer
+          format: int64
+        empty:
+          type: boolean
+        all:
+          type: object
+          additionalProperties:
+            type: string
+          writeOnly: true
+        lastModified:
+          type: integer
+          format: int64
+        date:
+          type: integer
+          format: int64
+    HttpMethod: {}
+    HttpRange: {}
+    MediaType:
       type: object
-      required: [campaignId, partnerName, title, description, targetAudience, callToAction, createdAt]
       properties:
-        campaignId: { type: string, format: uuid }
-        partnerName: { type: string }
-        partnerWebsite: { type: string, nullable: true }
-        title: { type: string }
-        description: { type: string }
-        targetAudience: { type: string }
-        callToAction: { type: string }
-        expiresAt: { type: string, format: date-time, nullable: true }
-        createdAt: { type: string, format: date-time }
+        type:
+          type: string
+        subtype:
+          type: string
+        parameters:
+          type: object
+          additionalProperties:
+            type: string
+        qualityValue:
+          type: number
+          format: double
+        charset:
+          type: string
+        concrete:
+          type: boolean
+        wildcardSubtype:
+          type: boolean
+        subtypeSuffix:
+          type: string
+        wildcardType:
+          type: boolean
+    CreateStoryRequest:
+      type: object
+      properties:
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        mediaId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        caption:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+      required:
+      - mediaId
+      - petId
+    StoryDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mediaUrl:
+          type: string
+        contentType:
+          type: string
+        caption:
+          type:
+          - string
+          - "null"
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        viewed:
+          type: boolean
+    CreatePostRequest:
+      type: object
+      properties:
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        caption:
+          type:
+          - string
+          - "null"
+          maxLength: 200
+          minLength: 0
+        placeName:
+          type:
+          - string
+          - "null"
+          maxLength: 160
+          minLength: 0
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+          maximum: 90
+          minimum: -90
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+          maximum: 180
+          minimum: -180
+        mediaIds:
+          type:
+          - array
+          - "null"
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 1
+        taggedPetIds:
+          type:
+          - array
+          - "null"
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
+      required:
+      - mediaIds
+      - petId
+    PostCreatedDto:
+      type: object
+      properties:
+        postId:
+          type: string
+          format: uuid
+        feedItemId:
+          type: string
+          format: uuid
+    CreatePlaydateRequest:
+      type: object
+      properties:
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        mode:
+          type:
+          - string
+          - "null"
+          enum:
+          - NOW
+          - SCHEDULED
+        startsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        placeId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+          maximum: 90
+          minimum: -90
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+          maximum: 180
+          minimum: -180
+        locationName:
+          type:
+          - string
+          - "null"
+          maxLength: 160
+          minLength: 0
+        message:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+        inviteePetIds:
+          type:
+          - array
+          - "null"
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
+      required:
+      - mode
+      - petId
+    PlaydateDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizerOwnerId:
+          type: string
+          format: uuid
+        organizerPetId:
+          type: string
+          format: uuid
+        organizerPetName:
+          type: string
+        mode:
+          type: string
+          enum:
+          - NOW
+          - SCHEDULED
+        startsAt:
+          type: string
+          format: date-time
+        placeId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        locationName:
+          type:
+          - string
+          - "null"
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+        message:
+          type:
+          - string
+          - "null"
+        status:
+          type: string
+        invites:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlaydateInviteDto"
+    PlaydateInviteDto:
+      type: object
+      properties:
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        status:
+          type: string
+    RespondInviteRequest:
+      type: object
+      properties:
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        response:
+          type:
+          - string
+          - "null"
+          enum:
+          - ACCEPTED
+          - DECLINED
+      required:
+      - petId
+      - response
+    CheckInRequest:
+      type: object
+      properties:
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+      required:
+      - petId
+    CheckInDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        placeId:
+          type: string
+          format: uuid
+        petId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
     CreatePetRequest:
       type: object
-      required: [name, species, size]
       properties:
-        name: { type: string, minLength: 1, maxLength: 80 }
-        species: { type: string, enum: [dog, cat, bird, rabbit, other] }
-        breed: { type: string, maxLength: 80 }
-        birthDate: { type: string, format: date }
-        size: { type: string, enum: [small, medium, large] }
-        activityPreference: { type: string, maxLength: 120 }
-    PetResponse:
-      allOf:
-        - $ref: '#/components/schemas/CreatePetRequest'
-        - type: object
-          required: [id, ownerId, status, createdAt]
-          properties:
-            id: { type: string, format: uuid }
-            ownerId: { type: string, format: uuid }
-            status: { type: string, enum: [active, inactive] }
-            createdAt: { type: string, format: date-time }
-    CreateActivityRequest:
+        name:
+          type: string
+          maxLength: 80
+          minLength: 0
+        species:
+          type: string
+          minLength: 1
+        breed:
+          type: string
+          maxLength: 80
+          minLength: 0
+        birthDate:
+          type: string
+          format: date
+        size:
+          type: string
+          minLength: 1
+        activityPreference:
+          type: string
+          maxLength: 120
+          minLength: 0
+      required:
+      - name
+      - size
+      - species
+    PetResponseDto:
       type: object
-      required: [petId, type, startedAt, durationSeconds]
       properties:
-        petId: { type: string, format: uuid }
-        type: { type: string, enum: [walk, run, hike, bike_ride, swim, play] }
-        startedAt: { type: string, format: date-time }
-        durationSeconds: { type: integer, minimum: 1 }
-        distanceMeters: { type: number, minimum: 0 }
-        notes: { type: string, maxLength: 500 }
-    ActivityResponse:
-      allOf:
-        - $ref: '#/components/schemas/CreateActivityRequest'
-        - type: object
-          required: [id, ownerId, createdAt]
-          properties:
-            id: { type: string, format: uuid }
-            ownerId: { type: string, format: uuid }
-            createdAt: { type: string, format: date-time }
-    DashboardSummaryResponse:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        species:
+          type: string
+        breed:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        size:
+          type: string
+        activityPreference:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    WeightRequest:
       type: object
-      required: [ownerId, petCount, activityCountLast7Days, totalDistanceMetersLast7Days, totalDurationSecondsLast7Days, currentStreakDays]
       properties:
-        ownerId: { type: string, format: uuid }
-        petCount: { type: integer }
-        activityCountLast7Days: { type: integer }
-        totalDistanceMetersLast7Days: { type: number }
-        totalDurationSecondsLast7Days: { type: integer }
-        currentStreakDays: { type: integer }
-        recentActivities:
+        measuredOn:
+          type:
+          - string
+          - "null"
+          format: date
+        weightKg:
+          type:
+          - number
+          - "null"
+          maximum: 200
+          minimum: 0.1
+      required:
+      - measuredOn
+      - weightKg
+    WeightDto:
+      type: object
+      properties:
+        measuredOn:
+          type: string
+          format: date
+        weightKg:
+          type: number
+    ShareLinkRequest:
+      type: object
+      properties:
+        days:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 30
+          minimum: 1
+    ShareLinkDto:
+      type: object
+      properties:
+        token:
+          type: string
+        path:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    CreateCampaignRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 160
+          minLength: 0
+        description:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        targetAudience:
+          type: string
+          maxLength: 160
+          minLength: 0
+        callToAction:
+          type: string
+          maxLength: 160
+          minLength: 0
+      required:
+      - callToAction
+      - description
+      - targetAudience
+      - title
+    CampaignResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        targetAudience:
+          type: string
+        callToAction:
+          type: string
+        status:
+          type: string
+        aiTopics:
           type: array
           items:
-            $ref: '#/components/schemas/ActivityResponse'
+            type: string
+        analyzedAt:
+          type: string
+          format: date-time
+        creditsCharged:
+          type: integer
+          format: int64
+        creditsRefunded:
+          type: integer
+          format: int64
+        expiresAt:
+          type: string
+          format: date-time
+        remainingBalance:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        endReason:
+          type: string
+    CampaignV2Dto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        endReason:
+          type:
+          - string
+          - "null"
+        title:
+          type: string
+        description:
+          type: string
+        targetAudience:
+          type: string
+        ctaLabel:
+          type: string
+        ctaType:
+          type: string
+        ctaUrl:
+          type:
+          - string
+          - "null"
+        serviceId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        mediaUrl:
+          type:
+          - string
+          - "null"
+        budgetCredits:
+          type: integer
+          format: int64
+        creditsCharged:
+          type: integer
+          format: int64
+        creditsRefunded:
+          type: integer
+          format: int64
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        targetLocation:
+          oneOf:
+          - $ref: "#/components/schemas/TargetLocationDto"
+          - type: "null"
+        targetSpecies:
+          type: array
+          items:
+            type: string
+        targetBreeds:
+          type: array
+          items:
+            type: string
+        targetInterests:
+          type: array
+          items:
+            type: string
+        formats:
+          type: array
+          items:
+            type: string
+        reviewedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        rejectionReason:
+          type:
+          - string
+          - "null"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TargetLocationDto:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        radiusMeters:
+          type: integer
+          format: int32
+    BookingDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        ownerName:
+          type: string
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        partnerId:
+          type: string
+          format: uuid
+        partnerName:
+          type: string
+        serviceId:
+          type: string
+          format: uuid
+        serviceName:
+          type: string
+        priceCents:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - REQUESTED
+          - CONFIRMED
+          - CANCELLED
+          - COMPLETED
+        source:
+          type: string
+          enum:
+          - APP
+          - AI
+          - AD
+        campaignId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        notes:
+          type:
+          - string
+          - "null"
+    CreatePurchaseRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+        method:
+          type: string
+        customerId:
+          type: string
+      required:
+      - amount
+    PaymentTransactionResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        currency:
+          type: string
+        expectedCredits:
+          type: integer
+          format: int64
+        method:
+          type: string
+        provider:
+          type: string
+        status:
+          type: string
+          enum:
+          - PENDING
+          - CONFIRMED
+          - FAILED
+          - EXPIRED
+          - CANCELED
+          - DISPUTED
+          - REFUNDED
+        providerCheckoutUrl:
+          type: string
+        failureReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RegisterPartnerRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+          minLength: 0
+        password:
+          type: string
+          maxLength: 128
+          minLength: 8
+        displayName:
+          type: string
+          maxLength: 120
+          minLength: 0
+        businessName:
+          type: string
+          maxLength: 160
+          minLength: 0
+        website:
+          type: string
+          maxLength: 300
+          minLength: 0
+        description:
+          type: string
+          maxLength: 1000
+          minLength: 0
+      required:
+      - businessName
+      - displayName
+      - email
+      - password
+    AuthResponseDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+        expiresInSeconds:
+          type: integer
+          format: int64
+        owner:
+          $ref: "#/components/schemas/OwnerResponseDto"
+    OwnerResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        displayName:
+          type: string
+        role:
+          type: string
+        bio:
+          type: string
+        phone:
+          type: string
+        avatarUrl:
+          type: string
+        businessName:
+          type: string
+        website:
+          type: string
+        partnerDescription:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - password
+    MediaDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+        contentType:
+          type: string
+    CreateLostPetAlertRequest:
+      type: object
+      properties:
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+        contactPhone:
+          type:
+          - string
+          - "null"
+          maxLength: 40
+          minLength: 0
+        photoMediaId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+          maximum: 90
+          minimum: -90
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+          maximum: 180
+          minimum: -180
+        lastSeenAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        radiusMeters:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 20000
+          minimum: 100
+      required:
+      - description
+      - lastSeenAt
+      - latitude
+      - longitude
+      - petId
+    LostPetAlertDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        petSpecies:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+        description:
+          type: string
+        contactPhone:
+          type:
+          - string
+          - "null"
+        photoUrl:
+          type:
+          - string
+          - "null"
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        lastSeenAt:
+          type: string
+          format: date-time
+        radiusMeters:
+          type: integer
+          format: int32
+        status:
+          type: string
+        distanceMeters:
+          type:
+          - number
+          - "null"
+          format: double
+        sightings:
+          type: integer
+          format: int64
+    SightingRequest:
+      type: object
+      properties:
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+          maximum: 90
+          minimum: -90
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+          maximum: 180
+          minimum: -180
+        seenAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        note:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+      required:
+      - latitude
+      - longitude
+      - seenAt
+    ResolveAlertRequest:
+      type: object
+      properties:
+        found:
+          type:
+          - boolean
+          - "null"
+      required:
+      - found
     GenerateInsightRequest:
       type: object
       properties:
-        petId: { type: string, format: uuid }
-        periodDays: { type: integer, minimum: 1, maximum: 90, default: 7 }
-    InsightResponse:
+        petId:
+          type: string
+          format: uuid
+        periodDays:
+          type: integer
+          format: int32
+          maximum: 90
+          minimum: 1
+    InsightResponseDto:
       type: object
-      required: [id, ownerId, text, provider, fallbackUsed, generatedAt]
       properties:
-        id: { type: string, format: uuid }
-        ownerId: { type: string, format: uuid }
-        petId: { type: string, format: uuid, nullable: true }
-        text: { type: string }
-        provider: { type: string }
-        model: { type: string, nullable: true }
-        fallbackUsed: { type: boolean }
-        generatedAt: { type: string, format: date-time }
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        petId:
+          type: string
+          format: uuid
+        text:
+          type: string
+        provider:
+          type: string
+        model:
+          type: string
+        fallbackUsed:
+          type: boolean
+        generatedAt:
+          type: string
+          format: date-time
+    CommentRequest:
+      type: object
+      properties:
+        body:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+      required:
+      - body
+    CommentDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        feedItemId:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        ownerName:
+          type: string
+        ownerAvatarUrl:
+          type:
+          - string
+          - "null"
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    RsvpRequest:
+      type: object
+      properties:
+        status:
+          type:
+          - string
+          - "null"
+          enum:
+          - GOING
+          - INTERESTED
+      required:
+      - status
+    CommunityEventDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        communityId:
+          type: string
+          format: uuid
+        communityName:
+          type:
+          - string
+          - "null"
+        title:
+          type: string
+        description:
+          type:
+          - string
+          - "null"
+        locationName:
+          type:
+          - string
+          - "null"
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        capacity:
+          type:
+          - integer
+          - "null"
+          format: int32
+        goingCount:
+          type: integer
+          format: int64
+        interestedCount:
+          type: integer
+          format: int64
+        viewerRsvp:
+          type:
+          - string
+          - "null"
+          enum:
+          - GOING
+          - INTERESTED
+    JoinChallengeRequest:
+      type: object
+      properties:
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+      required:
+      - petId
+    ChallengeDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        metric:
+          type: string
+          enum:
+          - ACTIVITY_COUNT
+          - DISTANCE_METERS
+          - DURATION_SECONDS
+        targetValue:
+          type: integer
+          format: int64
+        xpReward:
+          type: integer
+          format: int32
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        author:
+          type: string
+        joined:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChallengeParticipantDto"
+    ChallengeParticipantDto:
+      type: object
+      properties:
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        progress:
+          type: integer
+          format: int64
+        completed:
+          type: boolean
+    PushTokenRequest:
+      type: object
+      properties:
+        token:
+          type:
+          - string
+          - "null"
+          maxLength: 200
+          minLength: 0
+        platform:
+          type:
+          - string
+          - "null"
+          enum:
+          - IOS
+          - ANDROID
+          - WEB
+      required:
+      - platform
+      - token
+    CreateCommunityRequest:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        kind:
+          type:
+          - string
+          - "null"
+          enum:
+          - BREED
+          - NEIGHBORHOOD
+          - CAUSE
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+        coverUrl:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+      required:
+      - kind
+      - name
+    CommunityDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+          - BREED
+          - NEIGHBORHOOD
+          - CAUSE
+        description:
+          type:
+          - string
+          - "null"
+        coverUrl:
+          type:
+          - string
+          - "null"
+        memberCount:
+          type: integer
+          format: int64
+        joined:
+          type: boolean
+        role:
+          type:
+          - string
+          - "null"
+        upcomingEvents:
+          type: integer
+          format: int64
+    CreateEventRequest:
+      type: object
+      properties:
+        title:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+        locationName:
+          type:
+          - string
+          - "null"
+          maxLength: 160
+          minLength: 0
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+        startsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        endsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        capacity:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 10000
+          minimum: 1
+      required:
+      - startsAt
+      - title
+    CreateBookingRequest:
+      type: object
+      properties:
+        serviceId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        startsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        notes:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+        campaignId:
+          type:
+          - string
+          - "null"
+          format: uuid
+      required:
+      - petId
+      - serviceId
+      - startsAt
+    RegisterOwnerRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+          minLength: 0
+        password:
+          type: string
+          maxLength: 128
+          minLength: 8
+        displayName:
+          type: string
+          maxLength: 120
+          minLength: 0
+      required:
+      - displayName
+      - email
+      - password
+    CreateConversationRequest:
+      type: object
+      properties:
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+    ConversationDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        title:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+    SendMessageRequest:
+      type: object
+      properties:
+        content:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+      required:
+      - content
+    AiActionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+          - BOOKING
+          - REMINDER
+          - CAPTION
+          - PLAYDATE
+        status:
+          type: string
+          enum:
+          - PROPOSED
+          - CONFIRMED
+          - EXECUTED
+          - FAILED
+          - CANCELLED
+        payload:
+          type: object
+          additionalProperties: {}
+        sponsored:
+          type: boolean
+        campaignId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        resultRef:
+          type:
+          - string
+          - "null"
+          format: uuid
+        error:
+          type:
+          - string
+          - "null"
+    AiMessageDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        action:
+          oneOf:
+          - $ref: "#/components/schemas/AiActionDto"
+          - type: "null"
+    AiUsageDto:
+      type: object
+      properties:
+        plan:
+          type: string
+        used:
+          type: integer
+          format: int32
+        limit:
+          type:
+          - integer
+          - "null"
+          format: int32
+    SendMessageResponse:
+      type: object
+      properties:
+        userMessage:
+          $ref: "#/components/schemas/AiMessageDto"
+        assistantMessage:
+          $ref: "#/components/schemas/AiMessageDto"
+        usage:
+          $ref: "#/components/schemas/AiUsageDto"
+    AdEventRequest:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - "null"
+          enum:
+          - IMPRESSION
+          - CLICK
+        placement:
+          type:
+          - string
+          - "null"
+          enum:
+          - FEED_CARD
+          - MAP_PIN
+          - DISCOVER_HIGHLIGHT
+          - NEARBY_PROMO
+          - AI_RECOMMENDATION
+      required:
+      - placement
+      - type
+    LedgerAccountResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        walletId:
+          type: string
+          format: uuid
+        code:
+          type: string
+          enum:
+          - MAIN
+          - BONUS
+          - PARTNER
+        status:
+          type: string
+          enum:
+          - OPEN
+          - CLOSED
+        balance:
+          type: integer
+          format: int64
+    WalletResponseDto:
+      type: object
+      properties:
+        walletId:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - BLOCKED
+        blockedReason:
+          type: string
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/LedgerAccountResponseDto"
+        totalBalance:
+          type: integer
+          format: int64
+    AdminAdjustmentRequest:
+      type: object
+      properties:
+        accountCode:
+          type: string
+          enum:
+          - MAIN
+          - BONUS
+          - PARTNER
+        direction:
+          type: string
+          minLength: 1
+        amount:
+          type: integer
+          format: int64
+        reason:
+          type: string
+          minLength: 1
+      required:
+      - accountCode
+      - direction
+      - reason
+    PartnerProfileDto:
+      type: object
+      properties:
+        partnerId:
+          type: string
+          format: uuid
+        businessName:
+          type: string
+        category:
+          type: string
+          enum:
+          - VET
+          - GROOMING
+          - HOTEL
+          - CAFE
+          - PET_SHOP
+          - TRAINING
+          - WALKER
+          - OTHER
+        description:
+          type:
+          - string
+          - "null"
+        website:
+          type:
+          - string
+          - "null"
+        phone:
+          type:
+          - string
+          - "null"
+        address:
+          type:
+          - string
+          - "null"
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+        openingHours:
+          type:
+          - string
+          - "null"
+        coverUrl:
+          type:
+          - string
+          - "null"
+        verified:
+          type: boolean
+        verifiedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        placeId:
+          type:
+          - string
+          - "null"
+          format: uuid
+    CreateChallengeRequest:
+      type: object
+      properties:
+        title:
+          type:
+          - string
+          - "null"
+          maxLength: 120
+          minLength: 0
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+        metric:
+          type:
+          - string
+          - "null"
+          enum:
+          - ACTIVITY_COUNT
+          - DISTANCE_METERS
+          - DURATION_SECONDS
+        targetValue:
+          type:
+          - integer
+          - "null"
+          format: int64
+          maximum: 1000000
+          minimum: 1
+        xpReward:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 10000
+          minimum: 1
+        startsOn:
+          type:
+          - string
+          - "null"
+          format: date
+        endsOn:
+          type:
+          - string
+          - "null"
+          format: date
+      required:
+      - description
+      - endsOn
+      - metric
+      - startsOn
+      - targetValue
+      - title
+      - xpReward
+    RejectCampaignRequest:
+      type: object
+      properties:
+        reason:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+    AdminCampaignDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        partnerName:
+          type: string
+        partnerVerified:
+          type: boolean
+        status:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        ctaLabel:
+          type: string
+        ctaType:
+          type: string
+        formats:
+          type: array
+          items:
+            type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        submittedAt:
+          type: string
+          format: date-time
+        reviewedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        rejectionReason:
+          type:
+          - string
+          - "null"
+    CreateActivityRequest:
+      type: object
+      properties:
+        petId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          minLength: 1
+        startedAt:
+          type: string
+          format: date-time
+        durationSeconds:
+          type: integer
+          format: int64
+          minimum: 1
+        distanceMeters:
+          type: number
+          format: double
+          minimum: 0
+        notes:
+          type: string
+          maxLength: 500
+          minLength: 0
+        latitude:
+          type: number
+          format: double
+          maximum: 90
+          minimum: -90
+        longitude:
+          type: number
+          format: double
+          maximum: 180
+          minimum: -180
+        shareToPawCity:
+          type: boolean
+      required:
+      - petId
+      - startedAt
+      - type
+    ActivityResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        petId:
+          type: string
+          format: uuid
+        type:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        durationSeconds:
+          type: integer
+          format: int64
+        distanceMeters:
+          type: number
+          format: double
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+    ToggleReactionRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          maxLength: 16
+          minLength: 0
+      required:
+      - type
+    ActivityPostDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        ownerName:
+          type: string
+        ownerAvatarUrl:
+          type: string
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        petSpecies:
+          type: string
+        type:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        durationSeconds:
+          type: integer
+          format: int64
+        distanceMeters:
+          type: number
+          format: double
+        notes:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        createdAt:
+          type: string
+          format: date-time
+        reactions:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        commentCount:
+          type: integer
+          format: int64
+        viewerReaction:
+          type: string
+    AddCommentRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - body
+    ActivityCommentDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        activityId:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        ownerName:
+          type: string
+        ownerAvatarUrl:
+          type: string
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    UpdatePartnerProfileRequest:
+      type: object
+      properties:
+        businessName:
+          type:
+          - string
+          - "null"
+          maxLength: 160
+          minLength: 0
+        category:
+          type:
+          - string
+          - "null"
+          enum:
+          - VET
+          - GROOMING
+          - HOTEL
+          - CAFE
+          - PET_SHOP
+          - TRAINING
+          - WALKER
+          - OTHER
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 1000
+          minLength: 0
+        website:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+        phone:
+          type:
+          - string
+          - "null"
+          maxLength: 40
+          minLength: 0
+        address:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+        latitude:
+          type:
+          - number
+          - "null"
+          format: double
+        longitude:
+          type:
+          - number
+          - "null"
+          format: double
+        openingHours:
+          type:
+          - string
+          - "null"
+          maxLength: 300
+          minLength: 0
+        coverUrl:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+    UpdateCampaignRequest:
+      type: object
+      properties:
+        title:
+          type:
+          - string
+          - "null"
+          maxLength: 160
+          minLength: 0
+        description:
+          type:
+          - string
+          - "null"
+          maxLength: 2000
+          minLength: 0
+        targetAudience:
+          type:
+          - string
+          - "null"
+          maxLength: 160
+          minLength: 0
+        ctaLabel:
+          type:
+          - string
+          - "null"
+          maxLength: 160
+          minLength: 0
+        ctaType:
+          type:
+          - string
+          - "null"
+          enum:
+          - LINK
+          - BOOKING
+        ctaUrl:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+        serviceId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        mediaAssetId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        startsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        endsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        targetLatitude:
+          type:
+          - number
+          - "null"
+          format: double
+        targetLongitude:
+          type:
+          - number
+          - "null"
+          format: double
+        targetRadiusMeters:
+          type:
+          - integer
+          - "null"
+          format: int32
+          maximum: 100000
+          minimum: 500
+        targetSpecies:
+          type:
+          - array
+          - "null"
+          items:
+            type: string
+          maxItems: 10
+          minItems: 0
+        targetBreeds:
+          type:
+          - array
+          - "null"
+          items:
+            type: string
+          maxItems: 20
+          minItems: 0
+        targetInterests:
+          type:
+          - array
+          - "null"
+          items:
+            type: string
+          maxItems: 20
+          minItems: 0
+        formats:
+          type:
+          - array
+          - "null"
+          items:
+            type: string
+            enum:
+            - FEED_CARD
+            - MAP_PIN
+            - DISCOVER_HIGHLIGHT
+            - NEARBY_PROMO
+            - AI_RECOMMENDATION
+          maxItems: 5
+          minItems: 1
+    UpdateProfileRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+          maxLength: 120
+          minLength: 0
+        bio:
+          type: string
+          maxLength: 500
+          minLength: 0
+        phone:
+          type: string
+          maxLength: 40
+          minLength: 0
+        avatarUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        businessName:
+          type: string
+          maxLength: 160
+          minLength: 0
+        website:
+          type: string
+          maxLength: 300
+          minLength: 0
+        partnerDescription:
+          type: string
+          maxLength: 1000
+          minLength: 0
+        latitude:
+          type: number
+          format: double
+          maximum: 90
+          minimum: -90
+        longitude:
+          type: number
+          format: double
+          maximum: 180
+          minimum: -180
+        clearCoordinates:
+          type: boolean
+    NotificationPreferencesDto:
+      type: object
+      properties:
+        healthReminders:
+          type: boolean
+        social:
+          type: boolean
+        playdates:
+          type: boolean
+        lostPets:
+          type: boolean
+        bookings:
+          type: boolean
+    HealthPassportDto:
+      type: object
+      properties:
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        species:
+          type: string
+        breed:
+          type:
+          - string
+          - "null"
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/HealthRecordDto"
+        upcoming:
+          type: array
+          items:
+            $ref: "#/components/schemas/HealthRecordDto"
+        weights:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeightDto"
+    StoryGroupDto:
+      type: object
+      properties:
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        petAvatarUrl:
+          type:
+          - string
+          - "null"
+        ownerId:
+          type: string
+          format: uuid
+        own:
+          type: boolean
+        allViewed:
+          type: boolean
+        stories:
+          type: array
+          items:
+            $ref: "#/components/schemas/StoryDto"
+    OwnerRecommendationDto:
+      type: object
+      properties:
+        campaignId:
+          type: string
+          format: uuid
+        partnerName:
+          type: string
+        campaignTitle:
+          type: string
+        description:
+          type: string
+        callToAction:
+          type: string
+        recommendedTopics:
+          type: array
+          items:
+            type: string
+        analyzedAt:
+          type: string
+          format: date-time
+    OwnerPromotionDto:
+      type: object
+      properties:
+        campaignId:
+          type: string
+          format: uuid
+        partnerName:
+          type: string
+        partnerWebsite:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        targetAudience:
+          type: string
+        callToAction:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    PageResponsePlaceDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlaceDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    PlaceDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+          enum:
+          - PARK
+          - VET
+          - CAFE
+          - HOTEL
+          - GROOMING
+          - PET_SHOP
+          - TRAINING
+          - OTHER
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        distanceMeters:
+          type:
+          - number
+          - "null"
+          format: double
+        address:
+          type:
+          - string
+          - "null"
+        description:
+          type:
+          - string
+          - "null"
+        rating:
+          type:
+          - number
+          - "null"
+          format: double
+        ratingCount:
+          type: integer
+          format: int32
+        partnerId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        verifiedPartner:
+          type: boolean
+        checkInsToday:
+          type: integer
+          format: int64
+    BadgeDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        emoji:
+          type: string
+        awarded:
+          type: boolean
+        awardedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+    PetEngagementDto:
+      type: object
+      properties:
+        petId:
+          type: string
+          format: uuid
+        xp:
+          type: integer
+          format: int64
+        level:
+          type: integer
+          format: int32
+        levelTitle:
+          type: string
+        xpIntoLevel:
+          type: integer
+          format: int64
+        xpForNextLevel:
+          type:
+          - integer
+          - "null"
+          format: int64
+        streakDays:
+          type: integer
+          format: int32
+        badgeCount:
+          type: integer
+          format: int64
+    PetProfileDto:
+      type: object
+      properties:
+        pet:
+          $ref: "#/components/schemas/ProfilePetDto"
+        owner:
+          $ref: "#/components/schemas/ProfileOwnerDto"
+        engagement:
+          $ref: "#/components/schemas/PetEngagementDto"
+        stats:
+          $ref: "#/components/schemas/ProfileStatsDto"
+        badgeShelf:
+          type: array
+          items:
+            $ref: "#/components/schemas/BadgeDto"
+        weeklyActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeeklyBarDto"
+        following:
+          type: boolean
+        own:
+          type: boolean
+    ProfileOwnerDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        neighborhood:
+          type:
+          - string
+          - "null"
+        city:
+          type:
+          - string
+          - "null"
+    ProfilePetDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        species:
+          type: string
+        breed:
+          type:
+          - string
+          - "null"
+        birthDate:
+          type:
+          - string
+          - "null"
+          format: date
+        size:
+          type: string
+        avatarUrl:
+          type:
+          - string
+          - "null"
+        coverUrl:
+          type:
+          - string
+          - "null"
+        bio:
+          type:
+          - string
+          - "null"
+        activityPreference:
+          type:
+          - string
+          - "null"
+    ProfileStatsDto:
+      type: object
+      properties:
+        followers:
+          type: integer
+          format: int64
+        adventures:
+          type: integer
+          format: int64
+        moments:
+          type: integer
+          format: int64
+    WeeklyBarDto:
+      type: object
+      properties:
+        day:
+          type: string
+        minutes:
+          type: integer
+          format: int64
+    PageResponsePetPostDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PetPostDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    PetPostDto:
+      type: object
+      properties:
+        postId:
+          type: string
+          format: uuid
+        feedItemId:
+          type: string
+          format: uuid
+        caption:
+          type:
+          - string
+          - "null"
+        placeName:
+          type:
+          - string
+          - "null"
+        media:
+          type: array
+          items:
+            type: string
+        publishedAt:
+          type: string
+          format: date-time
+        reactionCount:
+          type: integer
+          format: int64
+        commentCount:
+          type: integer
+          format: int64
+    PageResponsePetFriendDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PetFriendDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    PetFriendDto:
+      type: object
+      properties:
+        petId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        species:
+          type: string
+        breed:
+          type:
+          - string
+          - "null"
+        avatarUrl:
+          type:
+          - string
+          - "null"
+        ownerName:
+          type: string
+        mutualSince:
+          type: string
+          format: date-time
+    AdventureDto:
+      type: object
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        feedItemId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        type:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        durationSeconds:
+          type: integer
+          format: int64
+        distanceMeters:
+          type:
+          - number
+          - "null"
+          format: double
+        notes:
+          type:
+          - string
+          - "null"
+    PageResponseAdventureDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdventureDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    NearbyPetDto:
+      type: object
+      properties:
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        species:
+          type: string
+        breed:
+          type:
+          - string
+          - "null"
+        avatarUrl:
+          type:
+          - string
+          - "null"
+        ownerName:
+          type: string
+        distanceMeters:
+          type: number
+          format: double
+    LedgerEntryPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/LedgerEntryResponseDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    LedgerEntryResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        accountId:
+          type: string
+          format: uuid
+        accountCode:
+          type: string
+          enum:
+          - MAIN
+          - BONUS
+          - PARTNER
+        direction:
+          type: string
+          enum:
+          - CREDIT
+          - DEBIT
+        amount:
+          type: integer
+          format: int64
+        balanceAfter:
+          type: integer
+          format: int64
+        referenceType:
+          type: string
+          enum:
+          - PAYMENT
+          - CAMPAIGN
+          - CAMPAIGN_REFUND
+          - PAYMENT_REVERSAL
+          - ADJUSTMENT
+        referenceId:
+          type: string
+          format: uuid
+        description:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+    CampaignMetricsDto:
+      type: object
+      properties:
+        campaignId:
+          type: string
+          format: uuid
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        impressions:
+          type: integer
+          format: int64
+        clicks:
+          type: integer
+          format: int64
+        bookings:
+          type: integer
+          format: int64
+        clickThroughRate:
+          type: number
+          format: double
+        bookingRate:
+          type: number
+          format: double
+        creditsSpent:
+          type: integer
+          format: int64
+        costPerClick:
+          type:
+          - number
+          - "null"
+          format: double
+        costPerBooking:
+          type:
+          - number
+          - "null"
+          format: double
+        byPlacement:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int64
+    PageResponseBookingDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    PricingResponseDto:
+      type: object
+      properties:
+        currency:
+          type: string
+        creditsPerCurrencyUnit:
+          type: number
+        minPurchaseAmount:
+          type: number
+        maxPurchaseAmount:
+          type: number
+        campaignPriceAmount:
+          type: number
+        campaignCreationCostCredits:
+          type: integer
+          format: int64
+        campaignDurationDays:
+          type: integer
+          format: int32
+        provider:
+          type: string
+    NotificationDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+          - HEALTH_REMINDER
+          - ACHIEVEMENT
+          - CHALLENGE
+          - SOCIAL
+          - PLAYDATE
+          - LOST_PET
+          - BOOKING
+          - SYSTEM
+        title:
+          type: string
+        body:
+          type: string
+        data:
+          type: object
+          additionalProperties: {}
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    PageResponseNotificationDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/NotificationDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    ActivityMapPointDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        type:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        startedAt:
+          type: string
+          format: date-time
+    MapPointsDto:
+      type: object
+      properties:
+        partners:
+          type: array
+          items:
+            $ref: "#/components/schemas/PartnerMapPointDto"
+        activities:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityMapPointDto"
+    PartnerMapPointDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        avatarUrl:
+          type: string
+        website:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+    AchievementContentDto:
+      type: object
+      properties:
+        badgeCode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        emoji:
+          type: string
+    ActivityContentDto:
+      type: object
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        type:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        durationSeconds:
+          type: integer
+          format: int64
+        distanceMeters:
+          type:
+          - number
+          - "null"
+          format: double
+        notes:
+          type:
+          - string
+          - "null"
+    FeedAuthorDto:
+      type: object
+      properties:
+        ownerId:
+          type: string
+          format: uuid
+        ownerName:
+          type: string
+        petId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        petName:
+          type:
+          - string
+          - "null"
+        petAvatarUrl:
+          type:
+          - string
+          - "null"
+        petSpecies:
+          type:
+          - string
+          - "null"
+        neighborhood:
+          type:
+          - string
+          - "null"
+    FeedCardDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+          - POST
+          - ACTIVITY
+          - ACHIEVEMENT
+          - SPONSORED
+        publishedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        author:
+          oneOf:
+          - $ref: "#/components/schemas/FeedAuthorDto"
+          - type: "null"
+        post:
+          oneOf:
+          - $ref: "#/components/schemas/PostContentDto"
+          - type: "null"
+        activity:
+          oneOf:
+          - $ref: "#/components/schemas/ActivityContentDto"
+          - type: "null"
+        achievement:
+          oneOf:
+          - $ref: "#/components/schemas/AchievementContentDto"
+          - type: "null"
+        sponsored:
+          oneOf:
+          - $ref: "#/components/schemas/SponsoredContentDto"
+          - type: "null"
+        reactions:
+          oneOf:
+          - $ref: "#/components/schemas/ReactionSummaryDto"
+          - type: "null"
+        commentCount:
+          type: integer
+          format: int64
+    PageResponseFeedCardDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedCardDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    PostContentDto:
+      type: object
+      properties:
+        postId:
+          type: string
+          format: uuid
+        caption:
+          type:
+          - string
+          - "null"
+        placeName:
+          type:
+          - string
+          - "null"
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaDto"
+        taggedPetIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    SponsoredContentDto:
+      type: object
+      properties:
+        campaignId:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        partnerName:
+          type: string
+        verified:
+          type: boolean
+        title:
+          type: string
+        description:
+          type: string
+        ctaLabel:
+          type: string
+        ctaType:
+          type: string
+        ctaUrl:
+          type:
+          - string
+          - "null"
+        serviceId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        mediaUrl:
+          type:
+          - string
+          - "null"
+        label:
+          type: string
+    PageResponseCommentDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommentDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    LeaderboardDto:
+      type: object
+      properties:
+        scope:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntryDto"
+    LeaderboardEntryDto:
+      type: object
+      properties:
+        rank:
+          type: integer
+          format: int32
+        petId:
+          type: string
+          format: uuid
+        petName:
+          type: string
+        petAvatarUrl:
+          type:
+          - string
+          - "null"
+        ownerName:
+          type: string
+        neighborhood:
+          type:
+          - string
+          - "null"
+        level:
+          type: integer
+          format: int32
+        levelTitle:
+          type: string
+        weeklyXp:
+          type: integer
+          format: int64
+        own:
+          type: boolean
+    DiscoverDto:
+      type: object
+      properties:
+        sponsored:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiscoverPartnerDto"
+        communities:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommunityDto"
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommunityEventDto"
+    DiscoverPartnerDto:
+      type: object
+      properties:
+        campaignId:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        partnerName:
+          type: string
+        verified:
+          type: boolean
+        title:
+          type: string
+        description:
+          type: string
+        ctaLabel:
+          type: string
+        ctaType:
+          type: string
+        ctaUrl:
+          type:
+          - string
+          - "null"
+        serviceId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        mediaUrl:
+          type:
+          - string
+          - "null"
+        label:
+          type: string
+    DashboardSummaryDto:
+      type: object
+      properties:
+        ownerId:
+          type: string
+          format: uuid
+        petCount:
+          type: integer
+          format: int32
+        activityCountLast7Days:
+          type: integer
+          format: int32
+        totalDistanceMetersLast7Days:
+          type: number
+          format: double
+        totalDurationSecondsLast7Days:
+          type: integer
+          format: int64
+        currentStreakDays:
+          type: integer
+          format: int32
+        recentActivities:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityResponseDto"
+    PageResponseCommunityDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommunityDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    PageResponseCommunityEventDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommunityEventDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    PageResponseConversationDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+    PageResponseAdminCampaignDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminCampaignDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        hasNext:
+          type: boolean
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

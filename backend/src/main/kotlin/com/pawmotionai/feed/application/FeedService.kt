@@ -14,6 +14,8 @@ import com.pawmotionai.feed.api.ReactionType
 import com.pawmotionai.feed.domain.FeedRanking
 import com.pawmotionai.feed.domain.FeedSlot
 import com.pawmotionai.feed.domain.RankCandidate
+import com.pawmotionai.notification.NotificationType
+import com.pawmotionai.notification.Notifier
 import com.pawmotionai.shared.BadRequestException
 import com.pawmotionai.shared.NotFoundException
 import com.pawmotionai.shared.PageRequest
@@ -27,7 +29,7 @@ import java.time.Instant
 import java.util.UUID
 
 @Service
-class FeedService(private val repository: JdbcFeedRepository) {
+class FeedService(private val repository: JdbcFeedRepository, private val notifier: Notifier) {
 
     private val log = LoggerFactory.getLogger(FeedService::class.java)
     internal var clock: Clock = Clock.systemUTC()
@@ -91,7 +93,12 @@ class FeedService(private val repository: JdbcFeedRepository) {
         requireItem(itemId)
         val trimmed = body.trim()
         if (trimmed.isEmpty()) throw BadRequestException("Comment cannot be blank")
-        return repository.addComment(itemId, viewerId, trimmed)
+        val comment = repository.addComment(itemId, viewerId, trimmed)
+        repository.feedItemAuthor(itemId)?.takeIf { it != viewerId }?.let { author ->
+            notifier.notify(author, NotificationType.SOCIAL, "New comment", "${comment.ownerName}: ${trimmed.take(120)}",
+                mapOf("feedItemId" to itemId.toString()))
+        }
+        return comment
     }
 
     @Transactional

@@ -42,7 +42,7 @@ class AssistantService(
     private val log = LoggerFactory.getLogger(AssistantService::class.java)
 
     companion object {
-        const val FREE_MONTHLY_MESSAGES = 30
+        const val FREE_MONTHLY_MESSAGES = 10
     }
 
     @Transactional(readOnly = true)

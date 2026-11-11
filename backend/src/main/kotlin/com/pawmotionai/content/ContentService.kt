@@ -1,5 +1,6 @@
 package com.pawmotionai.content
 
+import com.pawmotionai.engagement.EngagementService
 import com.pawmotionai.media.MediaService
 import com.pawmotionai.shared.BadRequestException
 import com.pawmotionai.shared.ForbiddenException
@@ -16,7 +17,7 @@ import java.time.Instant
 import java.util.UUID
 
 @Service
-class ContentService(private val jdbc: JdbcClient, private val petAccess: PetAccess, private val media: MediaService) {
+class ContentService(private val jdbc: JdbcClient, private val petAccess: PetAccess, private val media: MediaService, private val engagement: EngagementService) {
 
     private val log = LoggerFactory.getLogger(ContentService::class.java)
 
@@ -59,6 +60,7 @@ class ContentService(private val jdbc: JdbcClient, private val petAccess: PetAcc
             SELECT :id, 'POST', p.id, p.owner_id, p.pet_id, p.location, p.created_at FROM posts p WHERE p.id = :post
             """,
         ).param("id", feedItemId).param("post", postId).update()
+        engagement.recordPost(postId, ownerId, petId)
         log.info("post created post={} owner={} media={} tags={}", postId, ownerId, mediaIds.size, tagged.size)
         return PostCreatedDto(postId, feedItemId)
     }

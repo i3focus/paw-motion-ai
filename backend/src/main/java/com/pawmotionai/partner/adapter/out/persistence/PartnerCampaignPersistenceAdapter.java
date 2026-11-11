@@ -32,6 +32,8 @@ public class PartnerCampaignPersistenceAdapter implements PartnerCampaignReposit
             campaign.getStatus(), joinTopics(campaign), campaign.getAnalyzedAt(), campaign.getCreditsCharged(),
             campaign.getCreditsRefunded(), campaign.getExpiresAt(), campaign.getIdempotencyKey(), Instant.now());
         entity.setEndReason(campaign.getEndReason());
+        entity.setWindow(campaign.getCreatedAt(), campaign.getExpiresAt());
+        entity.setBudgetCredits(campaign.getCreditsCharged());
         return toDomain(repository.save(entity));
     }
 
