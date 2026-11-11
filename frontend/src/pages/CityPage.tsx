@@ -8,6 +8,7 @@ import {
   listMapPoints,
   toggleActivityReaction,
 } from '../api/client';
+import { useAuth } from '../auth';
 import { PawIcon } from '../components/petVisuals';
 import { Avatar, Badge, Button, EmptyState, ErrorMessage, PoppyMark, TextInput } from '../components/ui';
 import type { ActivityComment, ActivityPost, DashboardSummary, MapPoints } from '../types';
@@ -150,13 +151,13 @@ function CityMap({ points, compact = false }: { points: MapPoints; compact?: boo
   );
 }
 
-function QuestPanel({ summary, points, posts }: { summary: DashboardSummary | null; points: MapPoints; posts: ActivityPost[] }) {
+function QuestPanel({ summary, points, sharedPostCount }: { summary: DashboardSummary | null; points: MapPoints; sharedPostCount: number }) {
   const hud = levelInfo(summary);
   const cityPins = points.partners.length + points.activities.length;
   const quests = [
     { title: 'First miles', description: 'Record 3 activities this week', progress: Math.min(hud.activities / 3, 1), reward: '+120 XP' },
     { title: 'City explorer', description: 'Discover 5 partner or activity pins', progress: Math.min(cityPins / 5, 1), reward: '+90 XP' },
-    { title: 'Social pack', description: 'Share 3 activities to Paw City', progress: Math.min(posts.length / 3, 1), reward: '+75 XP' },
+    { title: 'Social pack', description: 'Share 3 activities to Paw City', progress: Math.min(sharedPostCount / 3, 1), reward: '+75 XP' },
     { title: 'Streak keeper', description: 'Reach a 7-day activity streak', progress: Math.min(hud.streak / 7, 1), reward: '+150 XP' },
   ];
 
@@ -338,6 +339,7 @@ function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: 
 }
 
 export function CityPage() {
+  const { owner } = useAuth();
   const [posts, setPosts] = useState<ActivityPost[]>([]);
   const [points, setPoints] = useState<MapPoints>({ partners: [], activities: [] });
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -395,6 +397,8 @@ export function CityPage() {
     setPosts((current) => current.map((post) => (post.id === updated.id ? updated : post)));
   }
 
+  const sharedPostCount = posts.filter((post) => post.ownerId === owner?.id).length;
+
   return (
     <div className="space-y-6">
       <CityHero summary={summary} />
@@ -423,7 +427,7 @@ export function CityPage() {
         </div>
         <aside className="space-y-5 xl:sticky xl:top-28 xl:self-start">
           <CityMap points={points} compact />
-          <QuestPanel summary={summary} points={points} posts={posts} />
+          <QuestPanel summary={summary} points={points} sharedPostCount={sharedPostCount} />
         </aside>
       </div>
     </div>
