@@ -27,7 +27,7 @@ import java.util.UUID
 /**
  * Campaign v2 management (draft → review → serve → end), partner business profile and admin moderation
  * (refactor plan §4.2 `ads`). Runs on JdbcClient over `partner_campaigns`/`partner_profiles`/`campaign_events`;
- * the legacy Java module keeps create/analyze/archive, ledger debits and expiry.
+ * the legacy Java module keeps create (idempotent + ledger debit) and scheduled expiry.
  */
 @Service
 class AdsService(
