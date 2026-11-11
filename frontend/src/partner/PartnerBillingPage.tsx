@@ -87,6 +87,12 @@ export function PartnerBillingPage() {
     }
     try {
       const purchase = await createPurchase({ amount: value, method }, purchaseKey.current.key);
+      if (['FAILED', 'EXPIRED', 'CANCELED'].includes(purchase.status)) {
+        purchaseKey.current = null;
+        setError(`Purchase ${purchase.id} is ${purchase.status.toLowerCase()}. Submit again to create a new checkout.`);
+        await refresh();
+        return;
+      }
       purchaseKey.current = null;
       if (purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
         window.location.assign(purchase.providerCheckoutUrl);
@@ -95,7 +101,6 @@ export function PartnerBillingPage() {
       setNotice(`Purchase ${purchase.id} is pending confirmation.`);
       await refresh();
     } catch (caught) {
-      purchaseKey.current = null;
       setError(caught instanceof ApiError ? caught.message : 'Unable to create purchase');
     } finally {
       setSubmitting(false);

@@ -58,8 +58,7 @@ public class CreatePurchaseService implements CreatePurchaseUseCase {
             var existingTransaction = existing.get();
             if (existingTransaction.getAmount().compareTo(command.amount()) != 0
                 || !java.util.Objects.equals(existingTransaction.getMethod(), command.method())
-                || (existingTransaction.getCustomerId() != null
-                    && !java.util.Objects.equals(existingTransaction.getCustomerId(), normalizeCustomerId(command.customerId())))) {
+                || !java.util.Objects.equals(existingTransaction.getCustomerId(), normalizeCustomerId(command.customerId()))) {
                 throw new IllegalArgumentException("Idempotency key was already used for a different purchase");
             }
             return PaymentTransactionResponseDtoMapper.from(existingTransaction);
