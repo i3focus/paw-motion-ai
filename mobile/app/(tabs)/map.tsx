@@ -200,10 +200,8 @@ function ReportLostBody({ pets, center, onDone }: { pets: Pet[]; center: { lat: 
   const [description, setDescription] = useState('');
   const [phone, setPhone] = useState('');
   const [radiusKm, setRadiusKm] = useState('2');
-  const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pet = petId || pets[0]?.id;
-  if (done) return <Text style={s.success}>Alert published. Nearby members will be notified.</Text>;
   return (
     <View style={s.gap}>
       {pets.length > 1 ? <Field label="Pet"><View style={s.chips}>{pets.map((p) => <Chip key={p.id} label={p.name} selected={pet === p.id} onPress={() => setPetId(p.id)} />)}</View></Field> : null}

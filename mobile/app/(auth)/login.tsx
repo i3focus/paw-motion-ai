@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } fr
 import { Link } from 'expo-router';
 import { useAuth } from '../../src/auth';
 import { Button, ErrorText, Field, Input } from '../../src/components';
-import { colors, fonts, fontSize, radius } from '../../src/theme';
+import { colors, fonts, fontSize } from '../../src/theme';
 import { isValidEmail, normalizeEmail } from '../../src/validation';
 import { PawMark } from '../../src/petVisuals';
 

@@ -4,7 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { getFeed, getStories, viewStory, type FeedCard, type StoryGroup } from '../../src/api/petlife';
 import { Avatar, FeedItemCard } from '../../src/petlife-ui';
 import { EmptyState, LoadingState } from '../../src/components';
-import { colors, fonts, fontSize, radius, shadow } from '../../src/theme';
+import { colors, fonts, fontSize, radius } from '../../src/theme';
 
 function StoryRail({ groups, onOpen }: { groups: StoryGroup[]; onOpen: (g: StoryGroup, i: number) => void }) {
   if (groups.length === 0) return null;
