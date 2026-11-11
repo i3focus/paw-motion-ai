@@ -6,6 +6,7 @@ import { CityPage } from './pages/CityPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PetsPage } from './pages/PetsPage';
 import { ActivitiesPage } from './pages/ActivitiesPage';
+import { BusinessesPage } from './pages/BusinessesPage';
 import { InsightsPage } from './pages/InsightsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { PartnerFakeCheckoutPage } from './partner/PartnerFakeCheckoutPage';
@@ -31,6 +32,7 @@ function AppShell() {
       {page === 'city' ? <CityPage /> : null}
       {page === 'pets' ? <PetsPage /> : null}
       {page === 'activities' ? <ActivitiesPage /> : null}
+      {page === 'businesses' ? <BusinessesPage /> : null}
       {page === 'insights' ? <InsightsPage /> : null}
       {page === 'profile' ? <ProfilePage /> : null}
     </Layout>

@@ -6,12 +6,13 @@ import {
   listActivityComments,
   listActivityFeed,
   listMapPoints,
+  listPromotions,
   toggleActivityReaction,
 } from '../api/client';
 import { useAuth } from '../auth';
 import { PawIcon } from '../components/petVisuals';
 import { Avatar, Badge, Button, EmptyState, ErrorMessage, PoppyMark, TextInput } from '../components/ui';
-import type { ActivityComment, ActivityPost, DashboardSummary, MapPoints } from '../types';
+import type { ActivityComment, ActivityPost, DashboardSummary, MapPoints, OwnerPromotion } from '../types';
 
 const REACTIONS = [
   { type: 'LIKE', label: 'Like', icon: '♡' },
@@ -338,10 +339,56 @@ function ActivityPostCard({ post, onUpdated }: { post: ActivityPost; onUpdated: 
   );
 }
 
+function NearbyPromotions({ promotions }: { promotions: OwnerPromotion[] }) {
+  if (promotions.length === 0) {
+    return null;
+  }
+  return (
+    <section className="quest-card">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cream-500">Nearby promotions</p>
+          <h2 className="mt-1 font-display text-xl font-bold text-cream-900">Partner offers</h2>
+        </div>
+        <Badge tone="accent">Ads</Badge>
+      </div>
+      <div className="mt-4 space-y-3">
+        {promotions.slice(0, 4).map((promotion) => {
+          const website = promotion.partnerWebsite?.trim();
+          const href = website ? (/^https?:\/\//i.test(website) ? website : `https://${website}`) : null;
+          return (
+            <article key={promotion.campaignId} className="rounded-2xl border border-cream-200 bg-white/80 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">{promotion.partnerName}</p>
+                  <h3 className="mt-1 font-bold text-cream-900">{promotion.title}</h3>
+                </div>
+                <Badge tone="danger">Promo</Badge>
+              </div>
+              <p className="mt-2 text-sm leading-5 text-cream-600">{promotion.description}</p>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-cream-500">{promotion.expiresAt ? `Until ${new Date(promotion.expiresAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'No expiry'}</span>
+                {href ? (
+                  <a href={href} target="_blank" rel="noreferrer" className="rounded-xl bg-primary px-3 py-1.5 text-xs font-bold text-white hover:bg-secondary">
+                    {promotion.callToAction}
+                  </a>
+                ) : (
+                  <span className="rounded-xl bg-cream-200 px-3 py-1.5 text-xs font-bold text-cream-600">{promotion.callToAction}</span>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function CityPage() {
   const { owner } = useAuth();
   const [posts, setPosts] = useState<ActivityPost[]>([]);
   const [points, setPoints] = useState<MapPoints>({ partners: [], activities: [] });
+  const [promotions, setPromotions] = useState<OwnerPromotion[]>([]);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -353,15 +400,17 @@ export function CityPage() {
     setLoading(true);
     setError(null);
     try {
-      const [feed, map, dashboard] = await Promise.all([
+      const [feed, map, dashboard, promoList] = await Promise.all([
         listActivityFeed(0, FEED_PAGE_SIZE),
         listMapPoints(),
         getDashboardSummary().catch(() => null),
+        listPromotions().catch(() => []),
       ]);
       setPosts(feed);
       setPage(0);
       setHasMore(feed.length === FEED_PAGE_SIZE);
       setPoints(map);
+      setPromotions(promoList);
       setSummary(dashboard);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to load Paw City');
@@ -427,6 +476,7 @@ export function CityPage() {
         </div>
         <aside className="space-y-5 xl:sticky xl:top-28 xl:self-start">
           <CityMap points={points} compact />
+          <NearbyPromotions promotions={promotions} />
           <QuestPanel summary={summary} points={points} sharedPostCount={sharedPostCount} />
         </aside>
       </div>

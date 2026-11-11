@@ -9,6 +9,7 @@ import type {
   Insight,
   Owner,
   OwnerRecommendation,
+  OwnerPromotion,
   Pet,
   Wallet,
   ActivityPost,
@@ -213,6 +214,10 @@ export function generateInsight(input: { petId?: string; periodDays?: number } =
 
 export function listRecommendations(): Promise<OwnerRecommendation[]> {
   return request<OwnerRecommendation[]>('/api/recommendations');
+}
+
+export function listPromotions(): Promise<OwnerPromotion[]> {
+  return request<OwnerPromotion[]>('/api/promotions');
 }
 
 export function registerPartner(input: {
