@@ -16,7 +16,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Dashboard" subtitle="Your pet activity overview for the last 7 days." />
+      <SectionHeader title="Progress" subtitle="Weekly mission stats for you and your pets." />
       <ErrorMessage message={error} />
       {summary ? (
         <>
@@ -27,7 +27,7 @@ export function DashboardPage() {
             <StatCard label="Duration" value={`${Math.round(summary.totalDurationSecondsLast7Days / 60)} min`} />
             <StatCard label="Streak" value={`${summary.currentStreakDays} days`} hint="Consecutive active days" />
           </div>
-          <Card title="Recent activities" description="Latest sessions across your pets.">
+          <Card title="Recent missions" description="Latest sessions across your pets.">
             {summary.recentActivities.length === 0 ? (
               <EmptyState title="No activities yet" description="Create a pet and record your first walk to see insights here." />
             ) : (

@@ -5,11 +5,11 @@ import { useAuth } from '../auth';
 export type PageKey = 'dashboard' | 'city' | 'pets' | 'activities' | 'insights' | 'profile';
 
 const NAV_ITEMS: Array<{ key: PageKey; label: string }> = [
-  { key: 'dashboard', label: 'Dashboard' },
   { key: 'city', label: 'Paw City' },
+  { key: 'dashboard', label: 'Progress' },
   { key: 'pets', label: 'Pets' },
   { key: 'activities', label: 'Activities' },
-  { key: 'insights', label: 'Insights' },
+  { key: 'insights', label: 'AI Coach' },
   { key: 'profile', label: 'Profile' },
 ];
 
@@ -17,7 +17,7 @@ export function Layout({ page, setPage, children }: { page: PageKey; setPage: (p
   const { owner, logout } = useAuth();
 
   return (
-    <div className="min-h-screen paw-city-bg">
+    <div className="paw-city-bg min-h-screen">
       <header className="sticky top-0 z-20 border-b border-cream-200 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="relative">

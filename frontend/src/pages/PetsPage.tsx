@@ -61,7 +61,7 @@ export function PetsPage() {
     <div className="space-y-6">
       <SectionHeader
         title="Pets"
-        subtitle="Create pet profiles and keep their details up to date."
+        subtitle="Build your pack roster and keep every pet mission-ready."
         action={!formOpen ? <Button onClick={startCreate}>Add pet</Button> : undefined}
       />
       <ErrorMessage message={error && !formOpen ? error : null} />
@@ -80,7 +80,7 @@ export function PetsPage() {
           </Card>
         ) : null}
 
-        <Card title="Your pets" description="Registered pets appear here with their profile details.">
+        <Card title="Your pack" description="Registered pets appear here with their profile details.">
           {pets.length === 0 ? (
             <EmptyState
               title="No pets yet"
