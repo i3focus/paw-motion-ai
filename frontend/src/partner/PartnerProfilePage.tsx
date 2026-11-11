@@ -59,6 +59,9 @@ export function PartnerProfilePage() {
     if (longitude.trim() && (Number(longitude) < -180 || Number(longitude) > 180)) {
       errors.longitude = 'Longitude must be between -180 and 180';
     }
+    if ((latitude.trim() === '') !== (longitude.trim() === '')) {
+      errors.coordinates = 'Enter both latitude and longitude or leave both blank';
+    }
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       return;
@@ -78,6 +81,7 @@ export function PartnerProfilePage() {
         avatarUrl: normalizeUrl(avatarUrl),
         latitude: latitude.trim() ? Number(latitude) : null,
         longitude: longitude.trim() ? Number(longitude) : null,
+        clearCoordinates: !latitude.trim() && !longitude.trim(),
       }, getStoredPartnerToken());
       await refreshProfile();
       setSaved(true);
@@ -157,6 +161,7 @@ export function PartnerProfilePage() {
                 placeholder="https://…"
               />
             </div>
+            {fieldErrors.coordinates ? <ErrorMessage message={fieldErrors.coordinates} /> : null}
             <ErrorMessage message={error} />
             {saved ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Profile updated.</p> : null}
             <Button type="submit" disabled={submitting}>{submitting ? 'Saving…' : 'Save profile'}</Button>

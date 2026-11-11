@@ -21,9 +21,11 @@ public class Activity {
     private final Instant createdAt;
     private Double latitude;
     private Double longitude;
+    private final boolean shareToPawCity;
 
     private Activity(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt, long durationSeconds,
-                     Double distanceMeters, String notes, Instant createdAt, Double latitude, Double longitude) {
+                     Double distanceMeters, String notes, Instant createdAt, Double latitude, Double longitude,
+                     boolean shareToPawCity) {
         this.id = id;
         this.ownerId = ownerId;
         this.petId = petId;
@@ -35,11 +37,19 @@ public class Activity {
         this.createdAt = createdAt;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.shareToPawCity = shareToPawCity;
     }
 
     public static Activity record(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
                                   long durationSeconds, Double distanceMeters, String notes, Instant createdAt,
                                   Double latitude, Double longitude) {
+        return record(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt,
+            latitude, longitude, false);
+    }
+
+    public static Activity record(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
+                                  long durationSeconds, Double distanceMeters, String notes, Instant createdAt,
+                                  Double latitude, Double longitude, boolean shareToPawCity) {
         if (durationSeconds <= 0) {
             throw new InvalidActivityException("durationSeconds must be greater than zero");
         }
@@ -55,7 +65,7 @@ public class Activity {
         validateCoordinate(latitude, -90, 90, "latitude");
         validateCoordinate(longitude, -180, 180, "longitude");
         return new Activity(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt,
-            latitude, longitude);
+            latitude, longitude, shareToPawCity);
     }
 
     public static Activity record(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
@@ -66,8 +76,15 @@ public class Activity {
     public static Activity reconstitute(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
                                         long durationSeconds, Double distanceMeters, String notes, Instant createdAt,
                                         Double latitude, Double longitude) {
+        return reconstitute(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt,
+            latitude, longitude, false);
+    }
+
+    public static Activity reconstitute(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
+                                        long durationSeconds, Double distanceMeters, String notes, Instant createdAt,
+                                        Double latitude, Double longitude, boolean shareToPawCity) {
         return new Activity(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt,
-            latitude, longitude);
+            latitude, longitude, shareToPawCity);
     }
 
     public static Activity reconstitute(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
@@ -93,4 +110,5 @@ public class Activity {
     public Instant getCreatedAt() { return createdAt; }
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
+    public boolean isShareToPawCity() { return shareToPawCity; }
 }

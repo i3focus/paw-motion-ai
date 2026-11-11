@@ -24,6 +24,7 @@ export function ActivitiesPage() {
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [locating, setLocating] = useState(false);
+  const [shareToPawCity, setShareToPawCity] = useState(true);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -99,6 +100,7 @@ export function ActivitiesPage() {
         distanceMeters: distanceKm ? Math.round(Number(distanceKm) * 1000) : undefined,
         latitude: latitude ? Number(latitude) : undefined,
         longitude: longitude ? Number(longitude) : undefined,
+        shareToPawCity,
         notes: notes.trim() || undefined,
       });
       setNotes('');
@@ -183,6 +185,18 @@ export function ActivitiesPage() {
             <Button type="button" variant="secondary" onClick={useCurrentLocation} disabled={locating} className="w-full">
               {locating ? 'Reading location…' : 'Use current location'}
             </Button>
+            <label className="flex items-start gap-3 rounded-2xl border border-cream-200 bg-cream-50 p-3 text-sm">
+              <input
+                type="checkbox"
+                checked={shareToPawCity}
+                onChange={(event) => setShareToPawCity(event.target.checked)}
+                className="mt-1 h-4 w-4 accent-primary"
+              />
+              <span>
+                <span className="font-semibold text-cream-900">Share to Paw City</span>
+                <span className="block text-cream-500">Show this activity as a post with reactions and comments.</span>
+              </span>
+            </label>
             <TextArea label="Notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} maxLength={500} />
             <ErrorMessage message={error} />
             <Button type="submit" disabled={submitting || pets.length === 0} className="w-full">{submitting ? 'Saving…' : 'Record activity'}</Button>

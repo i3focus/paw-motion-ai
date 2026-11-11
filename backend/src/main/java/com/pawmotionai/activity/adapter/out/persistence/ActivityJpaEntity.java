@@ -49,6 +49,8 @@ public class ActivityJpaEntity {
 
     @Column private Double latitude;
     @Column private Double longitude;
+    @Column(name = "share_to_paw_city", nullable = false)
+    private boolean shareToPawCity;
 
     @Version
     private Long version;
@@ -64,6 +66,13 @@ public class ActivityJpaEntity {
     public ActivityJpaEntity(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt, long durationSeconds,
                              Double distanceMeters, String notes, Instant createdAt, Instant updatedAt,
                              Double latitude, Double longitude) {
+        this(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt, updatedAt,
+            latitude, longitude, false);
+    }
+
+    public ActivityJpaEntity(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt, long durationSeconds,
+                             Double distanceMeters, String notes, Instant createdAt, Instant updatedAt,
+                             Double latitude, Double longitude, boolean shareToPawCity) {
         this.id = id;
         this.ownerId = ownerId;
         this.petId = petId;
@@ -76,6 +85,7 @@ public class ActivityJpaEntity {
         this.updatedAt = updatedAt;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.shareToPawCity = shareToPawCity;
     }
 
     public UUID getId() { return id; }
@@ -90,5 +100,6 @@ public class ActivityJpaEntity {
     public Instant getUpdatedAt() { return updatedAt; }
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
+    public boolean isShareToPawCity() { return shareToPawCity; }
     public Long getVersion() { return version; }
 }

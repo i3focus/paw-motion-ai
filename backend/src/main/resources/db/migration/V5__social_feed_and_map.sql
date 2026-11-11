@@ -4,7 +4,8 @@ ALTER TABLE owners
 
 ALTER TABLE activities
     ADD COLUMN latitude DOUBLE PRECISION,
-    ADD COLUMN longitude DOUBLE PRECISION;
+    ADD COLUMN longitude DOUBLE PRECISION,
+    ADD COLUMN share_to_paw_city BOOLEAN NOT NULL DEFAULT FALSE;
 
 CREATE TABLE activity_reactions (
     id UUID PRIMARY KEY,

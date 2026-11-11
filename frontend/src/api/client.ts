@@ -139,6 +139,7 @@ export function updateProfile(input: {
   partnerDescription?: string;
   latitude?: number | null;
   longitude?: number | null;
+  clearCoordinates?: boolean;
 }, token: string | null = getStoredOwnerToken()): Promise<Owner> {
   return request<Owner>('/api/me', {
     method: 'PATCH',
@@ -191,6 +192,7 @@ export function createActivity(input: {
   notes?: string;
   latitude?: number | null;
   longitude?: number | null;
+  shareToPawCity?: boolean;
 }): Promise<Activity> {
   return request<Activity>('/api/activities', {
     method: 'POST',

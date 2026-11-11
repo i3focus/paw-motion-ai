@@ -13,5 +13,6 @@ public record UpdateProfileRequest(
     @Size(max = 300) String website,
     @Size(max = 1000) String partnerDescription,
     @DecimalMin("-90") @DecimalMax("90") Double latitude,
-    @DecimalMin("-180") @DecimalMax("180") Double longitude) {
+    @DecimalMin("-180") @DecimalMax("180") Double longitude,
+    Boolean clearCoordinates) {
 }

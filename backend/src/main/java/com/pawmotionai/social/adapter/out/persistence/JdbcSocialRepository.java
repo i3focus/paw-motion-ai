@@ -38,7 +38,7 @@ public class JdbcSocialRepository implements SocialRepository {
 
     @Override
     public List<ActivityPostDto> findRecentPosts(UUID viewerId, int limit) {
-        String sql = POST_SELECT + " ORDER BY a.started_at DESC LIMIT ?";
+        String sql = POST_SELECT + " WHERE a.share_to_paw_city = TRUE ORDER BY a.started_at DESC LIMIT ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> toPost(rs, viewerId), limit).stream()
             .map(post -> withEngagement(post, viewerId))
             .toList();
@@ -46,7 +46,7 @@ public class JdbcSocialRepository implements SocialRepository {
 
     @Override
     public Optional<ActivityPostDto> findPostById(UUID activityId, UUID viewerId) {
-        String sql = POST_SELECT + " WHERE a.id = ?::uuid";
+        String sql = POST_SELECT + " WHERE a.id = ?::uuid AND a.share_to_paw_city = TRUE";
         return jdbcTemplate.query(sql, (rs, rowNum) -> toPost(rs, viewerId), activityId.toString()).stream()
             .findFirst()
             .map(post -> withEngagement(post, viewerId));
@@ -119,7 +119,7 @@ public class JdbcSocialRepository implements SocialRepository {
             SELECT a.id, a.pet_id, p.name AS pet_name, lower(a.type::text) AS type, a.latitude, a.longitude, a.started_at
             FROM activities a
             JOIN pets p ON p.id = a.pet_id
-            WHERE a.latitude IS NOT NULL AND a.longitude IS NOT NULL
+            WHERE a.latitude IS NOT NULL AND a.longitude IS NOT NULL AND a.share_to_paw_city = TRUE
             ORDER BY a.started_at DESC
             LIMIT 100
             """, (rs, rowNum) -> new MapPointsDto.ActivityMapPointDto(
@@ -131,7 +131,8 @@ public class JdbcSocialRepository implements SocialRepository {
 
     @Override
     public boolean activityExists(UUID activityId) {
-        Long count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM activities WHERE id = ?::uuid", Long.class,
+        Long count = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM activities WHERE id = ?::uuid AND share_to_paw_city = TRUE", Long.class,
             activityId.toString());
         return count != null && count > 0;
     }

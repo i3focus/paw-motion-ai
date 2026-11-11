@@ -16,6 +16,7 @@ import com.pawmotionai.billing.application.port.out.CreateCheckoutRequest;
 import com.pawmotionai.billing.application.port.out.PaymentGatewayPort;
 import com.pawmotionai.billing.application.port.out.PaymentTransactionRepository;
 import com.pawmotionai.billing.domain.exception.PaymentGatewayException;
+import com.pawmotionai.billing.domain.model.PaymentStatus;
 import com.pawmotionai.billing.domain.model.PaymentTransaction;
 import com.pawmotionai.configuration.BillingProperties;
 import com.pawmotionai.ledger.application.dto.LedgerAccountResponseDto;
@@ -57,8 +58,14 @@ public class CreatePurchaseService implements CreatePurchaseUseCase {
         if (existing.isPresent()) {
             var existingTransaction = existing.get();
             if (existingTransaction.getAmount().compareTo(command.amount()) != 0
-                || !java.util.Objects.equals(existingTransaction.getMethod(), command.method())) {
+                || !java.util.Objects.equals(existingTransaction.getMethod(), command.method())
+                || !java.util.Objects.equals(existingTransaction.getCustomerId(), normalizeCustomerId(command.customerId()))) {
                 throw new IllegalArgumentException("Idempotency key was already used for a different purchase");
+            }
+            if (existingTransaction.getStatus() == PaymentStatus.FAILED
+                || existingTransaction.getStatus() == PaymentStatus.EXPIRED
+                || existingTransaction.getStatus() == PaymentStatus.CANCELED) {
+                return retryCheckout(existingTransaction, command.customerId());
             }
             return PaymentTransactionResponseDtoMapper.from(existingTransaction);
         }
@@ -71,7 +78,8 @@ public class CreatePurchaseService implements CreatePurchaseUseCase {
         try {
             transaction = transactionRepository.save(new PaymentTransaction(UUID.randomUUID(), command.partnerId(), amount,
                 billingProperties.getCurrency(), billingProperties.getCreditsPerCurrencyUnit(), expectedCredits,
-                mainAccountId, command.method(), gateway.provider(), command.idempotencyKey(), now));
+                mainAccountId, command.method(), gateway.provider(), command.idempotencyKey(), now,
+                normalizeCustomerId(command.customerId())));
         } catch (DataIntegrityViolationException exception) {
             return transactionRepository.findByPartnerIdAndIdempotencyKey(command.partnerId(), command.idempotencyKey())
                 .map(PaymentTransactionResponseDtoMapper::from)
@@ -82,7 +90,8 @@ public class CreatePurchaseService implements CreatePurchaseUseCase {
         String returnUrl = completionUrl;
         try {
             var session = gateway.createCheckout(new CreateCheckoutRequest(command.partnerId(), transaction.getId(), amount,
-                billingProperties.getCurrency(), expectedCredits, completionUrl, returnUrl, command.customerId()));
+                billingProperties.getCurrency(), expectedCredits, completionUrl, returnUrl,
+                normalizeCustomerId(command.customerId())));
             transaction.attachCheckout(session.providerCheckoutId(), session.checkoutUrl(), Instant.now());
             return PaymentTransactionResponseDtoMapper.from(transactionRepository.save(transaction));
         } catch (RuntimeException exception) {
@@ -90,6 +99,26 @@ public class CreatePurchaseService implements CreatePurchaseUseCase {
             transactionRepository.save(transaction);
             throw new PaymentGatewayException("Payment provider is unavailable", exception);
         }
+    }
+
+    private PaymentTransactionResponseDto retryCheckout(PaymentTransaction transaction, String customerId) {
+        String completionUrl = billingProperties.getPartnerPortalBaseUrl() + "/billing/return?transactionId=" + transaction.getId();
+        try {
+            var session = gateway().createCheckout(new CreateCheckoutRequest(transaction.getPartnerId(), transaction.getId(),
+                transaction.getAmount(), transaction.getCurrency(), transaction.getExpectedCredits(), completionUrl,
+                completionUrl, normalizeCustomerId(customerId)));
+            transaction.reopenForCheckout(session.providerCheckoutId(), session.checkoutUrl(), Instant.now());
+            return PaymentTransactionResponseDtoMapper.from(transactionRepository.save(transaction));
+        } catch (RuntimeException exception) {
+            throw new PaymentGatewayException("Payment provider is unavailable", exception);
+        }
+    }
+
+    private String normalizeCustomerId(String customerId) {
+        if (customerId == null || customerId.isBlank()) {
+            return null;
+        }
+        return customerId.trim();
     }
 
     private PaymentGatewayPort gateway() {

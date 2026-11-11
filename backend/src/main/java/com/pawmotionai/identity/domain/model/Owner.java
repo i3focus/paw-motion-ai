@@ -111,6 +111,11 @@ public class Owner {
         }
     }
 
+    public void clearCoordinates() {
+        this.latitude = null;
+        this.longitude = null;
+    }
+
     private static void validateCoordinate(Double value, double min, double max, String field) {
         if (value != null && (value < min || value > max)) {
             throw new IllegalArgumentException(field + " must be between " + min + " and " + max);

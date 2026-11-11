@@ -38,6 +38,6 @@ public class OwnerController {
     public OwnerResponseDto updateProfile(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody UpdateProfileRequest request) {
         return updateProfileUseCase.update(UUID.fromString(jwt.getSubject()), new UpdateProfileCommand(request.displayName(),
             request.bio(), request.phone(), request.avatarUrl(), request.businessName(), request.website(), request.partnerDescription(),
-            request.latitude(), request.longitude()));
+            request.latitude(), request.longitude(), Boolean.TRUE.equals(request.clearCoordinates())));
     }
 }

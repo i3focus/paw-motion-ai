@@ -25,6 +25,7 @@ import com.pawmotionai.billing.application.port.in.GetBillingPricingUseCase;
 import com.pawmotionai.billing.application.port.in.GetPurchaseUseCase;
 import com.pawmotionai.billing.application.port.in.ListPurchasesUseCase;
 import com.pawmotionai.billing.application.usecase.PaymentLifecycleService;
+import com.pawmotionai.billing.domain.model.PaymentStatus;
 import com.pawmotionai.configuration.BillingProperties;
 
 @RestController
@@ -83,6 +84,12 @@ public class BillingController {
         PaymentTransactionResponseDto purchase = getPurchaseUseCase.getByPartner(partnerId, transactionId);
         if (!"fake".equalsIgnoreCase(purchase.provider())) {
             throw new IllegalStateException("Purchase was not created by the fake provider");
+        }
+        if (purchase.status() == PaymentStatus.CONFIRMED) {
+            return purchase;
+        }
+        if (purchase.status() != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Fake checkout can only complete a pending purchase");
         }
         paymentLifecycleService.confirm(partnerId, transactionId);
         return getPurchaseUseCase.getByPartner(partnerId, transactionId);

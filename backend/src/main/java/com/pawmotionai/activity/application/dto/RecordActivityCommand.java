@@ -12,5 +12,6 @@ public record RecordActivityCommand(
     Double distanceMeters,
     String notes,
     Double latitude,
-    Double longitude) {
+    Double longitude,
+    Boolean shareToPawCity) {
 }

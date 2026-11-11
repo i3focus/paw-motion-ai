@@ -4,10 +4,14 @@ import { Badge, Button, Card, EmptyState, ErrorMessage, SectionHeader, TextArea,
 import type { Campaign } from '../types';
 
 function isExpired(campaign: Campaign): boolean {
-  return campaign.status === 'EXPIRED' || new Date(campaign.expiresAt).getTime() <= Date.now();
+  return campaign.status === 'EXPIRED'
+    || (campaign.status !== 'ARCHIVED' && new Date(campaign.expiresAt).getTime() <= Date.now());
 }
 
 function vigencyLabel(campaign: Campaign): string {
+  if (campaign.status === 'ARCHIVED') {
+    return 'archived';
+  }
   const expiresAt = new Date(campaign.expiresAt);
   if (isExpired(campaign)) {
     return `expired ${expiresAt.toLocaleDateString()}`;
