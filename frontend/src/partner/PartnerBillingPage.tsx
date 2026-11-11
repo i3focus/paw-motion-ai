@@ -101,6 +101,9 @@ export function PartnerBillingPage() {
       setNotice(`Purchase ${purchase.id} is pending confirmation.`);
       await refresh();
     } catch (caught) {
+      if (caught instanceof ApiError && caught.status === 502) {
+        purchaseKey.current = null;
+      }
       setError(caught instanceof ApiError ? caught.message : 'Unable to create purchase');
     } finally {
       setSubmitting(false);
