@@ -2,7 +2,9 @@ package com.pawmotionai.ledger.application.usecase;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,13 +29,22 @@ public class EnsureWalletService implements EnsureWalletUseCase {
     @Override
     @Transactional
     public void ensureWallet(UUID partnerId) {
-        if (repository.findWalletByPartnerId(partnerId).isPresent()) {
-            return;
-        }
+        Wallet wallet = repository.findWalletByPartnerId(partnerId)
+            .orElseGet(() -> {
+                Instant now = Instant.now();
+                return repository.saveWallet(new Wallet(UUID.randomUUID(), partnerId, WalletStatus.ACTIVE, null, now, now));
+            });
+        ensureAccounts(wallet);
+    }
+
+    private void ensureAccounts(Wallet wallet) {
         Instant now = Instant.now();
-        Wallet wallet = repository.saveWallet(new Wallet(UUID.randomUUID(), partnerId, WalletStatus.ACTIVE, null, now, now));
-        List.of(LedgerAccountCode.MAIN, LedgerAccountCode.BONUS, LedgerAccountCode.PARTNER).forEach(code ->
-            repository.saveAccount(new LedgerAccount(UUID.randomUUID(), wallet.getId(), code, code.getDebitPriority(),
-                LedgerAccountStatus.OPEN, 0, now, now)));
+        Set<LedgerAccountCode> existing = repository.findAccountsByWalletId(wallet.getId()).stream()
+            .map(LedgerAccount::getCode)
+            .collect(Collectors.toSet());
+        List.of(LedgerAccountCode.MAIN, LedgerAccountCode.BONUS, LedgerAccountCode.PARTNER).stream()
+            .filter(code -> !existing.contains(code))
+            .forEach(code -> repository.saveAccount(new LedgerAccount(UUID.randomUUID(), wallet.getId(), code,
+                code.getDebitPriority(), LedgerAccountStatus.OPEN, 0, now, now)));
     }
 }

@@ -19,9 +19,11 @@ public class Activity {
     private final Double distanceMeters;
     private final String notes;
     private final Instant createdAt;
+    private Double latitude;
+    private Double longitude;
 
     private Activity(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt, long durationSeconds,
-                     Double distanceMeters, String notes, Instant createdAt) {
+                     Double distanceMeters, String notes, Instant createdAt, Double latitude, Double longitude) {
         this.id = id;
         this.ownerId = ownerId;
         this.petId = petId;
@@ -31,10 +33,13 @@ public class Activity {
         this.distanceMeters = distanceMeters;
         this.notes = notes;
         this.createdAt = createdAt;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public static Activity record(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
-                                  long durationSeconds, Double distanceMeters, String notes, Instant createdAt) {
+                                  long durationSeconds, Double distanceMeters, String notes, Instant createdAt,
+                                  Double latitude, Double longitude) {
         if (durationSeconds <= 0) {
             throw new InvalidActivityException("durationSeconds must be greater than zero");
         }
@@ -47,12 +52,34 @@ public class Activity {
         if (startedAt.isAfter(Instant.now().plus(FUTURE_TOLERANCE))) {
             throw new InvalidActivityException("startedAt cannot be in the future");
         }
-        return new Activity(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt);
+        validateCoordinate(latitude, -90, 90, "latitude");
+        validateCoordinate(longitude, -180, 180, "longitude");
+        return new Activity(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt,
+            latitude, longitude);
+    }
+
+    public static Activity record(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
+                                  long durationSeconds, Double distanceMeters, String notes, Instant createdAt) {
+        return record(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt, null, null);
+    }
+
+    public static Activity reconstitute(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
+                                        long durationSeconds, Double distanceMeters, String notes, Instant createdAt,
+                                        Double latitude, Double longitude) {
+        return new Activity(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt,
+            latitude, longitude);
     }
 
     public static Activity reconstitute(UUID id, UUID ownerId, UUID petId, ActivityType type, Instant startedAt,
                                         long durationSeconds, Double distanceMeters, String notes, Instant createdAt) {
-        return new Activity(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt);
+        return reconstitute(id, ownerId, petId, type, startedAt, durationSeconds, distanceMeters, notes, createdAt,
+            null, null);
+    }
+
+    private static void validateCoordinate(Double value, double min, double max, String field) {
+        if (value != null && (value < min || value > max)) {
+            throw new InvalidActivityException(field + " must be between " + min + " and " + max);
+        }
     }
 
     public UUID getId() { return id; }
@@ -64,4 +91,6 @@ public class Activity {
     public Double getDistanceMeters() { return distanceMeters; }
     public String getNotes() { return notes; }
     public Instant getCreatedAt() { return createdAt; }
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
 }

@@ -55,7 +55,12 @@ public class CreatePurchaseService implements CreatePurchaseUseCase {
 
         var existing = transactionRepository.findByPartnerIdAndIdempotencyKey(command.partnerId(), command.idempotencyKey());
         if (existing.isPresent()) {
-            return PaymentTransactionResponseDtoMapper.from(existing.get());
+            var existingTransaction = existing.get();
+            if (existingTransaction.getAmount().compareTo(command.amount()) != 0
+                || !java.util.Objects.equals(existingTransaction.getMethod(), command.method())) {
+                throw new IllegalArgumentException("Idempotency key was already used for a different purchase");
+            }
+            return PaymentTransactionResponseDtoMapper.from(existingTransaction);
         }
 
         BigDecimal amount = command.amount().setScale(2, RoundingMode.UNNECESSARY);

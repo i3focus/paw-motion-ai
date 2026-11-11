@@ -45,7 +45,7 @@ public class ActivityController {
                                                                @Valid @RequestBody CreateActivityRequest request) {
         ActivityResponseDto response = recordActivityUseCase.recordActivity(new RecordActivityCommand(
             ownerId(jwt), request.petId(), request.type(), request.startedAt(), request.durationSeconds(),
-            request.distanceMeters(), request.notes()));
+            request.distanceMeters(), request.notes(), request.latitude(), request.longitude()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

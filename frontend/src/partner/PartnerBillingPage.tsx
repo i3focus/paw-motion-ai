@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ApiError, createPurchase, getBillingPricing, getWallet, getWalletEntries, listPurchases } from '../api/client';
 import { Badge, Button, Card, EmptyState, ErrorMessage, SectionHeader, StatCard, TextInput } from '../components/ui';
 import type { BillingPricing, LedgerEntryPage, PaymentTransaction, Wallet } from '../types';
@@ -21,6 +21,7 @@ export function PartnerBillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const purchaseKey = useRef<{ fingerprint: string; key: string } | null>(null);
 
   const totalBalance = wallet?.totalBalance ?? 0;
 
@@ -80,10 +81,14 @@ export function PartnerBillingPage() {
       return;
     }
     setSubmitting(true);
+    const fingerprint = `${value}:${method}`;
+    if (!purchaseKey.current || purchaseKey.current.fingerprint !== fingerprint) {
+      purchaseKey.current = { fingerprint, key: crypto.randomUUID() };
+    }
     try {
-      const purchase = await createPurchase({ amount: value, method });
-      const fakeCheckout = purchase.provider === 'fake' || (purchase.providerCheckoutUrl ?? '').includes('/billing/fake');
-      if (!fakeCheckout && purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
+      const purchase = await createPurchase({ amount: value, method }, purchaseKey.current.key);
+      purchaseKey.current = null;
+      if (purchase.providerCheckoutUrl && /^https?:\/\//i.test(purchase.providerCheckoutUrl)) {
         window.location.assign(purchase.providerCheckoutUrl);
         return;
       }

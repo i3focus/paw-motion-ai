@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { AuthProvider, useAuth } from './auth';
 import { Layout, type PageKey } from './components/Layout';
 import { AuthPage } from './pages/AuthPage';
+import { CityPage } from './pages/CityPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PetsPage } from './pages/PetsPage';
 import { ActivitiesPage } from './pages/ActivitiesPage';
 import { InsightsPage } from './pages/InsightsPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { PartnerFakeCheckoutPage } from './partner/PartnerFakeCheckoutPage';
 import { PartnerPortal } from './partner/PartnerPortal';
 
 function AppShell() {
@@ -26,6 +28,7 @@ function AppShell() {
   return (
     <Layout page={page} setPage={setPage}>
       {page === 'dashboard' ? <DashboardPage /> : null}
+      {page === 'city' ? <CityPage /> : null}
       {page === 'pets' ? <PetsPage /> : null}
       {page === 'activities' ? <ActivitiesPage /> : null}
       {page === 'insights' ? <InsightsPage /> : null}
@@ -35,8 +38,12 @@ function AppShell() {
 }
 
 export default function App() {
+  const isFakeCheckout = window.location.pathname.startsWith('/partner') && window.location.pathname.includes('/billing/fake');
   const isPartnerPortal = window.location.pathname.startsWith('/partner');
 
+  if (isFakeCheckout) {
+    return <PartnerFakeCheckoutPage />;
+  }
   if (isPartnerPortal) {
     return <PartnerPortal />;
   }

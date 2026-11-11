@@ -27,7 +27,7 @@ public class UpdateProfileService implements UpdateProfileUseCase {
         Owner owner = ownerRepository.findById(accountId)
             .orElseThrow(() -> new OwnerNotFoundException(accountId));
         owner.updateProfile(command.displayName(), command.bio(), command.phone(), command.avatarUrl(),
-            command.businessName(), command.website(), command.partnerDescription());
+            command.businessName(), command.website(), command.partnerDescription(), command.latitude(), command.longitude());
         return OwnerResponseDto.from(ownerRepository.save(owner));
     }
 }

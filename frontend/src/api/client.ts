@@ -11,6 +11,9 @@ import type {
   OwnerRecommendation,
   Pet,
   Wallet,
+  ActivityPost,
+  ActivityComment,
+  MapPoints,
 } from '../types';
 
 const OWNER_TOKEN_KEY = 'pawmotion.owner.accessToken';
@@ -134,6 +137,8 @@ export function updateProfile(input: {
   businessName?: string;
   website?: string;
   partnerDescription?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }, token: string | null = getStoredOwnerToken()): Promise<Owner> {
   return request<Owner>('/api/me', {
     method: 'PATCH',
@@ -184,6 +189,8 @@ export function createActivity(input: {
   durationSeconds: number;
   distanceMeters?: number;
   notes?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }): Promise<Activity> {
   return request<Activity>('/api/activities', {
     method: 'POST',
@@ -282,4 +289,36 @@ export function createPurchase(input: {
     headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(input),
   }, getStoredPartnerToken());
+}
+
+export function completeFakePurchase(transactionId: string): Promise<PaymentTransaction> {
+  return request<PaymentTransaction>(`/api/partner/billing/purchases/${transactionId}/fake-complete`, {
+    method: 'POST',
+  }, getStoredPartnerToken());
+}
+
+export function listActivityFeed(): Promise<ActivityPost[]> {
+  return request<ActivityPost[]>('/api/feed');
+}
+
+export function toggleActivityReaction(activityId: string, type: string): Promise<ActivityPost> {
+  return request<ActivityPost>(`/api/activities/${activityId}/reactions`, {
+    method: 'POST',
+    body: JSON.stringify({ type }),
+  });
+}
+
+export function listActivityComments(activityId: string): Promise<ActivityComment[]> {
+  return request<ActivityComment[]>(`/api/activities/${activityId}/comments`);
+}
+
+export function addActivityComment(activityId: string, body: string): Promise<ActivityComment> {
+  return request<ActivityComment>(`/api/activities/${activityId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ body }),
+  });
+}
+
+export function listMapPoints(): Promise<MapPoints> {
+  return request<MapPoints>('/api/map/points');
 }

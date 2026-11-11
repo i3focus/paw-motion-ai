@@ -21,6 +21,9 @@ export function ActivitiesPage() {
   const [startedAt, setStartedAt] = useState(() => toLocalInputValue(new Date()));
   const [durationMinutes, setDurationMinutes] = useState('30');
   const [distanceKm, setDistanceKm] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [locating, setLocating] = useState(false);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -38,6 +41,27 @@ export function ActivitiesPage() {
     refresh().catch((caught) => setError(caught instanceof ApiError ? caught.message : 'Unable to load activities'));
   }, []);
 
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not available in this browser');
+      return;
+    }
+    setLocating(true);
+    setError(null);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLatitude(position.coords.latitude.toFixed(6));
+        setLongitude(position.coords.longitude.toFixed(6));
+        setLocating(false);
+      },
+      () => {
+        setError('Unable to read your location');
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const errors: Record<string, string> = {};
@@ -53,6 +77,12 @@ export function ActivitiesPage() {
     if (distanceKm && !isNonNegativeNumber(distanceKm)) {
       errors.distanceKm = 'Distance must be zero or greater';
     }
+    if (latitude && (Number(latitude) < -90 || Number(latitude) > 90)) {
+      errors.latitude = 'Latitude must be between -90 and 90';
+    }
+    if (longitude && (Number(longitude) < -180 || Number(longitude) > 180)) {
+      errors.longitude = 'Longitude must be between -180 and 180';
+    }
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       return;
@@ -67,10 +97,14 @@ export function ActivitiesPage() {
         startedAt: new Date(startedAt).toISOString(),
         durationSeconds: Math.round(Number(durationMinutes) * 60),
         distanceMeters: distanceKm ? Math.round(Number(distanceKm) * 1000) : undefined,
+        latitude: latitude ? Number(latitude) : undefined,
+        longitude: longitude ? Number(longitude) : undefined,
         notes: notes.trim() || undefined,
       });
       setNotes('');
       setDistanceKm('');
+      setLatitude('');
+      setLongitude('');
       await refresh();
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Unable to record activity');
@@ -124,6 +158,31 @@ export function ActivitiesPage() {
                 error={fieldErrors.distanceKm}
               />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <NumberInput
+                label="Latitude"
+                min="-90"
+                max="90"
+                step="0.000001"
+                value={latitude}
+                onChange={(event) => setLatitude(event.target.value)}
+                error={fieldErrors.latitude}
+                placeholder="Optional"
+              />
+              <NumberInput
+                label="Longitude"
+                min="-180"
+                max="180"
+                step="0.000001"
+                value={longitude}
+                onChange={(event) => setLongitude(event.target.value)}
+                error={fieldErrors.longitude}
+                placeholder="Optional"
+              />
+            </div>
+            <Button type="button" variant="secondary" onClick={useCurrentLocation} disabled={locating} className="w-full">
+              {locating ? 'Reading location…' : 'Use current location'}
+            </Button>
             <TextArea label="Notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} maxLength={500} />
             <ErrorMessage message={error} />
             <Button type="submit" disabled={submitting || pets.length === 0} className="w-full">{submitting ? 'Saving…' : 'Record activity'}</Button>

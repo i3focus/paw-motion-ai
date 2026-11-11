@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { ApiError, getStoredPartnerToken, updateProfile } from '../api/client';
 import { usePartnerAuth } from '../partnerAuth';
-import { Avatar, Badge, Button, Card, ErrorMessage, PhoneInput, SectionHeader, TextArea, TextInput, UrlInput } from '../components/ui';
+import { Avatar, Badge, Button, Card, ErrorMessage, NumberInput, PhoneInput, SectionHeader, TextArea, TextInput, UrlInput } from '../components/ui';
 import { isValidHttpUrl, isValidPhone, normalizeUrl } from '../lib/validation';
 
 export function PartnerProfilePage() {
@@ -13,6 +13,8 @@ export function PartnerProfilePage() {
   const [bio, setBio] = useState('');
   const [phone, setPhone] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -29,6 +31,8 @@ export function PartnerProfilePage() {
     setBio(partner.bio ?? '');
     setPhone(partner.phone ?? '');
     setAvatarUrl(partner.avatarUrl ?? '');
+    setLatitude(partner.latitude?.toString() ?? '');
+    setLongitude(partner.longitude?.toString() ?? '');
   }, [partner]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -49,6 +53,12 @@ export function PartnerProfilePage() {
     if (avatarUrl.trim() && !isValidHttpUrl(avatarUrl)) {
       errors.avatarUrl = 'Enter a valid http(s) URL';
     }
+    if (latitude.trim() && (Number(latitude) < -90 || Number(latitude) > 90)) {
+      errors.latitude = 'Latitude must be between -90 and 90';
+    }
+    if (longitude.trim() && (Number(longitude) < -180 || Number(longitude) > 180)) {
+      errors.longitude = 'Longitude must be between -180 and 180';
+    }
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       return;
@@ -66,6 +76,8 @@ export function PartnerProfilePage() {
         bio: bio.trim(),
         phone: phone.trim(),
         avatarUrl: normalizeUrl(avatarUrl),
+        latitude: latitude.trim() ? Number(latitude) : null,
+        longitude: longitude.trim() ? Number(longitude) : null,
       }, getStoredPartnerToken());
       await refreshProfile();
       setSaved(true);
@@ -122,6 +134,10 @@ export function PartnerProfilePage() {
               maxLength={300}
               placeholder="https://…"
             />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <NumberInput label="Map latitude" value={latitude} onChange={(event) => setLatitude(event.target.value)} error={fieldErrors.latitude} step="0.000001" placeholder="Optional" />
+              <NumberInput label="Map longitude" value={longitude} onChange={(event) => setLongitude(event.target.value)} error={fieldErrors.longitude} step="0.000001" placeholder="Optional" />
+            </div>
             <TextArea label="Business description" value={partnerDescription} onChange={(event) => setPartnerDescription(event.target.value)} rows={4} maxLength={1000} />
             <TextArea label="Bio" value={bio} onChange={(event) => setBio(event.target.value)} rows={3} maxLength={500} />
             <div className="grid gap-4 sm:grid-cols-2">

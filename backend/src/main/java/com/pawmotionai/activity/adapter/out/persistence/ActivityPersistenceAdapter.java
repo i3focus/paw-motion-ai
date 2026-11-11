@@ -24,7 +24,8 @@ public class ActivityPersistenceAdapter implements ActivityRepository {
         ActivityJpaEntity entity = repository.findById(activity.getId())
             .orElseGet(() -> new ActivityJpaEntity(
                 activity.getId(), activity.getOwnerId(), activity.getPetId(), activity.getType(), activity.getStartedAt(),
-                activity.getDurationSeconds(), activity.getDistanceMeters(), activity.getNotes(), activity.getCreatedAt(), Instant.now()));
+                activity.getDurationSeconds(), activity.getDistanceMeters(), activity.getNotes(), activity.getCreatedAt(), Instant.now(),
+                activity.getLatitude(), activity.getLongitude()));
         return toDomain(repository.save(entity));
     }
 
@@ -41,6 +42,7 @@ public class ActivityPersistenceAdapter implements ActivityRepository {
     private Activity toDomain(ActivityJpaEntity entity) {
         return Activity.reconstitute(
             entity.getId(), entity.getOwnerId(), entity.getPetId(), entity.getType(), entity.getStartedAt(),
-            entity.getDurationSeconds(), entity.getDistanceMeters(), entity.getNotes(), entity.getCreatedAt());
+            entity.getDurationSeconds(), entity.getDistanceMeters(), entity.getNotes(), entity.getCreatedAt(),
+            entity.getLatitude(), entity.getLongitude());
     }
 }

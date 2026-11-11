@@ -2,10 +2,11 @@ import type { ReactNode } from 'react';
 import { Avatar, Badge, BrandLogo } from './ui';
 import { useAuth } from '../auth';
 
-export type PageKey = 'dashboard' | 'pets' | 'activities' | 'insights' | 'profile';
+export type PageKey = 'dashboard' | 'city' | 'pets' | 'activities' | 'insights' | 'profile';
 
 const NAV_ITEMS: Array<{ key: PageKey; label: string }> = [
   { key: 'dashboard', label: 'Dashboard' },
+  { key: 'city', label: 'Paw City' },
   { key: 'pets', label: 'Pets' },
   { key: 'activities', label: 'Activities' },
   { key: 'insights', label: 'Insights' },

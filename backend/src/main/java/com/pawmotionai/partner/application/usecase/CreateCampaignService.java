@@ -40,7 +40,14 @@ public class CreateCampaignService implements CreateCampaignUseCase {
         if (idempotencyKey != null) {
             var existing = repository.findByPartnerIdAndIdempotencyKey(partnerId, idempotencyKey);
             if (existing.isPresent()) {
-                return CampaignResponseDto.from(existing.get(), postLedgerEntryUseCase.availableBalance(partnerId));
+                var existingCampaign = existing.get();
+                if (!existingCampaign.getTitle().equals(command.title())
+                    || !existingCampaign.getDescription().equals(command.description())
+                    || !existingCampaign.getTargetAudience().equals(command.targetAudience())
+                    || !existingCampaign.getCallToAction().equals(command.callToAction())) {
+                    throw new IllegalArgumentException("Idempotency key was already used for a different campaign");
+                }
+                return CampaignResponseDto.from(existingCampaign, postLedgerEntryUseCase.availableBalance(partnerId));
             }
         }
 
