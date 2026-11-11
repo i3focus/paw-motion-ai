@@ -1,0 +1,461 @@
+---
+name: hibernate-jpa-validator
+description: Reviews and writes Hibernate/JPA code for performance and correctness, inspired by Hypersistence Optimizer. Triggers on @Entity, @ManyToOne, @OneToMany, @ManyToMany, @OneToOne, GenerationType, EntityManager, Session, SessionFactory, CriteriaBuilder, Spring Data JPA repositories, JpaRepository, BaseJpaRepository, HikariCP, @BatchSize, @EntityGraph, JPQL, @Transactional, @Lock, OptimisticLockException, LazyConnectionDataSourceProxy, read-write routing, OSIV, Testcontainers, @DataJpaTest, datasource-proxy, query count assertions, Flyway, ddl-auto, identifier generation, association mappings, fetch plans, N+1 detection, batch processing, second-level caching, connection pooling, DTO projections, keyset pagination, JOIN FETCH with pagination, query optimization, inheritance strategies, Hibernate 6 features, migration from Hibernate 5 to 6, migration from Hibernate 6 to 7 (Hibernate 7, Jakarta Persistence 3.2, Spring Boot 4, Testcontainers 2, StatelessSession cache and batch changes, @Where to @SQLRestriction, Session.save/update/delete removal), Lombok on entities (@Data, @Builder, @EqualsAndHashCode, @ToString, @FieldNameConstants), Java records as entities/embeddables/projections/IdClass, and Kotlin data classes with the kotlin-jpa / kotlin-noarg / kotlin-allopen plugins. Does NOT cover Jakarta Bean Validation (@Valid, @NotNull, @Size, ConstraintValidator, validation groups) — that is a separate concern handled elsewhere.
+---
+
+# Hibernate/JPA Validator
+
+## Currency
+
+**Last verified: 2026-07** (Hibernate ORM 7.x / Spring Boot 4.1 era; the 6->7 notes are checked against the official 7.0 migration guide). Facts here age. If the answer hinges on a
+version-sensitive fact — a Hibernate or Spring Boot major, a pinned artifact coordinate, a default that names a release — and time has passed
+since the stamp above, spot-check current release notes or the tool's own source
+before asserting it. When current docs disagree with this file, **the docs win**:
+say so and note the line is stale.
+
+## Overview
+
+Full-spectrum Hibernate/JPA analysis inspired by Vlad Mihalcea's Hypersistence Optimizer. When reviewing any entity or JPA code, **run the full checklist** — not just what the user asked about. Performance is first-class, not an afterthought.
+
+This skill targets ORM concerns (mappings, fetch plans, SQL generation, transactions, schema). It does **not** cover Jakarta Bean Validation constraints (`@Valid`, `@NotNull`, `@Size`, `ConstraintValidator`, validation groups) — defer those to a Bean Validation skill or general Spring guidance.
+
+Core philosophy: show the generated SQL, explain the underlying JDBC behavior, then show the fix.
+
+---
+
+## A: Assess the Request
+
+```
+What does the user need?
+├── Entity class(es) → Section B (full checklist ALWAYS)
+├── Slow queries / N+1 → Section C
+├── Query optimization / projections → Section D
+├── Batch inserts/updates → Section E
+├── Caching questions → Section F
+├── Connection pool tuning → Section G
+├── Spring Data JPA patterns → Section H
+├── Transactions / locking / propagation → Section I
+├── Testcontainers / repository tests → Section J
+├── Flyway / DDL validation / migrations → Section K
+└── All of the above for a PR/module → Run B→K in order
+```
+
+---
+
+## B: Entity Mapping Validation (CORE — Run for Every Entity)
+
+**Run every item. Skip nothing. This is the Hypersistence Optimizer philosophy.**
+
+### B1 — Identifier Strategy
+
+**Check:** `@GeneratedValue` strategy.
+
+| Strategy | Verdict |
+|---|---|
+| `SEQUENCE` + `@SequenceGenerator(allocationSize=50)` | ✅ Correct |
+| `SEQUENCE` with default allocationSize=1 | ⚠️ Fix optimizer |
+| `IDENTITY` | ⚠️ Breaks JDBC batching — flag it |
+| `TABLE` | ❌ Never — pessimistic locking anti-pattern |
+| `AUTO` | ❌ Never — unpredictable, database-dependent |
+| UUID random (`UUID.randomUUID()`) | ⚠️ Index fragmentation — prefer time-ordered |
+
+→ See `references/identifier-strategies.md` for pooled/pooled-lo optimizers, UUID strategies, `@NaturalId`.
+
+### B2 — equals/hashCode
+
+**This is the most critical correctness issue in Hibernate.**
+
+```java
+// ❌ WRONG — generated ID is null before persist, breaks Set semantics
+@Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Post)) return false;
+    Post post = (Post) o;
+    return Objects.equals(id, post.id);  // null == null for transient entities!
+}
+
+// ✅ CORRECT — business key / @NaturalId
+@NaturalId
+@Column(unique = true, nullable = false)
+private String slug;
+
+@Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Post)) return false;
+    Post post = (Post) o;
+    return Objects.equals(slug, post.slug);
+}
+
+@Override
+public int hashCode() {
+    return Objects.hash(slug);
+}
+
+// ✅ ALSO CORRECT — stable hashCode with generated ID
+@Override
+public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    Post post = (Post) o;
+    return id != null && id.equals(post.id);
+}
+
+@Override
+public int hashCode() { return getClass().hashCode(); }  // stable across states
+```
+
+**Flag:** equals/hashCode using `id` with a mutable-hash-contract, or auto-generated by IDE without review.
+
+→ See `references/entity-mapping-checklist.md`
+
+### B3 — Associations
+
+Check each association against these rules:
+
+| Association | Rule | Flag If Violated |
+|---|---|---|
+| `@ManyToOne` | Always `fetch = LAZY` | EAGER is default — always missing |
+| `@OneToMany` | Always `mappedBy` + inverse side owns FK | Unidirectional `@OneToMany` creates spurious DELETE+INSERT |
+| `@ManyToMany` | Use `Set`, never `List` | `List` triggers bag semantics → DELETE ALL + re-INSERT |
+| `@OneToOne` | Use `@MapsId` to share PK | Separate FK column adds extra join; EAGER by default |
+| All bidirectional | Add `addXxx`/`removeXxx` sync helpers | Inconsistent in-memory state |
+
+**Unidirectional @OneToMany SQL disaster:**
+```java
+// ❌ WRONG — generates DELETE + re-INSERT on every change
+@OneToMany
+private List<Comment> comments = new ArrayList<>();
+
+// SQL for adding one comment:
+// DELETE FROM post_comments WHERE post_id = 1
+// INSERT INTO post_comments (post_id, comment_id) VALUES (1, 1)
+// INSERT INTO post_comments (post_id, comment_id) VALUES (1, 2)  ← old entry re-inserted!
+
+// ✅ CORRECT — only INSERT the new comment
+@OneToMany(mappedBy = "post")
+private List<Comment> comments = new ArrayList<>();
+```
+
+→ See `references/association-mappings.md`
+
+### B4 — Cascade Types
+
+| Check | Flag If |
+|---|---|
+| `CascadeType.ALL` or `REMOVE` on `@ManyToOne` | Cascading delete from child to parent is catastrophic |
+| `orphanRemoval = true` on `@ManyToMany` | Never — shared entities cannot be orphaned |
+| Missing cascade on `@OneToMany` to dependent children | Convenience miss — document intentional omission |
+
+### B5 — Fetch Types
+
+**All associations must be `FetchType.LAZY`.** `@ManyToOne` and `@OneToOne` default to EAGER — always override. `@OneToMany`/`@ManyToMany` default LAZY (keep).
+
+### B6 — @DynamicUpdate / @DynamicInsert
+
+Flag entities with many columns that are frequently partially updated:
+```java
+// Without @DynamicUpdate — Hibernate always updates ALL columns:
+// UPDATE account SET name=?, email=?, balance=?, status=?, updated_at=? WHERE id=?
+
+// With @DynamicUpdate — only dirty columns:
+// UPDATE account SET balance=? WHERE id=?
+@Entity
+@DynamicUpdate
+public class Account { ... }
+```
+
+Apply `@DynamicUpdate` when: entity has 10+ columns, most updates touch 1-3 fields.
+
+### B7 — @Immutable for Reference Data
+
+```java
+// ❌ WRONG — Hibernate dirty-checks these on every flush, wasting CPU
+@Entity
+public class Country { ... }
+
+// ✅ CORRECT — no dirty checking, no versioning, safe to cache
+@Entity
+@Immutable
+public class Country { ... }
+```
+
+Apply to: lookup tables, reference data, anything that never changes after insert.
+
+### B8 — Column Definitions
+
+Check for:
+- Missing `nullable = false` on non-null columns (FK columns, required fields)
+- Missing `@Column(length=...)` on String fields (default 255, often wrong)
+- Missing `unique = true` / `@UniqueConstraint` on unique business keys
+- Missing `@Index` on FK columns used in WHERE clauses
+
+→ See `references/entity-mapping-checklist.md` for full naming/DDL checklist.
+
+### B9 — Lombok on Entities
+
+JPA requires a no-arg constructor and mutable fields. Lombok's "include every field" defaults break both equals/hashCode semantics and the persistence contract.
+
+| Pattern | Verdict |
+|---|---|
+| `@Data` | ❌ Bundles `@EqualsAndHashCode` + `@ToString` on all fields |
+| `@EqualsAndHashCode` (any form, including `onlyExplicitlyIncluded = true` with id) | ❌ Transient entities collide; use `@NaturalId` or stable hashCode |
+| `@ToString` without `exclude = {...}` | ❌ Silent N+1 in log statements; `LazyInitializationException` outside tx |
+| `@Builder` without `@NoArgsConstructor` | ❌ JPA fails to instantiate |
+| `@Builder` on field with initializer, missing `@Builder.Default` | ❌ Collection set to null, NPE on first `add()` |
+| `@Value` | ❌ Final + immutable — no proxies, no hydration |
+| `@FieldNameConstants` | ✅ Type-safe `Sort`/Criteria/Specification — recommend it |
+
+→ See `references/lombok-jpa.md` for full code examples.
+
+### B10 — Java Records with JPA
+
+Records are `final`, have only `final` components, and have no synthesizable no-arg constructor. They cannot be entities, but they are excellent for several adjacent uses.
+
+| Use case | Verdict |
+|---|---|
+| `@Entity` / `@MappedSuperclass` | ❌ Final, immutable, no no-arg ctor — fundamental blockers |
+| `@Embeddable` | ✅ Hibernate 6.2+ only |
+| `@IdClass` | ✅ Excellent — immutable + auto equals/hashCode |
+| `@EmbeddedId` | ✅ Hibernate 6.2+ only |
+| Spring Data **class** projection (`record PostSummary(...)`) | ✅ Canonical constructor used |
+| Spring Data **interface** projection | ❌ Records can't be proxied — use an `interface` |
+| Record component is `long`/`int` for nullable column | ❌ NPE on hydration — use boxed `Long`/`Integer` |
+
+→ See `references/java-records-jpa.md` for full code examples.
+
+### B11 — Kotlin Data Classes with JPA
+
+Same `@Data`-style problem (auto equals/hashCode/toString on all properties) **plus** records' problem (final by default, no no-arg constructor). `kotlin-jpa` only fixes the constructor half of that — it wraps `kotlin-noarg`, not `kotlin-allopen` — so entities also need `kotlin-allopen` configured for `@Entity`/`@MappedSuperclass` to become non-final.
+
+| Pattern | Verdict |
+|---|---|
+| `data class` as `@Entity` | ❌ Auto equals/hashCode/toString on all fields + `copy()` makes accidental detached entities |
+| Regular `class` as `@Entity` with `kotlin-jpa` **and** `kotlin-allopen` (configured for JPA annotations) | ✅ Required setup |
+| `kotlin-jpa` alone (no `kotlin-allopen`) | ❌ No-arg only — class still final → `LAZY` proxies impossible |
+| `Long` (non-null) on `@Id` | ❌ Primitive `0` reads as "new" (correctly, for fresh entities) but can't distinguish a genuinely-persisted id-`0` row — use `Long?` |
+| Non-null Kotlin type backing nullable column | ❌ NPE landmine — match nullability |
+| `data class` as `@Embeddable` (with `kotlin-jpa`) | ⚠️ OK — no `allopen` needed, embeddables aren't proxied; "update" by replacing the whole instance |
+| `data class` as DTO projection | ✅ Same as Java record |
+| `@JvmInline value class` field | ❌ Erased at JVM level — needs `AttributeConverter`, often breaks queries |
+| `@Access(AccessType.PROPERTY)` on a `val` property | ❌ No generated setter — Hibernate can't write it; must be `var` |
+| Annotation on a property, no `@Access` override | ✅ Default field access — getters/setters bypassed, usually fine |
+
+→ See `references/kotlin-data-classes-jpa.md` for full code examples.
+
+---
+
+## C: N+1 and Fetch Strategy Review
+
+**When you see:** `findAll()`, service layer looping on associations, `@Transactional` method that loads a collection then iterates.
+
+### Detect N+1
+
+```properties
+# Enable Hibernate statistics
+spring.jpa.properties.hibernate.generate_statistics=true
+logging.level.org.hibernate.stat=DEBUG
+```
+
+Or use `datasource-proxy` / `p6spy` to count SQL statements per request.
+
+### Fix Strategies (ordered by preference)
+
+1. **JOIN FETCH** — one-off graph load via `@Query("... JOIN FETCH p.comments ...")`
+2. **@EntityGraph** — declarative, reusable: `@EntityGraph(attributePaths = {"comments", "tags"})` on the repo method
+3. **@BatchSize** — loading the same collection for many parents; generates `WHERE post_id IN (?, ?, …)`:
+```java
+@BatchSize(size = 25)
+@OneToMany(mappedBy = "post")
+private List<Comment> comments;
+```
+4. **@Fetch(FetchMode.SUBSELECT)** — one extra subselect query loads child collections for *all* parents already in the persistence context. Beware: fires even when you only iterate one parent.
+
+**MultipleBagFetchException:** You cannot JOIN FETCH two `List` (bag) collections. Fix: use `Set` or fetch in separate queries.
+
+→ See `references/fetching-and-n-plus-one.md`
+
+---
+
+## D: Query Optimization
+
+### Use DTO Projections for Read-Only Data
+
+Use interface or class projections (`findAllProjectedBy()` returning a `PostSummary` interface) instead of full entities for list/table views — loads only the columns you select, no dirty-check snapshot, no lazy-load traps.
+
+### Pagination: Keyset over OFFSET
+
+```java
+// ❌ OFFSET — scans and discards N rows
+Page<Post> page = postRepository.findAll(PageRequest.of(100, 20));
+
+// ✅ Keyset — seeks directly to position
+@Query("SELECT p FROM Post p WHERE p.createdAt < :cursor ORDER BY p.createdAt DESC")
+List<Post> findNextPage(@Param("cursor") Instant cursor, Pageable pageable);
+```
+
+→ See `references/query-optimization.md` for Criteria API, @QueryHints, Blaze Persistence, jOOQ.
+
+---
+
+## E: Batch Processing
+
+```properties
+spring.jpa.properties.hibernate.jdbc.batch_size=25
+spring.jpa.properties.hibernate.order_inserts=true
+spring.jpa.properties.hibernate.order_updates=true
+```
+
+Flush + clear every `batch_size` iterations to prevent L1-cache OOM. **`IDENTITY` generation silently disables JDBC batching** (Hibernate must round-trip per insert to read the generated key) — the primary reason to prefer `SEQUENCE`.
+
+→ See `references/batch-processing.md` for StatelessSession, JPQL bulk operations, p6spy verification.
+
+---
+
+## F: Caching Review
+
+**Before recommending cache, ask:** Is this entity shared across transactions? How stale can it be?
+
+| Scenario | Strategy |
+|---|---|
+| Read-only reference data | `READ_ONLY` — safest, most efficient |
+| Mostly read, rare updates | `NONSTRICT_READ_WRITE` — brief inconsistency window |
+| Transactional correctness required | `READ_WRITE` or `TRANSACTIONAL` |
+| Reporting / aggregates | Don't cache — use query cache carefully |
+
+**Query cache gotcha:** invalidates the ENTIRE region when ANY entity in the result type is updated.
+
+→ See `references/caching.md` for provider config, `@NaturalIdCache`, invalidation behavior.
+
+---
+
+## G: Connection Pool Tuning
+
+HikariCP defaults are mostly fine. Non-obvious settings to set explicitly:
+
+- `maximum-pool-size` — the classic `(cores * 2) + effective_spindle_count` is an **HDD-era heuristic** with no reliable SSD/cloud equivalent; treat it as a starting point only and size empirically under load
+- `minimum-idle` = `maximum-pool-size` (HikariCP recommends a fixed pool over elastic sizing)
+- `max-lifetime` must be **less than** the DB's `wait_timeout` / load-balancer idle timeout
+- `leak-detection-threshold: 2000` — flag connections held > 2s (catches missed transactions)
+
+→ See `references/connection-pooling.md` for pool sizing formula, metrics, statement caching.
+
+---
+
+## H: Spring Data JPA Patterns
+
+**Top anti-patterns to flag:**
+
+1. `findAll()` — loads entire table; always `findByXxx`, `Pageable`, or projection
+2. `findById()` on write paths — use `getReferenceById()` when you only need an FK
+3. `save()` on a new entity with **assigned** ID — triggers MERGE (extra SELECT, returns a different managed instance). Even with `@GeneratedValue` (where `save()` correctly delegates to `persist()`), prefer `persist()` from `BaseJpaRepository` to make intent explicit and survive a future switch to assigned IDs.
+4. `@Modifying` without `clearAutomatically = true` — stale first-level cache
+5. Derived query methods that generate N+1 — add `@EntityGraph` or JOIN FETCH
+6. `save(entity)` on managed entity inside `@Transactional` — redundant, dirty checking handles it
+7. `countByXxx > 0` for existence checks — use the `existsByXxx` derived method (Spring Data 3.x emits `SELECT 1 ... LIMIT 1`); reach for native `SELECT EXISTS(...)` only when composing with a larger query
+8. `JOIN FETCH` + `Pageable` — silently triggers in-memory pagination (HHH90003004)
+9. Returning entities from REST controllers — silent N+1 with OSIV; use DTOs
+10. `spring.jpa.open-in-view=true` (the default) — masks N+1, holds connections
+
+`@Modifying` bulk updates need `clearAutomatically = true, flushAutomatically = true` — otherwise the L1 cache still holds the pre-update entities and subsequent reads return stale data.
+
+**Repository base class:** Prefer Hypersistence Utils' `BaseJpaRepository` over `JpaRepository` — it omits `findAll()`/`save()` and exposes explicit `persist()`/`merge()`/`getReferenceById()`.
+
+→ See `references/spring-data-jpa.md` for `BaseJpaRepository`, EXISTS optimization, Stream methods, QBE, Jakarta Data, bidirectional sync helpers, projections, auditing, Specification API.
+
+---
+
+## I: Transactions and Concurrency
+
+**Defaults to enforce:** `spring.jpa.open-in-view=false`. `@Transactional(readOnly = true)` on every read service method, `@Transactional` on writes. Service layer owns transactions, not repositories.
+
+**Less-obvious checklist:**
+- No self-invocation of `@Transactional` methods (Spring AOP proxy is bypassed)
+- `@Version` on every mutable entity (optimistic locking)
+- Pessimistic locks always have an explicit timeout
+- External API calls live **outside** the transaction — use `@TransactionalEventListener(AFTER_COMMIT)`
+- Read-write routing must wrap the routing DataSource in `LazyConnectionDataSourceProxy` (otherwise the connection is acquired before Spring knows whether to route read or write)
+
+→ See `references/spring-transactions.md` for propagation rules, isolation levels, locking, `LazyConnectionDataSourceProxy`, read-write routing, OSIV.
+
+---
+
+## J: Testing the Data Access Layer
+
+**Rules:**
+- Real database via Testcontainers — **never** H2/HSQLDB for production code targeting PostgreSQL/MySQL
+- `@AutoConfigureTestDatabase(replace = Replace.NONE)` on `@DataJpaTest` — Spring otherwise substitutes H2
+- `em.flush() + em.clear()` after seeding — without it, assertions hit L1 cache, not DB
+- Assert query counts with `datasource-proxy` — best N+1 regression guard
+- `ddl-auto=validate` in test profile — catches mapping/migration drift
+
+```java
+@DataJpaTest
+@Testcontainers
+@AutoConfigureTestDatabase(replace = Replace.NONE)  // critical — without this Spring substitutes H2
+class PostRepositoryTest {
+    @Container @ServiceConnection  // @ServiceConnection auto-wires Hikari to the container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+}
+```
+
+→ See `references/spring-testing.md` for `@ServiceConnection`, reusable containers, query count assertions, cleanup strategies, `@Sql`, migration tests.
+
+---
+
+## K: Schema Migrations
+
+**Rules:**
+- `spring.jpa.hibernate.ddl-auto=validate` in every environment except first-time bootstrap
+- **Never** `update` or `create-drop` outside of throwaway dev DBs
+- Flyway (or Liquibase) owns the schema — Hibernate validates only
+- Three-step migrations for adding NOT NULL columns to populated tables
+- `CREATE INDEX CONCURRENTLY` for any production index addition (PostgreSQL)
+- Test data-changing migrations against a copy of production data
+
+Standard config: `spring.jpa.hibernate.ddl-auto=validate`, `spring.flyway.enabled=true`, `spring.flyway.validate-on-migrate=true`, `spring.flyway.out-of-order=false`.
+
+**Flyway needs a starter plus a DB module.** Per the Spring Boot docs, add
+`spring-boot-starter-flyway` (which covers in-memory and file-based databases), and for
+anything else the database-specific module too — `org.flywaydb:flyway-database-postgresql`
+for PostgreSQL, `org.flywaydb:flyway-mysql` for MySQL. `flyway-core` alone is not enough.
+
+→ See `references/spring-schema-migrations.md` for Flyway config, repeatable migrations, zero-downtime patterns, DDL validation, multi-tenant schemas.
+
+---
+
+## L: Version-Specific Topics
+
+None of these fire on every review — open them when the request names the topic.
+
+| When the request involves… | Open |
+|---|---|
+| Upgrading Hibernate 6 → 7 (Spring Boot 3 → 4) | `references/migration-6-to-7.md` |
+| Upgrading Hibernate 5 → 6 (Spring Boot 2 → 3) | `references/migration-5-to-6.md` |
+| `@SQLRestriction`, `@SoftDelete`, `@TenantId`, JSON columns, other Hibernate-only features | `references/hibernate-features.md` |
+| `@Inheritance`, `SINGLE_TABLE` vs `JOINED` vs `TABLE_PER_CLASS`, `@DiscriminatorColumn` | `references/inheritance-strategies.md` |
+| Turning on SQL/bind-parameter logging, statistics, slow-query thresholds | `references/logging-and-monitoring.md` |
+
+**Which Hibernate is in play?** Spring Boot 3.x manages Hibernate 6; Spring Boot 4.x
+manages Hibernate 7. Check the project's Boot version before asserting version-specific
+behaviour — several Hibernate 7 changes are silent (native-query temporal types,
+`StatelessSession` caching and batching), so code that compiles may still behave
+differently. See `references/migration-6-to-7.md`.
+
+## Always Do
+
+- Run the **full B checklist** even when the user only asks about one thing
+- Show the **generated SQL** to explain why a mapping is suboptimal
+- Show **before/after** entity code, not just the fix
+- Suggest enabling **Hibernate statistics** or **datasource-proxy** to verify actual SQL count
+- Cite Vlad's reasoning (e.g., "SEQUENCE preferred because IDENTITY disables JDBC batching")
+
+## Never Do
+
+- Suggest `FetchType.EAGER` without very strong justification
+- Suggest `GenerationType.AUTO` or `TABLE`
+- Suggest `@OneToMany` without `mappedBy`
+- Suggest `List` for `@ManyToMany`
+- Suggest loading entities just to update one field — use bulk JPQL UPDATE
+- Suggest query cache without explaining invalidation behavior
+- Recommend Jakarta Bean Validation patterns (`@Valid`, `@NotNull`, `ConstraintValidator`) — out of scope; defer to a Bean Validation skill
