@@ -82,7 +82,7 @@ function readProfile(key: string): Owner | null {
   }
 }
 
-async function request<T>(path: string, init: RequestInit = {}, token: string | null = getStoredOwnerToken()): Promise<T> {
+export async function request<T>(path: string, init: RequestInit = {}, token: string | null = getStoredOwnerToken()): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
