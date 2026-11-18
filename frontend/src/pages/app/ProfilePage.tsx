@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../auth';
 import { createPet, listPets, updateProfile } from '../../api/client';
 import { cancelBooking, getNotificationPreferences, listMyBookings, updateNotificationPreferences, type Booking, type NotificationPreferences } from '../../api/petlife';
@@ -21,6 +21,14 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(owner?.displayName ?? '');
   const [bio, setBio] = useState(owner?.bio ?? '');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('addPet') === '1') {
+      setAddOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => { listPets().then(setPets).catch(() => setPets([])); }, [addOpen]);
   useEffect(() => { getNotificationPreferences().then(setPrefs).catch(() => setPrefs({})); }, []);

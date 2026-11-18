@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidHttpUrl, normalizeUrl, safeHref } from './validation';
+import { isStrongPassword, isValidHttpUrl, normalizeUrl, passwordIssues, safeHref } from './validation';
 
 describe('safeHref', () => {
   it('returns http(s) URLs unchanged and rejects every other scheme', () => {
@@ -11,6 +11,21 @@ describe('safeHref', () => {
     expect(safeHref(null)).toBeNull();
     expect(safeHref(undefined)).toBeNull();
     expect(safeHref('data:text/html,<b>x</b>')).toBeNull();
+  });
+});
+
+describe('passwordIssues / isStrongPassword', () => {
+  it('accepts a strong password', () => {
+    expect(isStrongPassword('PetLife123!')).toBe(true);
+    expect(passwordIssues('PetLife123!')).toEqual([]);
+  });
+
+  it('rejects weak passwords and reports the missing rules', () => {
+    expect(isStrongPassword('petlife')).toBe(false);
+    expect(passwordIssues('petlife1')).toEqual(['an uppercase letter', 'a symbol']);
+    expect(passwordIssues('short')).toContain('at least 8 characters');
+    expect(passwordIssues('PASSWORD1')).toEqual(['a lowercase letter', 'a symbol']);
+    expect(passwordIssues('Password')).toEqual(['a number', 'a symbol']);
   });
 });
 

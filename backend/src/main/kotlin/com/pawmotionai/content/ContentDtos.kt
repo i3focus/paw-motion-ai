@@ -13,7 +13,7 @@ data class CreatePostRequest(
     @field:Size(max = 160) val placeName: String?,
     @field:DecimalMin("-90") @field:DecimalMax("90") val latitude: Double?,
     @field:DecimalMin("-180") @field:DecimalMax("180") val longitude: Double?,
-    @field:NotNull @field:Size(min = 1, max = 10) val mediaIds: List<UUID>?,
+    @field:Size(max = 10) val mediaIds: List<UUID>? = emptyList(),
     @field:Size(max = 10) val taggedPetIds: List<UUID>? = emptyList(),
 )
 

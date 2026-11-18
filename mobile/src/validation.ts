@@ -6,6 +6,21 @@ export function normalizeEmail(value: string): string {
   return value.trim().toLowerCase();
 }
 
+export const PASSWORD_MIN_LENGTH = 8;
+
+/** Returns the list of unmet password rules — empty means the password is strong enough. */
+export function passwordIssues(value: string): string[] {
+  const issues: string[] = [];
+  if (value.length < PASSWORD_MIN_LENGTH) issues.push(`at least ${PASSWORD_MIN_LENGTH} characters`);
+  if (!/[a-z]/.test(value)) issues.push('a lowercase letter');
+  if (!/[A-Z]/.test(value)) issues.push('an uppercase letter');
+  if (!/\d/.test(value)) issues.push('a number');
+  if (!/[^A-Za-z0-9]/.test(value)) issues.push('a symbol');
+  return issues;
+}
+
+export const PASSWORD_REQUIREMENTS = `At least ${PASSWORD_MIN_LENGTH} characters with uppercase, lowercase, a number and a symbol`;
+
 export function isValidHttpUrl(value: string): boolean {
   const trimmed = value.trim();
   if (!trimmed) {

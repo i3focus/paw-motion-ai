@@ -5,6 +5,7 @@ import { listPets } from '../../api/client';
 import { safeHref } from '../../lib/validation';
 import type { Pet } from '../../types';
 import { Avatar, Badge, Button, Chip, LoadingState, SponsoredLabel } from '../../components/ui';
+import { BookingSheet } from '../../components/BookingSheet';
 
 export function DiscoverPage() {
   const [discover, setDiscover] = useState<Discover | null>(null);
@@ -13,6 +14,7 @@ export function DiscoverPage() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [scope, setScope] = useState<'neighborhood' | 'global'>('neighborhood');
   const [error, setError] = useState<string | null>(null);
+  const [bookService, setBookService] = useState<{ serviceId: string; partnerName?: string; campaignId?: string } | null>(null);
 
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(
@@ -42,7 +44,11 @@ export function DiscoverPage() {
                 <div className="flex items-center justify-between"><SponsoredLabel />{s.verified ? <Badge tone="success">✓ Verified</Badge> : null}</div>
                 <p className="mt-2 font-extrabold text-teal-dark">{s.title ?? s.partnerName}</p>
                 <p className="text-body text-muted">{s.description}{s.partnerName && s.title ? ` · ${s.partnerName}` : ''}</p>
-                {s.ctaLabel && safeHref(s.ctaUrl) ? (
+                {s.ctaLabel && s.ctaType === 'BOOKING' && s.serviceId ? (
+                  <button type="button"
+                    onClick={() => { if (s.campaignId) recordAdEvent(s.campaignId, 'CLICK', 'DISCOVER_HIGHLIGHT').catch(() => {}); setBookService({ serviceId: s.serviceId!, partnerName: s.partnerName, campaignId: s.campaignId }); }}
+                    className="mt-2 inline-flex min-h-11 items-center rounded-pill bg-coral px-4 text-label font-black text-coral-ink">{s.ctaLabel}</button>
+                ) : s.ctaLabel && safeHref(s.ctaUrl) ? (
                   <a href={safeHref(s.ctaUrl)!} target="_blank" rel="noreferrer"
                     onClick={() => s.campaignId && recordAdEvent(s.campaignId, 'CLICK', 'DISCOVER_HIGHLIGHT').catch(() => {})}
                     className="mt-2 inline-flex min-h-11 items-center rounded-pill bg-coral px-4 text-label font-black text-coral-ink">{s.ctaLabel}</a>
@@ -126,6 +132,7 @@ export function DiscoverPage() {
           {(board?.entries ?? []).length === 0 ? <p className="p-4 text-body text-muted">No leaderboard data yet — log an activity to climb the ranks!</p> : null}
         </div>
       </section>
+      <BookingSheet open={bookService !== null} onClose={() => setBookService(null)} serviceId={bookService?.serviceId ?? ''} partnerName={bookService?.partnerName} campaignId={bookService?.campaignId} />
     </div>
   );
 }

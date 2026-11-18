@@ -13,7 +13,7 @@ import {
   type CampaignV2,
 } from '../api/partner';
 import { Badge, Button, Card, ErrorMessage, LoadingState, SectionHeader, StatCard } from '../components/ui';
-import { CampaignForm, draftErrors, draftFromCampaign, draftToUpdate, useMediaUpload, type CampaignDraft } from './PartnerCampaignForm';
+import { CampaignForm, draftBaseErrors, draftErrors, draftFromCampaign, draftToUpdate, useMediaUpload, type CampaignDraft } from './PartnerCampaignForm';
 import { formatList, STATUS_TONE, statusLabel } from './PartnerCampaignsPage';
 
 const EDITABLE = new Set(['DRAFT', 'PAUSED']);
@@ -52,7 +52,7 @@ export function PartnerCampaignDetailPage() {
 
   async function save(andSubmit: boolean) {
     if (!draft) return;
-    const errs = draftErrors(draft);
+    const errs = andSubmit ? draftErrors(draft) : draftBaseErrors(draft);
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
     setBusy('save');
@@ -86,7 +86,9 @@ export function PartnerCampaignDetailPage() {
       setDirty(false);
       setNotice('Submitted for review — you will be notified once it is approved.');
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Unable to submit');
+      setError(caught instanceof ApiError
+        ? caught.status === 402 ? `${caught.message} — buy more credits in Credits & Billing.` : caught.message
+        : 'Unable to submit');
     } finally {
       setBusy(null);
     }

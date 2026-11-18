@@ -37,14 +37,20 @@ export function CreatePostSheet({ open, onClose, pets }: { open: boolean; onClos
     }
   }
 
+  const canPublish = Boolean(resolvedPetId) && (Boolean(file) || caption.trim().length > 0);
+
   async function publish() {
-    if (!resolvedPetId || !file || busy !== 'idle') return;
+    if (!canPublish || busy !== 'idle') return;
     setError(null);
     try {
-      setBusy('uploading');
-      const media = await uploadMedia(file);
+      let mediaIds: string[] = [];
+      if (file) {
+        setBusy('uploading');
+        const media = await uploadMedia(file);
+        mediaIds = [media.id as string];
+      }
       setBusy('posting');
-      await createPost({ petId: resolvedPetId, caption: caption.trim() || undefined, placeName: placeName.trim() || undefined, mediaIds: [media.id as string] });
+      await createPost({ petId: resolvedPetId, caption: caption.trim() || undefined, placeName: placeName.trim() || undefined, mediaIds });
       onClose();
       setCaption(''); setPlaceName(''); pickFile(null);
       navigate('/app/feed', { state: { refresh: Date.now() } });
@@ -94,7 +100,7 @@ export function CreatePostSheet({ open, onClose, pets }: { open: boolean; onClos
         <ErrorMessage message={error} />
         <div className="flex gap-2 pt-1">
           <Button variant="ghost" onClick={onClose} className="flex-1">Cancel</Button>
-          <Button onClick={publish} disabled={!resolvedPetId || !file || busy !== 'idle'} className="flex-1">
+          <Button onClick={publish} disabled={!canPublish || busy !== 'idle'} className="flex-1">
             {busy === 'uploading' ? 'Uploading…' : busy === 'posting' ? 'Publishing…' : 'Publish'}
           </Button>
         </div>

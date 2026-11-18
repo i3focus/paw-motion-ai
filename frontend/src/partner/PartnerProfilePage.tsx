@@ -1,6 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ApiError, getStoredPartnerToken, updateProfile } from '../api/client';
-import { getPartnerProfileV2, updatePartnerProfileV2 } from '../api/partner';
+import { getPartnerProfileV2, updatePartnerProfileV2, uploadPartnerMedia } from '../api/partner';
 import { usePartnerAuth } from '../partnerAuth';
 import { Avatar, Badge, Button, Card, ErrorMessage, NumberInput, PhoneInput, SectionHeader, SelectInput, TextArea, TextInput, UrlInput } from '../components/ui';
 import { isValidHttpUrl, isValidPhone, normalizeUrl, safeHref } from '../lib/validation';
@@ -27,6 +27,23 @@ export function PartnerProfilePage() {
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInput = useRef<HTMLInputElement>(null);
+
+  async function uploadAvatar(file: File | null) {
+    if (!file) return;
+    setUploadingAvatar(true);
+    setError(null);
+    try {
+      const media = await uploadPartnerMedia(file);
+      if (media.url) setAvatarUrl(media.url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not upload the photo');
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInput.current) avatarInput.current.value = '';
+    }
+  }
 
   useEffect(() => {
     if (!partner) {
@@ -71,7 +88,7 @@ export function PartnerProfilePage() {
     if (phone.trim() && !isValidPhone(phone)) {
       errors.phone = 'Enter a valid phone number with area code';
     }
-    if (avatarUrl.trim() && !isValidHttpUrl(avatarUrl)) {
+    if (avatarUrl.trim() && !avatarUrl.trim().startsWith('/') && !isValidHttpUrl(avatarUrl)) {
       errors.avatarUrl = 'Enter a valid http(s) URL';
     }
     if (latitude.trim() && (Number(latitude) < -90 || Number(latitude) > 90)) {
@@ -96,7 +113,7 @@ export function PartnerProfilePage() {
         displayName: displayName.trim(),
         bio: bio.trim(),
         phone: phone.trim(),
-        avatarUrl: normalizeUrl(avatarUrl),
+        avatarUrl: avatarUrl.trim().startsWith('/') ? avatarUrl.trim() : normalizeUrl(avatarUrl),
       }, getStoredPartnerToken());
       await updatePartnerProfileV2({
         businessName: businessName.trim(),
@@ -128,9 +145,14 @@ export function PartnerProfilePage() {
     <div className="space-y-6">
       <SectionHeader title="Partner profile" subtitle="Manage your business profile and contact details." />
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-        <Card>
+        <Card className="p-5 sm:p-6">
           <div className="flex flex-col items-center text-center">
             <Avatar name={businessName || partner.displayName} src={avatarUrl || partner.avatarUrl} className="h-24 w-24 text-2xl" />
+            <input ref={avatarInput} type="file" accept="image/*" className="sr-only" aria-label="Upload profile photo"
+              onChange={(e) => void uploadAvatar(e.target.files?.[0] ?? null)} />
+            <Button variant="secondary" size="sm" className="mt-3" disabled={uploadingAvatar} onClick={() => avatarInput.current?.click()}>
+              {uploadingAvatar ? 'Uploading…' : '📷 Upload photo'}
+            </Button>
             <h2 className="mt-4 text-xl font-bold text-ink">{businessName || partner.displayName}</h2>
             <p className="text-body text-muted">{partner.email}</p>
             <div className="mt-3 flex gap-2"><Badge tone="accent">Partner</Badge>{verified ? <Badge tone="success">✓ Verified business</Badge> : null}</div>

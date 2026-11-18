@@ -69,12 +69,19 @@ export function draftFromCampaign(c?: CampaignV2 | null): CampaignDraft {
   };
 }
 
-export function draftErrors(d: CampaignDraft): Record<string, string> {
+/** Minimum fields needed to create/save a draft — mirrors the create endpoint's requirements. */
+export function draftBaseErrors(d: CampaignDraft): Record<string, string> {
   const errors: Record<string, string> = {};
   if (!d.title.trim()) errors.title = 'Title is required';
   if (!d.description.trim()) errors.description = 'Description is required';
   if (!d.targetAudience.trim()) errors.targetAudience = 'Target audience is required';
   if (!d.ctaLabel.trim()) errors.ctaLabel = 'CTA label is required';
+  return errors;
+}
+
+/** Full validation for submitting a campaign for review. */
+export function draftErrors(d: CampaignDraft): Record<string, string> {
+  const errors: Record<string, string> = draftBaseErrors(d);
   if (d.ctaType === 'LINK' && !d.ctaUrl.trim()) errors.ctaUrl = 'A link CTA needs a destination URL';
   if (d.ctaType === 'LINK' && d.ctaUrl.trim() && !/^https?:\/\//i.test(d.ctaUrl.trim())) errors.ctaUrl = 'URL must start with http:// or https://';
   if (d.ctaType === 'BOOKING' && !d.serviceId) errors.serviceId = 'Choose the service to book';

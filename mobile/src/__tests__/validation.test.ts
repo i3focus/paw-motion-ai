@@ -1,9 +1,17 @@
-import { isValidEmail, isValidHttpUrl, isValidPhone, isPositiveInteger, normalizeEmail, normalizeUrl } from '../validation';
+import { isValidEmail, isValidHttpUrl, isValidPhone, isPositiveInteger, normalizeEmail, normalizeUrl, passwordIssues } from '../validation';
 
 describe('isValidEmail', () => {
   it('accepts a normal email and rejects malformed input', () => {
     expect(isValidEmail('ana@petlife.app')).toBe(true);
     expect(isValidEmail('not-an-email')).toBe(false);
+  });
+});
+
+describe('passwordIssues', () => {
+  it('accepts a strong password and lists missing rules for weak ones', () => {
+    expect(passwordIssues('PetLife123!')).toEqual([]);
+    expect(passwordIssues('petlife1')).toEqual(['an uppercase letter', 'a symbol']);
+    expect(passwordIssues('short')).toContain('at least 8 characters');
   });
 });
 

@@ -130,6 +130,24 @@ export const updateNotificationPreferences = (prefs: NotificationPreferences) =>
 export const registerPushToken = (token: string, platform: 'IOS' | 'ANDROID' | 'WEB') =>
   request<void>('/api/devices/push-tokens', { method: 'POST', body: JSON.stringify({ token, platform }) });
 
+// Partners (public)
+export type PartnerService = components['schemas']['PartnerServiceDto'];
+export interface PartnerPublicProfile {
+  partnerId?: string;
+  businessName?: string;
+  category?: string;
+  description?: string | null;
+  website?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  openingHours?: string | null;
+  coverUrl?: string | null;
+  verified?: boolean;
+  placeId?: string | null;
+  services?: PartnerService[];
+}
+export const getPartner = (partnerId: string) => request<PartnerPublicProfile>(`/api/partners/${partnerId}`);
+
 // Bookings (owner side)
 export const listMyBookings = (page = 0) => request<components['schemas']['PageResponseBookingDto']>(p('/api/bookings', { page, size: 30 }));
 export const createBooking = (input: components['schemas']['CreateBookingRequest']) =>

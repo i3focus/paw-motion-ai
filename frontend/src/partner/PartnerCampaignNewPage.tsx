@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ApiError, createCampaign } from '../api/client';
 import { updateCampaign } from '../api/partner';
 import { Button, Card, ErrorMessage, SectionHeader } from '../components/ui';
-import { CampaignForm, draftErrors, draftFromCampaign, draftToUpdate, useMediaUpload, type CampaignDraft } from './PartnerCampaignForm';
+import { CampaignForm, draftBaseErrors, draftErrors, draftFromCampaign, draftToUpdate, useMediaUpload, type CampaignDraft } from './PartnerCampaignForm';
 
 export function PartnerCampaignNewPage() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export function PartnerCampaignNewPage() {
   const { upload, uploading, uploadError } = useMediaUpload((patch) => setDraft((d) => ({ ...d, ...patch })));
 
   async function save(andSubmit: boolean) {
-    const errs = draftErrors(draft);
+    const errs = andSubmit ? draftErrors(draft) : draftBaseErrors(draft);
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
     setSubmitting(true);
@@ -47,7 +47,7 @@ export function PartnerCampaignNewPage() {
   return (
     <div className="space-y-6">
       <SectionHeader title="New campaign" subtitle="Set up the ad, targeting and formats — you can submit it for review right away or keep it as a draft." />
-      <Card>
+      <Card className="p-5 sm:p-6">
         <CampaignForm draft={draft} onChange={setDraft} errors={errors} onMedia={upload} uploading={uploading} />
         <ErrorMessage message={uploadError ?? error} />
         <div className="mt-6 flex flex-wrap gap-3">
