@@ -29,8 +29,9 @@ class ContentService(private val jdbc: JdbcClient, private val petAccess: PetAcc
     @Transactional
     fun createPost(ownerId: UUID, request: CreatePostRequest): PostCreatedDto {
         val petId = request.petId!!
-        val mediaIds = request.mediaIds!!.distinct()
+        val mediaIds = request.mediaIds.orEmpty().distinct()
         val tagged = request.taggedPetIds.orEmpty().distinct().filter { it != petId }
+        if (mediaIds.isEmpty() && request.caption.isNullOrBlank()) throw IllegalArgumentException("A post needs a caption or at least one photo")
         if ((request.latitude == null) != (request.longitude == null)) throw BadRequestException("latitude and longitude must be provided together")
         petAccess.requireOwnedActivePet(ownerId, petId)
         petAccess.requireActivePets(tagged)

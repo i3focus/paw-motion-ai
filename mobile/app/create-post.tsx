@@ -43,15 +43,21 @@ export default function CreatePostScreen() {
     }
   }
 
+  const canPublish = Boolean(resolvedPet) && (Boolean(asset) || caption.trim().length > 0);
+
   async function publish() {
-    if (!resolvedPet || !asset || busy !== 'idle') return;
+    if (!canPublish || busy !== 'idle') return;
     setError(null);
     try {
-      setBusy('uploading');
-      const media = await uploadMedia(asset);
-      if (!media.id) throw new Error('Upload did not return a media id');
+      let mediaIds: string[] = [];
+      if (asset) {
+        setBusy('uploading');
+        const media = await uploadMedia(asset);
+        if (!media.id) throw new Error('Upload did not return a media id');
+        mediaIds = [media.id];
+      }
       setBusy('posting');
-      await createPost({ petId: resolvedPet, caption: caption.trim() || undefined, placeName: placeName.trim() || undefined, mediaIds: [media.id] });
+      await createPost({ petId: resolvedPet, caption: caption.trim() || undefined, placeName: placeName.trim() || undefined, mediaIds });
       router.back();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not publish the post');
@@ -105,7 +111,7 @@ export default function CreatePostScreen() {
           <View style={s.flex1}><Button label="Cancel" variant="ghost" onPress={() => router.back()} /></View>
           <View style={s.flex1}>
             <Button label={busy === 'uploading' ? 'Uploading…' : busy === 'posting' ? 'Publishing…' : 'Publish'}
-              disabled={!resolvedPet || !asset || busy !== 'idle'} onPress={publish} />
+              disabled={!canPublish || busy !== 'idle'} onPress={publish} />
           </View>
         </View>
       </ScrollView>

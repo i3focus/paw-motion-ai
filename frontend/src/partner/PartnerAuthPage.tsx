@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import { usePartnerAuth } from '../partnerAuth';
 import { BrandLogo, Button, EmailInput, ErrorMessage, PasswordInput, TextArea, TextInput, UrlInput } from '../components/ui';
-import { isValidEmail, isValidHttpUrl, normalizeEmail, normalizeUrl } from '../lib/validation';
+import { isValidEmail, isValidHttpUrl, normalizeEmail, normalizeUrl, passwordIssues, PASSWORD_REQUIREMENTS } from '../lib/validation';
 
 export function PartnerAuthPage() {
   const { login, register } = usePartnerAuth();
@@ -24,7 +24,12 @@ export function PartnerAuthPage() {
     if (!isValidEmail(normalizedEmail)) {
       errors.email = 'Enter a valid email address';
     }
-    if (password.length < 8) {
+    if (mode === 'register') {
+      const missing = passwordIssues(password);
+      if (missing.length > 0) {
+        errors.password = `Password needs ${missing.join(', ')}`;
+      }
+    } else if (password.length < 8) {
       errors.password = 'Password must be at least 8 characters';
     }
     if (mode === 'register') {
@@ -121,6 +126,7 @@ export function PartnerAuthPage() {
             onChange={(event) => setPassword(event.target.value)}
             error={fieldErrors.password}
             minLength={8}
+            hint={mode === 'register' ? PASSWORD_REQUIREMENTS : undefined}
             autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
           />
           <ErrorMessage message={error} />

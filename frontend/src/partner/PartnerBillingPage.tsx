@@ -117,7 +117,7 @@ export function PartnerBillingPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Credits & Billing" subtitle="Prepaid credits power campaign creation. Campaigns debit credits when created and refund prorated credits when archived." />
+      <SectionHeader title="Credits & Billing" subtitle="Prepaid credits power your campaigns. Drafts are free — credits are debited when a campaign is submitted for review, and prorated credits are refunded when it ends." />
       {wallet?.status === 'BLOCKED' ? <ErrorMessage message={`Wallet blocked: ${wallet.blockedReason ?? 'contact support'}`} /> : null}
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Available credits" value={String(totalBalance)} />
@@ -126,7 +126,7 @@ export function PartnerBillingPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
-        <Card title="Buy credits" description={pricing ? `1 ${pricing.currency} = ${pricing.creditsPerCurrencyUnit} credits. Campaign creation costs ${pricing.campaignCreationCostCredits} credits.` : 'Loading pricing…'}>
+        <Card title="Buy credits" description={pricing ? `1 ${pricing.currency} = ${pricing.creditsPerCurrencyUnit} credits. Submitting a campaign for review costs ${pricing.campaignCreationCostCredits} credits.` : 'Loading pricing…'}>
           <form onSubmit={handlePurchase} className="space-y-4">
             <TextInput label={`Amount (${pricing?.currency ?? 'BRL'})`} required type="number" min={pricing?.minPurchaseAmount} max={pricing?.maxPurchaseAmount} step={1} value={amount} onChange={(event) => setAmount(event.target.value)} />
             <div className="flex gap-2">

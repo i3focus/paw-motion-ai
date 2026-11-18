@@ -25,10 +25,11 @@ export default function MapScreen() {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [places, setPlaces] = useState<Place[] | null>(null);
   const [lost, setLost] = useState<LostPetAlert[]>([]);
-  const [pets, setPets] = useState<Pet[]>([]);
+  const [pets, setPets] = useState<Pet[] | null>(null);
   const [selected, setSelected] = useState<Place | null>(null);
   const [alert, setAlert] = useState<LostPetAlert | null>(null);
-  const [mode, setMode] = useState<'none' | 'playdate' | 'lost'>('none');
+  const [focusedLost, setFocusedLost] = useState<LostPetAlert | null>(null);
+  const [mode, setMode] = useState<'none' | 'playdate' | 'lost' | 'needPet'>('none');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,7 +58,13 @@ export default function MapScreen() {
   }, [center, filter, debouncedQuery]);
 
   const activeLost = lost.filter((l) => l.status === 'ACTIVE');
+  const focusedAlert = focusedLost && activeLost.some((l) => l.id === focusedLost.id) ? focusedLost : activeLost[0] ?? null;
   const pins = filter === 'LOST' ? [] : places ?? [];
+
+  function requirePet(action: 'playdate' | 'lost') {
+    if (pets !== null && pets.length === 0) setMode('needPet');
+    else setMode(action);
+  }
 
   return (
     <View style={s.screen}>
@@ -66,8 +73,8 @@ export default function MapScreen() {
         <FlatList horizontal data={FILTERS} keyExtractor={(f) => f.key} showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}
           renderItem={({ item }) => <Chip label={item.label} selected={filter === item.key} onPress={() => setFilter(filter === item.key ? 'ALL' : item.key)} />} />
         <View style={s.actions}>
-          <View style={s.flex1}><Button label="🐶 Playdate now" onPress={() => setMode('playdate')} /></View>
-          <View style={s.flex1}><Button label="⚠️ Lost pet" variant="outline" onPress={() => setMode('lost')} /></View>
+          <View style={s.flex1}><Button label="🐶 Playdate now" onPress={() => requirePet('playdate')} /></View>
+          <View style={s.flex1}><Button label="⚠️ Lost pet" variant="outline" onPress={() => requirePet('lost')} /></View>
         </View>
       </View>
       <ErrorText message={denied ? 'Location denied — showing a default area.' : error} />
@@ -81,15 +88,15 @@ export default function MapScreen() {
           </Pressable>
         ))}
         {activeLost.map((l, i) => (
-          <Pressable key={l.id} onPress={() => setAlert(l)} accessibilityLabel={`Lost pet alert: ${l.petName}`}
-            style={[s.pin, s.pinLost, { left: `${16 + ((i * 31) % 66)}%`, top: `${14 + ((i * 43) % 60)}%` }]}>
+          <Pressable key={l.id} onPress={() => setFocusedLost(l)} accessibilityLabel={`Lost pet alert: ${l.petName}`}
+            style={[s.pin, s.pinLost, focusedAlert?.id === l.id && s.pinLostFocused, { left: `${16 + ((i * 31) % 66)}%`, top: `${14 + ((i * 43) % 60)}%` }]}>
             <Text style={s.pinEmoji}>⚠️</Text>
           </Pressable>
         ))}
-        {activeLost[0] ? (
-          <Pressable style={s.lostBanner} onPress={() => setAlert(activeLost[0] ?? null)}>
-            <Text style={s.lostTitle} numberOfLines={1}>Lost pet · {activeLost[0].distanceMeters ? `${(activeLost[0].distanceMeters / 1000).toFixed(1)} km` : 'nearby'}</Text>
-            <Text style={s.lostBody} numberOfLines={1}>{activeLost[0].petName} — tap for details</Text>
+        {focusedAlert ? (
+          <Pressable style={s.lostBanner} onPress={() => setAlert(focusedAlert)}>
+            <Text style={s.lostTitle} numberOfLines={1}>Lost pet · {focusedAlert.distanceMeters ? `${(focusedAlert.distanceMeters / 1000).toFixed(1)} km` : 'nearby'}</Text>
+            <Text style={s.lostBody} numberOfLines={1}>{focusedAlert.petName} — tap for details</Text>
           </Pressable>
         ) : null}
       </View>
@@ -112,16 +119,23 @@ export default function MapScreen() {
       />
 
       <Sheet visible={selected !== null} title={selected?.name ?? 'Place'} onClose={() => setSelected(null)}>
-        {selected ? <PlaceBody place={selected} pets={pets} /> : null}
+        {selected ? <PlaceBody place={selected} pets={pets ?? []} /> : null}
       </Sheet>
       <Sheet visible={alert !== null} title={alert ? `Lost pet: ${alert.petName}` : 'Lost pet'} onClose={() => setAlert(null)}>
         {alert ? <LostBody alert={alert} center={center} /> : null}
       </Sheet>
       <Sheet visible={mode === 'playdate'} title="Playdate now" onClose={() => setMode('none')}>
-        <PlaydateBody pets={pets} center={center} onPet={(id) => { setMode('none'); router.push(`/pet/${id}`); }} />
+        <PlaydateBody pets={pets ?? []} center={center} onPet={(id) => { setMode('none'); router.push(`/pet/${id}`); }} />
       </Sheet>
       <Sheet visible={mode === 'lost'} title="Report lost pet" onClose={() => setMode('none')}>
-        <ReportLostBody pets={pets} center={center} onDone={() => setMode('none')} />
+        <ReportLostBody pets={pets ?? []} center={center} onDone={() => setMode('none')} />
+      </Sheet>
+      <Sheet visible={mode === 'needPet'} title="Add a pet first" onClose={() => setMode('none')}>
+        <View style={s.gap}>
+          <Text style={s.petIcon}>🐾</Text>
+          <Text style={s.bodyText}>You need a pet on your profile to do that.</Text>
+          <Button label="Create my pet" onPress={() => { setMode('none'); router.push({ pathname: '/(tabs)/profile', params: { addPet: '1' } }); }} />
+        </View>
       </Sheet>
     </View>
   );
@@ -228,6 +242,8 @@ const s = StyleSheet.create({
   meDot: { width: 20, height: 20, borderRadius: 10, backgroundColor: colors.teal, borderWidth: 4, borderColor: colors.white },
   pin: { position: 'absolute', width: 40, height: 40, borderRadius: 20, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', ...shadow.card },
   pinLost: { borderWidth: 2, borderColor: colors.danger, backgroundColor: colors.dangerSoft },
+  pinLostFocused: { borderWidth: 4, transform: [{ scale: 1.2 }] },
+  petIcon: { fontSize: 36, textAlign: 'center' },
   pinEmoji: { fontSize: 18 },
   lostBanner: { position: 'absolute', left: 10, right: 10, bottom: 10, backgroundColor: 'rgba(255,255,255,0.96)', borderRadius: radius.md, padding: 10 },
   lostTitle: { color: colors.danger, fontSize: fontSize.caption, fontFamily: fonts.w900 },

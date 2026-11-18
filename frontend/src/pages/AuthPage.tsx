@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { useAuth } from '../auth';
 import { BrandLogo, Button, EmailInput, ErrorMessage, PasswordInput, TextInput } from '../components/ui';
-import { isValidEmail, normalizeEmail } from '../lib/validation';
+import { isValidEmail, normalizeEmail, passwordIssues, PASSWORD_REQUIREMENTS } from '../lib/validation';
 
 const FEATURES = [
   { emoji: '📸', title: 'Feed', description: 'Turn walks and moments into posts, reactions and stories.' },
@@ -27,17 +27,26 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     const errors: Record<string, string> = {};
     const normalizedEmail = normalizeEmail(email);
     if (!isValidEmail(normalizedEmail)) errors.email = 'Enter a valid email address';
-    if (password.length < 8) errors.password = 'Password must be at least 8 characters';
-    if (!isLogin && displayName.trim().length < 2) errors.displayName = 'Enter your name';
+    if (isLogin) {
+      if (password.length < 8) errors.password = 'Password must be at least 8 characters';
+    } else {
+      const missing = passwordIssues(password);
+      if (missing.length > 0) errors.password = `Password needs ${missing.join(', ')}`;
+      if (displayName.trim().length < 2) errors.displayName = 'Enter your name';
+    }
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
     setSubmitting(true);
     setError(null);
     try {
-      if (isLogin) await login(normalizedEmail, password);
-      else await register(normalizedEmail, password, displayName.trim());
-      navigate('/app/feed', { replace: true });
+      if (isLogin) {
+        await login(normalizedEmail, password);
+        navigate('/app/feed', { replace: true });
+      } else {
+        await register(normalizedEmail, password, displayName.trim());
+        navigate('/app/profile?addPet=1', { replace: true });
+      }
     } catch (e) {
       setError(e instanceof ApiError && e.status === 401
         ? 'Incorrect email or password'
@@ -81,7 +90,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
             <EmailInput label="Email" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldErrors.email} required />
             <PasswordInput label="Password" value={password} onChange={(e) => setPassword(e.target.value)}
               error={fieldErrors.password} autoComplete={isLogin ? 'current-password' : 'new-password'}
-              hint={isLogin ? undefined : 'At least 8 characters'} required />
+              hint={isLogin ? undefined : PASSWORD_REQUIREMENTS} required />
             <ErrorMessage message={error} />
             <Button type="submit" className="w-full" size="lg" disabled={submitting}>
               {submitting ? 'Please wait…' : isLogin ? 'Sign in' : 'Create account'}

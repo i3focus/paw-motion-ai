@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '../../src/auth';
 import { createPet, listPets, updateProfile } from '../../src/api/client';
 import { getNotificationPreferences, getUnreadCount, updateNotificationPreferences, type NotificationPreferences } from '../../src/api/petlife';
@@ -9,6 +9,7 @@ import { Avatar, Sheet } from '../../src/petlife-ui';
 import { PetAvatar } from '../../src/petVisuals';
 import { Badge, Button, Card, ErrorText, Field, Input, LoadingState } from '../../src/components';
 import { colors, fonts, fontSize, radius, shadow } from '../../src/theme';
+import { isValidDateInput, isNotFutureDate } from '../../src/validation';
 
 const PREFS: { key: keyof NotificationPreferences; label: string; hint: string }[] = [
   { key: 'healthReminders', label: 'Health reminders', hint: 'Vaccines and vet visits coming due' },
@@ -25,7 +26,9 @@ export default function ProfileScreen() {
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [unread, setUnread] = useState(0);
   const [sheet, setSheet] = useState<'none' | 'pet' | 'edit'>('none');
-  const [petForm, setPetForm] = useState({ name: '', species: 'dog', breed: '', size: 'medium' });
+  const [petForm, setPetForm] = useState({ name: '', species: 'dog', breed: '', size: 'medium', birthDate: '' });
+  const params = useLocalSearchParams<{ addPet?: string }>();
+  useEffect(() => { if (params.addPet === '1') setSheet('pet'); }, [params.addPet]);
   const [name, setName] = useState(owner?.displayName ?? '');
   const [bio, setBio] = useState(owner?.bio ?? '');
   const [busy, setBusy] = useState(false);
@@ -103,12 +106,18 @@ export default function ProfileScreen() {
           <Field label="Name"><Input value={petForm.name} onChangeText={(v) => setPetForm({ ...petForm, name: v })} /></Field>
           <Field label="Species"><View style={s.chips}>{['dog', 'cat', 'bird', 'rabbit', 'other'].map((sp) => <Pressable key={sp} onPress={() => setPetForm({ ...petForm, species: sp })} style={[s.opt, petForm.species === sp && s.optOn]}><Text style={[s.optText, petForm.species === sp && s.optTextOn]}>{sp}</Text></Pressable>)}</View></Field>
           <Field label="Breed (optional)"><Input value={petForm.breed} onChangeText={(v) => setPetForm({ ...petForm, breed: v })} /></Field>
+          <Field label="Birth date (optional, YYYY-MM-DD)"><Input value={petForm.birthDate} onChangeText={(v) => setPetForm({ ...petForm, birthDate: v })} placeholder="2023-05-10" autoCapitalize="none" keyboardType="numbers-and-punctuation" /></Field>
           <Field label="Size"><View style={s.chips}>{['small', 'medium', 'large'].map((sz) => <Pressable key={sz} onPress={() => setPetForm({ ...petForm, size: sz })} style={[s.opt, petForm.size === sz && s.optOn]}><Text style={[s.optText, petForm.size === sz && s.optTextOn]}>{sz}</Text></Pressable>)}</View></Field>
           <ErrorText message={error} />
           <Button label={busy ? 'Saving…' : 'Add pet'} disabled={busy || petForm.name.trim().length < 2} onPress={() => {
+            const birth = petForm.birthDate.trim();
+            if (birth && (!isValidDateInput(birth) || !isNotFutureDate(birth))) {
+              setError(birth && isValidDateInput(birth) ? 'Birth date cannot be in the future' : 'Use YYYY-MM-DD for the birth date');
+              return;
+            }
             setBusy(true); setError(null);
-            createPet({ name: petForm.name.trim(), species: petForm.species, breed: petForm.breed.trim() || undefined, size: petForm.size })
-              .then(() => { setSheet('none'); setPetForm({ name: '', species: 'dog', breed: '', size: 'medium' }); return listPets().then(setPets); })
+            createPet({ name: petForm.name.trim(), species: petForm.species, breed: petForm.breed.trim() || undefined, size: petForm.size, birthDate: birth || undefined })
+              .then(() => { setSheet('none'); setPetForm({ name: '', species: 'dog', breed: '', size: 'medium', birthDate: '' }); return listPets().then(setPets); })
               .catch((e) => setError(e instanceof Error ? e.message : 'Could not add pet'))
               .finally(() => setBusy(false));
           }} />

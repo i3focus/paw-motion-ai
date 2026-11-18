@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { getWallet } from '../api/client';
 import { Avatar, Badge, BrandLogo } from '../components/ui';
 import { usePartnerAuth } from '../partnerAuth';
 
@@ -13,6 +14,12 @@ const NAV_ITEMS: Array<{ to: string; label: string }> = [
 
 export function PartnerLayout({ children }: { children: ReactNode }) {
   const { partner, logout } = usePartnerAuth();
+  const location = useLocation();
+  const [balance, setBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (partner) getWallet().then((w) => setBalance(w.totalBalance ?? 0)).catch(() => setBalance(null));
+  }, [partner, location.pathname]);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -30,6 +37,10 @@ export function PartnerLayout({ children }: { children: ReactNode }) {
                 <p className="text-label text-muted">{partner?.email}</p>
               </div>
             </div>
+            <Link to="/partner/billing" title="Credits & billing"
+              className="flex min-h-10 items-center gap-1.5 rounded-pill bg-amber-soft px-4 text-label font-black text-amber-ink hover:opacity-90">
+              ⚡ {balance === null ? '—' : balance.toLocaleString()} credits
+            </Link>
             <Badge tone="accent">Partner</Badge>
             <button type="button" onClick={logout} className="rounded-2xl border border-line px-3 py-2 text-body font-semibold text-muted hover:bg-cream">
               Logout

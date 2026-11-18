@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { checkIn, createLostPetAlert, createPlaydate, getLostPets, getNearbyPets, getPlaces, reportSighting, type LostPetAlert, type NearbyPet, type Place } from '../../api/petlife';
+import { checkIn, createLostPetAlert, createPlaydate, getLostPets, getNearbyPets, getPartner, getPlaces, reportSighting, type LostPetAlert, type NearbyPet, type PartnerPublicProfile, type Place } from '../../api/petlife';
 import { listPets } from '../../api/client';
+import { BookingSheet } from '../../components/BookingSheet';
 import type { Pet } from '../../types';
 import { Badge, BottomSheet, Button, Chip, EmptyState, ErrorMessage, Field, LoadingState, SelectInput, TextArea, TextInput } from '../../components/ui';
 import { Avatar } from '../../components/ui';
@@ -37,12 +38,15 @@ export function MapPage() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [selected, setSelected] = useState<Place | null>(null);
   const [alert, setAlert] = useState<LostPetAlert | null>(null);
+  const [focusedLost, setFocusedLost] = useState<LostPetAlert | null>(null);
   const [playdateOpen, setPlaydateOpen] = useState(false);
   const [lostOpen, setLostOpen] = useState(false);
+  const [needPet, setNeedPet] = useState<string | null>(null);
+  const [petsLoaded, setPetsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const center = pos ?? { lat: -23.56, lng: -46.64 };
 
-  useEffect(() => { listPets().then(setPets).catch(() => setPets([])); }, []);
+  useEffect(() => { listPets().then(setPets).catch(() => setPets([])).finally(() => setPetsLoaded(true)); }, []);
   useEffect(() => {
     if (!pos && !denied) return;
     getPlaces(center.lat, center.lng, 8000, filter === 'ALL' || filter === 'LOST' ? undefined : filter, query || undefined)
@@ -51,7 +55,16 @@ export function MapPage() {
   }, [pos, denied, filter, query, center.lat, center.lng]);
 
   const nearLost = useMemo(() => lost.filter((l) => l.status === 'ACTIVE'), [lost]);
+  const focusedAlert = useMemo(() => (focusedLost && nearLost.some((l) => l.id === focusedLost.id) ? focusedLost : nearLost[0] ?? null), [focusedLost, nearLost]);
   const pins = (filter === 'LOST' ? [] : places ?? []);
+
+  function requirePet(action: 'playdate' | 'lost') {
+    if (petsLoaded && pets.length === 0) {
+      setNeedPet(action === 'lost' ? 'report a lost pet' : 'start a playdate');
+      return;
+    }
+    if (action === 'lost') setLostOpen(true); else setPlaydateOpen(true);
+  }
 
   if (places === null && !denied && !error) return <LoadingState label="Finding pet-friendly places…" />;
 
@@ -60,8 +73,8 @@ export function MapPage() {
       <div className="flex flex-wrap items-center gap-2">
         <TextInput value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search nearby…" aria-label="Search nearby" className="min-w-48 flex-1" />
         {FILTERS.map((f) => <Chip key={f.key} selected={filter === f.key} onClick={() => setFilter(filter === f.key ? 'ALL' : f.key)}>{f.emoji} {f.label}</Chip>)}
-        <Button variant="primary" size="sm" onClick={() => setPlaydateOpen(true)}>🐶 Playdate now</Button>
-        <Button variant="outline" size="sm" onClick={() => setLostOpen(true)}>⚠️ Report lost pet</Button>
+        <Button variant="primary" size="sm" onClick={() => requirePet('playdate')}>🐶 Playdate now</Button>
+        <Button variant="outline" size="sm" onClick={() => requirePet('lost')}>⚠️ Report lost pet</Button>
       </div>
       <ErrorMessage message={denied ? 'Location permission was denied — showing your default area. Enable location for nearby results.' : error} />
 
@@ -84,20 +97,20 @@ export function MapPage() {
             </button>
           ))}
           {nearLost.map((l, i) => (
-            <button key={l.id} type="button" onClick={() => setAlert(l)} aria-label={`Lost pet alert: ${l.petName}`}
-              className="absolute grid h-10 w-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-danger-soft text-lg ring-2 ring-danger"
+            <button key={l.id} type="button" onClick={() => setFocusedLost(l)} aria-label={`Lost pet alert: ${l.petName}`}
+              className={`absolute grid h-10 w-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-danger-soft text-lg ring-2 ring-danger transition hover:scale-110${focusedAlert?.id === l.id ? ' scale-125 ring-4' : ''}`}
               style={{ left: `${20 + ((i * 29) % 60)}%`, top: `${18 + ((i * 41) % 55)}%` }}>
               ⚠️
             </button>
           ))}
-          {nearLost[0] ? (
+          {focusedAlert ? (
             <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-white/95 p-3 shadow-card sm:right-auto sm:max-w-sm">
-              <p className="text-label font-extrabold text-danger">Lost pet · {nearLost[0].distanceMeters ? `${(nearLost[0].distanceMeters / 1000).toFixed(1)} km away` : 'nearby'}</p>
-              <p className="mt-1 font-extrabold text-ink">{nearLost[0].petName}</p>
-              <p className="text-caption text-muted line-clamp-2">{nearLost[0].description}</p>
+              <p className="text-label font-extrabold text-danger">Lost pet · {focusedAlert.distanceMeters ? `${(focusedAlert.distanceMeters / 1000).toFixed(1)} km away` : 'nearby'}</p>
+              <p className="mt-1 font-extrabold text-ink">{focusedAlert.petName}</p>
+              <p className="text-caption text-muted line-clamp-2">{focusedAlert.description}</p>
               <div className="mt-2 flex gap-2">
-                <Button size="sm" variant="secondary" onClick={() => setAlert(nearLost[0])}>I have information</Button>
-                <Button size="sm" variant="ghost" onClick={() => navigator.share?.({ title: `Lost pet: ${nearLost[0].petName}`, text: nearLost[0].description ?? '' }).catch(() => {})}>Share alert</Button>
+                <Button size="sm" variant="secondary" onClick={() => setAlert(focusedAlert)}>I have information</Button>
+                <Button size="sm" variant="ghost" onClick={() => navigator.share?.({ title: `Lost pet: ${focusedAlert.petName}`, text: focusedAlert.description ?? '' }).catch(() => {})}>Share alert</Button>
               </div>
             </div>
           ) : null}
@@ -114,6 +127,14 @@ export function MapPage() {
       <LostPetSheet alert={alert} onClose={() => setAlert(null)} />
       <PlaydateSheet open={playdateOpen} pets={pets} center={center} onClose={() => setPlaydateOpen(false)} />
       <ReportLostSheet open={lostOpen} pets={pets} center={center} onClose={() => setLostOpen(false)} />
+      <BottomSheet open={needPet !== null} title="Add a pet first" onClose={() => setNeedPet(null)}>
+        <div className="space-y-4 py-2 text-center">
+          <p className="text-4xl" aria-hidden="true">🐾</p>
+          <p className="text-body text-ink">You need a pet on your profile to {needPet}.</p>
+          <Link to="/app/profile?addPet=1"><Button className="w-full">Create my pet</Button></Link>
+          <Button variant="ghost" className="w-full" onClick={() => setNeedPet(null)}>Not now</Button>
+        </div>
+      </BottomSheet>
     </div>
   );
 }
@@ -140,30 +161,61 @@ function PlaceList({ places, onSelect }: { places: Place[]; onSelect: (p: Place)
 function PlaceSheet({ place, pets, onClose }: { place: Place | null; pets: Pet[]; onClose: () => void }) {
   const [petId, setPetId] = useState('');
   const [done, setDone] = useState(false);
+  const [partner, setPartner] = useState<PartnerPublicProfile | null>(null);
+  const [bookService, setBookService] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPartner(null);
+    setDone(false);
+    if (place?.partnerId) getPartner(place.partnerId).then(setPartner).catch(() => setPartner(null));
+  }, [place?.partnerId]);
+
   const pet = petId || pets[0]?.id;
-  if (!place) return null;
+  const services = partner?.services?.filter((s) => s.active !== false) ?? [];
   return (
-    <BottomSheet open title={place.name ?? 'Place'} onClose={onClose}>
+    <>
+    <BottomSheet open={place !== null} title={place?.name ?? 'Place'} onClose={onClose}>
       <div className="space-y-3">
         <div className="flex gap-2">
-          <Badge tone="accent">{place.category?.toLowerCase().replace('_', ' ')}</Badge>
-          {place.verifiedPartner ? <Badge tone="success">Verified partner</Badge> : null}
-          {place.rating ? <Badge tone="warning">★ {place.rating.toFixed(1)} ({place.ratingCount})</Badge> : null}
+          <Badge tone="accent">{place?.category?.toLowerCase().replace('_', ' ')}</Badge>
+          {place?.verifiedPartner ? <Badge tone="success">Verified partner</Badge> : null}
+          {place?.rating ? <Badge tone="warning">★ {place.rating.toFixed(1)} ({place.ratingCount})</Badge> : null}
         </div>
-        {place.address ? <p className="text-body text-muted">📍 {place.address}</p> : null}
-        {place.description ? <p className="text-body text-ink">{place.description}</p> : null}
+        {place?.address ? <p className="text-body text-muted">📍 {place.address}</p> : null}
+        {place?.description ? <p className="text-body text-ink">{place.description}</p> : null}
+        {partner?.openingHours ? <p className="text-caption text-muted">🕒 {partner.openingHours}</p> : null}
+        {partner?.phone ? <p className="text-caption text-muted">📞 {partner.phone}</p> : null}
+        {partner?.website ? <a href={partner.website} target="_blank" rel="noreferrer" className="block text-label font-bold text-teal hover:underline">🌐 {partner.website.replace(/^https?:\/\//, '')}</a> : null}
+
+        {services.length > 0 ? (
+          <div className="space-y-2">
+            <p className="text-label font-extrabold text-muted">Services</p>
+            {services.map((s) => (
+              <div key={s.id} className="flex items-center justify-between gap-3 rounded-lg bg-sand p-3">
+                <div className="min-w-0">
+                  <p className="truncate font-extrabold text-ink">{s.name}</p>
+                  <p className="text-caption text-muted">{s.durationMinutes} min{s.priceCents != null ? ` · ${(s.priceCents / 100).toLocaleString('pt-BR', { style: 'currency', currency: s.currency ?? 'BRL' })}` : ''}</p>
+                </div>
+                <Button size="sm" onClick={() => s.id && setBookService(s.id)}>Book</Button>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
         {pets.length > 1 ? (
           <SelectInput label="Check in as" value={pet} onChange={(e) => setPetId(e.target.value)}>
             {pets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </SelectInput>
         ) : null}
         {done ? <p className="rounded-md bg-teal-light p-3 text-body font-bold text-teal">Checked in! Enjoy your visit. 🐾</p> : (
-          <Button className="w-full" onClick={() => pet && place.id && checkIn(place.id, pet).then(() => setDone(true)).catch(() => {})} disabled={!pet}>
+          <Button className="w-full" onClick={() => pet && place?.id && checkIn(place.id, pet).then(() => setDone(true)).catch(() => {})} disabled={!pet}>
             Check in here
           </Button>
         )}
       </div>
     </BottomSheet>
+    <BookingSheet open={bookService !== null} onClose={() => setBookService(null)} serviceId={bookService ?? ''} partnerName={partner?.businessName ?? place?.name} />
+    </>
   );
 }
 
