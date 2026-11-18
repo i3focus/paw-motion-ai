@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
+import com.pawmotionai.identity.domain.model.OwnerRole;
 import com.pawmotionai.identity.domain.model.OwnerStatus;
 
 @Entity
@@ -29,8 +30,9 @@ public class OwnerJpaEntity {
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private OwnerRole role;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -52,7 +54,7 @@ public class OwnerJpaEntity {
     protected OwnerJpaEntity() {
     }
 
-    public OwnerJpaEntity(UUID id, String email, String passwordHash, String displayName, String role, OwnerStatus status,
+    public OwnerJpaEntity(UUID id, String email, String passwordHash, String displayName, OwnerRole role, OwnerStatus status,
                           Instant createdAt, Instant updatedAt, String bio, String phone, String avatarUrl) {
         this.id = id;
         this.email = email;
@@ -71,7 +73,7 @@ public class OwnerJpaEntity {
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
     public String getDisplayName() { return displayName; }
-    public String getRole() { return role; }
+    public OwnerRole getRole() { return role; }
     public OwnerStatus getStatus() { return status; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

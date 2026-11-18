@@ -46,9 +46,10 @@
 
 ## As-built controls (post-refactor, 2026-11)
 
-- JWT bearer auth (`JWT_SECRET`/`JWT_ISSUER` env); `ActiveAccountFilter` blocks
-  suspended accounts; role checks gate `/api/partner/*` (PARTNER) and
-  `/api/admin/*` (ADMIN).
+- JWT bearer auth (`JWT_SECRET`/`JWT_ISSUER` env); issued tokens carry a `roles`
+  claim which the resource server maps to `ROLE_*` authorities. `ActiveAccountFilter`
+  blocks suspended accounts; `@Secured` method security gates owner (`ROLE_OWNER`),
+  partner (`ROLE_PARTNER`), and admin (`ROLE_ADMIN`) endpoints.
 - `WriteRateLimitFilter` throttles mutating routes.
 - `PATCH /api/me` is identity-only; partner business data requires the PARTNER role
   on `/api/partner/profile` (ADR-0021).

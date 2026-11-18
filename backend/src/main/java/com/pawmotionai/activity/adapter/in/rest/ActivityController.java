@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,8 +25,10 @@ import com.pawmotionai.activity.application.dto.RecordActivityCommand;
 import com.pawmotionai.activity.application.port.in.GetDashboardSummaryUseCase;
 import com.pawmotionai.activity.application.port.in.ListActivitiesUseCase;
 import com.pawmotionai.activity.application.port.in.RecordActivityUseCase;
+import com.pawmotionai.shared.SecurityRoles;
 
 @RestController
+@Secured(SecurityRoles.OWNER)
 @RequestMapping("/api")
 public class ActivityController {
 

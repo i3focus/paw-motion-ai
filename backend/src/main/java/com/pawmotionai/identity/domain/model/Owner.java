@@ -9,14 +9,14 @@ public class Owner {
     private final String email;
     private final String passwordHash;
     private String displayName;
-    private final String role;
+    private final OwnerRole role;
     private final OwnerStatus status;
     private final Instant createdAt;
     private String bio;
     private String phone;
     private String avatarUrl;
 
-    private Owner(UUID id, String email, String passwordHash, String displayName, String role, OwnerStatus status,
+    private Owner(UUID id, String email, String passwordHash, String displayName, OwnerRole role, OwnerStatus status,
                   Instant createdAt, String bio, String phone, String avatarUrl) {
         this.id = id;
         this.email = email;
@@ -31,17 +31,17 @@ public class Owner {
     }
 
     public static Owner register(UUID id, String email, String passwordHash, String displayName, Instant createdAt) {
-        return new Owner(id, email, passwordHash, displayName, "OWNER", OwnerStatus.ACTIVE, createdAt,
+        return new Owner(id, email, passwordHash, displayName, OwnerRole.OWNER, OwnerStatus.ACTIVE, createdAt,
             null, null, null);
     }
 
     public static Owner registerPartner(UUID id, String email, String passwordHash, String displayName,
                                         Instant createdAt) {
-        return new Owner(id, email, passwordHash, displayName, "PARTNER", OwnerStatus.ACTIVE, createdAt,
+        return new Owner(id, email, passwordHash, displayName, OwnerRole.PARTNER, OwnerStatus.ACTIVE, createdAt,
             null, null, null);
     }
 
-    public static Owner reconstitute(UUID id, String email, String passwordHash, String displayName, String role,
+    public static Owner reconstitute(UUID id, String email, String passwordHash, String displayName, OwnerRole role,
                                      OwnerStatus status, Instant createdAt, String bio, String phone, String avatarUrl) {
         return new Owner(id, email, passwordHash, displayName, role, status, createdAt, bio, phone, avatarUrl);
     }
@@ -51,7 +51,7 @@ public class Owner {
     }
 
     public boolean isPartner() {
-        return "PARTNER".equals(role);
+        return role == OwnerRole.PARTNER;
     }
 
     public void updateProfile(String displayName, String bio, String phone, String avatarUrl) {
@@ -85,7 +85,7 @@ public class Owner {
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
     public String getDisplayName() { return displayName; }
-    public String getRole() { return role; }
+    public OwnerRole getRole() { return role; }
     public OwnerStatus getStatus() { return status; }
     public Instant getCreatedAt() { return createdAt; }
     public String getBio() { return bio; }

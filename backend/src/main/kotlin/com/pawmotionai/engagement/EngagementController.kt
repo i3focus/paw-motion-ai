@@ -1,10 +1,11 @@
 package com.pawmotionai.engagement
 
 import com.pawmotionai.shared.BadRequestException
+import com.pawmotionai.shared.SecurityRoles
 import com.pawmotionai.shared.ownerId
-import com.pawmotionai.shared.requireRole
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.security.access.annotation.Secured
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -23,9 +24,11 @@ import java.util.UUID
 @Tag(name = "Gamification")
 class EngagementController(private val service: EngagementService) {
 
+    @Secured(SecurityRoles.OWNER)
     @GetMapping("/pets/{petId}/engagement")
     fun engagement(@PathVariable petId: UUID): PetEngagementDto = service.engagement(petId)
 
+    @Secured(SecurityRoles.OWNER)
     @GetMapping("/pets/{petId}/badges")
     fun badges(@PathVariable petId: UUID): List<BadgeDto> = service.badges(petId)
 
@@ -42,10 +45,10 @@ class EngagementController(private val service: EngagementService) {
         return service.leaderboard(jwt.ownerId, scope)
     }
 
+    @Secured(SecurityRoles.ADMIN)
     @PostMapping("/admin/challenges")
     @ResponseStatus(HttpStatus.CREATED)
     fun createChallenge(@AuthenticationPrincipal jwt: Jwt, @Valid @RequestBody request: CreateChallengeRequest): ChallengeDto {
-        jwt.requireRole("ADMIN")
         return service.createChallenge(jwt.ownerId, request)
     }
 }

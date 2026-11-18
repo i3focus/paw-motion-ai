@@ -17,8 +17,8 @@ class OwnerProfileTest {
         Owner owner = Owner.register(UUID.randomUUID(), "owner@example.com", "hash", "Owner", Instant.now());
         Owner partner = Owner.registerPartner(UUID.randomUUID(), "partner@example.com", "hash", "Partner", Instant.now());
 
-        assertEquals("OWNER", owner.getRole());
-        assertEquals("PARTNER", partner.getRole());
+        assertEquals(OwnerRole.OWNER, owner.getRole());
+        assertEquals(OwnerRole.PARTNER, partner.getRole());
         assertTrue(owner.isActive());
         assertTrue(partner.isPartner());
     }
