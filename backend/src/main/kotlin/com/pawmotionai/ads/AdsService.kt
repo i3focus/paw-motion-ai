@@ -1,8 +1,11 @@
 package com.pawmotionai.ads
 
+import com.pawmotionai.configuration.CampaignPricingProperties
 import com.pawmotionai.media.MediaService
+import com.pawmotionai.ledger.application.port.`in`.EnsureWalletUseCase
 import com.pawmotionai.ledger.application.port.`in`.GetWalletUseCase
 import com.pawmotionai.ledger.application.port.`in`.LedgerPostingCommands.CreditPosting
+import com.pawmotionai.ledger.application.port.`in`.LedgerPostingCommands.DebitPosting
 import com.pawmotionai.ledger.application.port.`in`.PostLedgerEntryUseCase
 import com.pawmotionai.ledger.domain.model.LedgerAccountCode
 import com.pawmotionai.ledger.domain.model.LedgerEntryDirection
@@ -27,7 +30,8 @@ import java.util.UUID
 /**
  * Campaign v2 management (draft → review → serve → end), partner business profile and admin moderation
  * (refactor plan §4.2 `ads`). Runs on JdbcClient over `partner_campaigns`/`partner_profiles`/`campaign_events`;
- * the legacy Java module keeps create (idempotent + ledger debit) and scheduled expiry.
+ * the legacy Java module keeps create (idempotent; drafts are free) and scheduled expiry — the ledger
+ * debit happens here, on submit.
  */
 @Service
 class AdsService(
@@ -35,6 +39,8 @@ class AdsService(
     private val media: MediaService,
     private val ledger: PostLedgerEntryUseCase,
     private val wallet: GetWalletUseCase,
+    private val ensureWallet: EnsureWalletUseCase,
+    private val pricing: CampaignPricingProperties,
 ) {
 
     private val log = LoggerFactory.getLogger(AdsService::class.java)
@@ -127,7 +133,9 @@ class AdsService(
 
     @Transactional
     fun submit(partnerId: UUID, campaignId: UUID): CampaignV2Dto =
-        transition(partnerId, campaignId, "DRAFT", "IN_REVIEW", ", submitted_at = now()") {
+        transition(partnerId, campaignId, "DRAFT", "IN_REVIEW",
+            ", submitted_at = now(), credits_charged = :charge, budget_credits = :charge",
+            mapOf("charge" to pricing.creationCostCredits)) {
             val missing = jdbc.sql(
                 """
                 SELECT c.media_asset_id, c.cta_type, c.cta_url, c.service_id, c.cta, c.title, c.description, c.ends_at,
@@ -151,6 +159,11 @@ class AdsService(
                     }
                 }.single()
             if (missing.isNotEmpty()) throw BadRequestException("Campaign is missing: ${missing.joinToString()}")
+            // Drafts are free; the campaign cost is debited here, at submission. The ledger dedups
+            // debits by (CAMPAIGN, campaignId), so re-submitting after a rejection never charges twice.
+            ensureWallet.ensureWallet(partnerId)
+            ledger.debit(DebitPosting(partnerId, pricing.creationCostCredits, LedgerReferenceType.CAMPAIGN, campaignId,
+                "Campaign submission", campaignId.toString()))
         }
 
     @Transactional
@@ -193,27 +206,29 @@ class AdsService(
         val debitByAccount = ledger.findByReference(LedgerReferenceType.CAMPAIGN, campaignId, LedgerEntryDirection.DEBIT)
             .groupingBy { it.accountId }.fold(0L) { acc, e -> acc + e.amount }
         var remaining = refundAmount
-        wallet.getByPartner(partnerId).accounts()
-            .filter { debitByAccount.containsKey(it.id()) }
-            .sortedByDescending { it.code().debitPriority }
+        wallet.getByPartner(partnerId).accounts
+            .filter { debitByAccount.containsKey(it.id) }
+            .sortedByDescending { it.code.debitPriority }
             .forEach { account ->
                 if (remaining <= 0) return@forEach
-                val amount = minOf(debitByAccount[account.id()] ?: 0L, remaining)
+                val amount = minOf(debitByAccount[account.id] ?: 0L, remaining)
                 if (amount > 0) {
-                    ledger.credit(CreditPosting(partnerId, LedgerAccountCode.valueOf(account.code().name), amount,
+                    ledger.credit(CreditPosting(partnerId, account.code, amount,
                         LedgerReferenceType.CAMPAIGN_REFUND, campaignId, "Campaign end refund", campaignId.toString()))
                     remaining -= amount
                 }
             }
     }
 
-    private fun transition(partnerId: UUID, campaignId: UUID, from: String, to: String, extraSet: String = "", validate: () -> Unit = {}): CampaignV2Dto {
+    private fun transition(partnerId: UUID, campaignId: UUID, from: String, to: String, extraSet: String = "", extraParams: Map<String, Any?> = emptyMap(), validate: () -> Unit = {}): CampaignV2Dto {
         val owner = jdbc.sql("SELECT partner_id FROM partner_campaigns WHERE id = :id FOR UPDATE").param("id", campaignId)
             .query(UUID::class.java).optional().orElseThrow { NotFoundException("Campaign not found") }
         if (owner != partnerId) throw ForbiddenException("Campaign belongs to another partner")
         validate()
-        val updated = jdbc.sql("UPDATE partner_campaigns SET status = :to, updated_at = now()$extraSet WHERE id = :id AND status = :from")
-            .param("to", to).param("id", campaignId).param("from", from).update()
+        val statement = jdbc.sql("UPDATE partner_campaigns SET status = :to, updated_at = now()$extraSet WHERE id = :id AND status = :from")
+            .param("to", to).param("id", campaignId).param("from", from)
+        extraParams.forEach { (key, value) -> statement.param(key, value) }
+        val updated = statement.update()
         if (updated == 0) throw ConflictException("Campaign cannot move from ${from.lowercase()} to ${to.lowercase()} from its current status")
         log.info("campaign transition campaign={} {} -> {}", campaignId, from, to)
         return campaign(partnerId, campaignId)
