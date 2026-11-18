@@ -2,7 +2,9 @@ package com.pawmotionai.petprofile
 
 import com.pawmotionai.shared.PageRequest
 import com.pawmotionai.shared.PageResponse
+import com.pawmotionai.shared.SecurityRoles
 import com.pawmotionai.shared.ownerId
+import org.springframework.security.access.annotation.Secured
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
+@Secured(SecurityRoles.OWNER)
 @RequestMapping("/api/pets")
 @Tag(name = "Pet profile")
 class PetProfileController(private val service: PetProfileService) {

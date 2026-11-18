@@ -2,7 +2,9 @@ package com.pawmotionai.map
 
 import com.pawmotionai.shared.PageRequest
 import com.pawmotionai.shared.PageResponse
+import com.pawmotionai.shared.SecurityRoles
 import com.pawmotionai.shared.ownerId
+import org.springframework.security.access.annotation.Secured
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -74,6 +76,7 @@ class MapController(private val service: MapService) {
     fun respond(@AuthenticationPrincipal jwt: Jwt, @PathVariable playdateId: UUID, @Valid @RequestBody request: RespondInviteRequest): PlaydateDto =
         service.respondToInvite(jwt.ownerId, playdateId, request.petId!!, request.response!!)
 
+    @Secured(SecurityRoles.OWNER)
     @GetMapping("/pets/nearby")
     @Operation(summary = "Pets near a point; distances are rounded to 100 m and exact owner locations are never returned")
     fun nearbyPets(

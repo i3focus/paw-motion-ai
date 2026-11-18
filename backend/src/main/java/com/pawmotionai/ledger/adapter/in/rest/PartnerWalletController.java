@@ -2,6 +2,7 @@ package com.pawmotionai.ledger.adapter.in.rest;
 
 import java.util.UUID;
 
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +16,10 @@ import com.pawmotionai.ledger.application.dto.WalletResponseDto;
 import com.pawmotionai.ledger.application.port.in.EnsureWalletUseCase;
 import com.pawmotionai.ledger.application.port.in.GetWalletUseCase;
 import com.pawmotionai.ledger.application.port.in.ListWalletEntriesUseCase;
+import com.pawmotionai.shared.SecurityRoles;
 
 @RestController
+@Secured(SecurityRoles.PARTNER)
 @RequestMapping("/api/partner/wallet")
 public class PartnerWalletController {
 

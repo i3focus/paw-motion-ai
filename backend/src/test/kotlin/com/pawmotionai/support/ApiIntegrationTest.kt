@@ -95,6 +95,7 @@ abstract class ApiIntegrationTest {
             .claim("email", email)
             .claim("displayName", name)
             .claim("role", role)
+            .claim("roles", listOf(role))
             .build()
         val token = jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)).tokenValue
         return Session(token, id)

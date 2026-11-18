@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +17,11 @@ import jakarta.validation.Valid;
 
 import com.pawmotionai.partner.application.dto.CampaignResponseDto;
 import com.pawmotionai.partner.application.dto.CreateCampaignCommand;
-import com.pawmotionai.shared.CurrentUserKt;
 import com.pawmotionai.partner.application.port.in.CreateCampaignUseCase;
+import com.pawmotionai.shared.SecurityRoles;
 
 @RestController
+@Secured(SecurityRoles.PARTNER)
 @RequestMapping("/api/partner/campaigns")
 public class PartnerCampaignController {
 
@@ -33,7 +35,6 @@ public class PartnerCampaignController {
     public ResponseEntity<CampaignResponseDto> create(@AuthenticationPrincipal Jwt jwt,
                                                       @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
                                                       @Valid @RequestBody CreateCampaignRequest request) {
-        CurrentUserKt.requireRole(jwt, "PARTNER");
         CampaignResponseDto response = createCampaignUseCase.create(UUID.fromString(jwt.getSubject()),
             new CreateCampaignCommand(UUID.fromString(jwt.getSubject()), request.title(), request.description(),
                 request.targetAudience(), request.callToAction(), idempotencyKey));

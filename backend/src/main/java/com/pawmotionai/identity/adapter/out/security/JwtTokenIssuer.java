@@ -1,6 +1,7 @@
 package com.pawmotionai.identity.adapter.out.security;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -37,7 +38,8 @@ public class JwtTokenIssuer implements TokenIssuer {
             .subject(owner.getId().toString())
             .claim("email", owner.getEmail())
             .claim("displayName", owner.getDisplayName())
-            .claim("role", owner.getRole())
+            .claim("role", owner.getRole().name())
+            .claim("roles", List.of(owner.getRole().name()))
             .build();
         String token = jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)).getTokenValue();
         return new IssuedToken(token, "Bearer", ttlSeconds);

@@ -1,6 +1,8 @@
 package com.pawmotionai.content
 
+import com.pawmotionai.shared.SecurityRoles
 import com.pawmotionai.shared.ownerId
+import org.springframework.security.access.annotation.Secured
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -43,9 +45,11 @@ class ContentController(private val service: ContentService) {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun viewStory(@AuthenticationPrincipal jwt: Jwt, @PathVariable storyId: UUID) = service.markStoryViewed(jwt.ownerId, storyId)
 
+    @Secured(SecurityRoles.OWNER)
     @PutMapping("/pets/{petId}/follow")
     fun follow(@AuthenticationPrincipal jwt: Jwt, @PathVariable petId: UUID): FollowStateDto = service.follow(jwt.ownerId, petId, true)
 
+    @Secured(SecurityRoles.OWNER)
     @DeleteMapping("/pets/{petId}/follow")
     fun unfollow(@AuthenticationPrincipal jwt: Jwt, @PathVariable petId: UUID): FollowStateDto = service.follow(jwt.ownerId, petId, false)
 }

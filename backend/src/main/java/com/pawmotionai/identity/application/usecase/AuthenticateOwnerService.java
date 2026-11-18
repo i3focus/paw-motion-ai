@@ -17,6 +17,7 @@ import com.pawmotionai.identity.application.port.out.PasswordHasher;
 import com.pawmotionai.identity.application.port.out.TokenIssuer;
 import com.pawmotionai.identity.domain.exception.InvalidCredentialsException;
 import com.pawmotionai.identity.domain.model.Owner;
+import com.pawmotionai.identity.domain.model.OwnerRole;
 
 @Service
 public class AuthenticateOwnerService implements AuthenticateOwnerUseCase {
@@ -45,7 +46,7 @@ public class AuthenticateOwnerService implements AuthenticateOwnerUseCase {
             .filter(candidate -> passwordHasher.matches(command.password(), candidate.getPasswordHash()))
             .orElseThrow(InvalidCredentialsException::new);
 
-        if (!"ADMIN".equals(owner.getRole()) && adminEmails.contains(owner.getEmail().toLowerCase())) {
+        if (owner.getRole() != OwnerRole.ADMIN && adminEmails.contains(owner.getEmail().toLowerCase())) {
             jdbc.sql("UPDATE owners SET role = 'ADMIN', updated_at = now() WHERE id = :id")
                 .param("id", owner.getId()).update();
             owner = ownerRepository.findByEmailIgnoreCase(owner.getEmail()).orElse(owner);

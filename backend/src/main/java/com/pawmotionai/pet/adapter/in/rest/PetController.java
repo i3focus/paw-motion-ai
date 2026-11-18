@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,8 +25,10 @@ import com.pawmotionai.pet.application.port.in.CreatePetUseCase;
 import com.pawmotionai.pet.application.port.in.GetPetUseCase;
 import com.pawmotionai.pet.application.port.in.ListPetsUseCase;
 import com.pawmotionai.pet.application.port.in.UpdatePetUseCase;
+import com.pawmotionai.shared.SecurityRoles;
 
 @RestController
+@Secured(SecurityRoles.OWNER)
 @RequestMapping("/api/pets")
 public class PetController {
 

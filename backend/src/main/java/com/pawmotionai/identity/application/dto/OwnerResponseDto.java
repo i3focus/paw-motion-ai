@@ -6,7 +6,7 @@ public record OwnerResponseDto(UUID id, String email, String displayName, String
                                String avatarUrl) {
 
     public static OwnerResponseDto from(com.pawmotionai.identity.domain.model.Owner owner) {
-        return new OwnerResponseDto(owner.getId(), owner.getEmail(), owner.getDisplayName(), owner.getRole(), owner.getBio(),
-            owner.getPhone(), owner.getAvatarUrl());
+        return new OwnerResponseDto(owner.getId(), owner.getEmail(), owner.getDisplayName(), owner.getRole().name(),
+            owner.getBio(), owner.getPhone(), owner.getAvatarUrl());
     }
 }

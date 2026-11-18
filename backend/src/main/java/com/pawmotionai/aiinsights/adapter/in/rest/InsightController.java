@@ -2,6 +2,7 @@ package com.pawmotionai.aiinsights.adapter.in.rest;
 
 import java.util.UUID;
 
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,8 +15,10 @@ import jakarta.validation.Valid;
 import com.pawmotionai.aiinsights.application.dto.GenerateInsightCommand;
 import com.pawmotionai.aiinsights.application.dto.InsightResponseDto;
 import com.pawmotionai.aiinsights.application.port.in.GenerateInsightUseCase;
+import com.pawmotionai.shared.SecurityRoles;
 
 @RestController
+@Secured(SecurityRoles.OWNER)
 @RequestMapping("/api/insights")
 public class InsightController {
 

@@ -2,10 +2,11 @@ package com.pawmotionai.booking
 
 import com.pawmotionai.shared.PageRequest
 import com.pawmotionai.shared.PageResponse
+import com.pawmotionai.shared.SecurityRoles
 import com.pawmotionai.shared.ownerId
-import com.pawmotionai.shared.requireRole
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.security.access.annotation.Secured
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -40,40 +41,40 @@ class BookingController(private val service: BookingService) {
     @PostMapping("/bookings/{bookingId}/cancel")
     fun cancel(@AuthenticationPrincipal jwt: Jwt, @PathVariable bookingId: UUID): BookingDto = service.cancel(jwt.ownerId, bookingId)
 
+    @Secured(SecurityRoles.PARTNER)
     @GetMapping("/partner/services")
     fun partnerServices(@AuthenticationPrincipal jwt: Jwt): List<PartnerServiceDto> {
-        jwt.requireRole("PARTNER")
         return service.services(jwt.ownerId, activeOnly = false)
     }
 
+    @Secured(SecurityRoles.PARTNER)
     @PostMapping("/partner/services")
     @ResponseStatus(HttpStatus.CREATED)
     fun createService(@AuthenticationPrincipal jwt: Jwt, @Valid @RequestBody request: PartnerServiceRequest): PartnerServiceDto {
-        jwt.requireRole("PARTNER")
         return service.createService(jwt.ownerId, request)
     }
 
+    @Secured(SecurityRoles.PARTNER)
     @PutMapping("/partner/services/{serviceId}")
     fun updateService(@AuthenticationPrincipal jwt: Jwt, @PathVariable serviceId: UUID, @Valid @RequestBody request: PartnerServiceRequest): PartnerServiceDto {
-        jwt.requireRole("PARTNER")
         return service.updateService(jwt.ownerId, serviceId, request)
     }
 
+    @Secured(SecurityRoles.PARTNER)
     @GetMapping("/partner/bookings")
     fun partnerBookings(@AuthenticationPrincipal jwt: Jwt, @RequestParam(required = false) page: Int?, @RequestParam(required = false) size: Int?): PageResponse<BookingDto> {
-        jwt.requireRole("PARTNER")
         return service.partnerBookings(jwt.ownerId, PageRequest.of(page, size))
     }
 
+    @Secured(SecurityRoles.PARTNER)
     @PostMapping("/partner/bookings/{bookingId}/confirm")
     fun confirm(@AuthenticationPrincipal jwt: Jwt, @PathVariable bookingId: UUID): BookingDto {
-        jwt.requireRole("PARTNER")
         return service.partnerTransition(jwt.ownerId, bookingId, BookingStatus.CONFIRMED)
     }
 
+    @Secured(SecurityRoles.PARTNER)
     @PostMapping("/partner/bookings/{bookingId}/complete")
     fun complete(@AuthenticationPrincipal jwt: Jwt, @PathVariable bookingId: UUID): BookingDto {
-        jwt.requireRole("PARTNER")
         return service.partnerTransition(jwt.ownerId, bookingId, BookingStatus.COMPLETED)
     }
 }
