@@ -1,5 +1,6 @@
 package com.pawmotionai.identity.application.usecase
 
+import com.pawmotionai.shared.LogSafe
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -7,7 +8,6 @@ import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Component
-import java.security.MessageDigest
 
 /**
  * Promove a ADMIN, no startup, os emails de `app.admin.emails`, somente com `app.admin.bootstrap-enabled=true` (C15).
@@ -59,10 +59,7 @@ class AdminBootstrapRunner(
 
     private fun record(action: String, email: String) {
         meterRegistry.counter("admin.role_changes", "action", action).increment()
-        log.info("admin bootstrap {} emailHash={}", action, shortHash(email))
+        log.info("admin bootstrap {} emailHash={}", action, LogSafe.hash(email))
     }
 
-    private fun shortHash(email: String): String =
-        MessageDigest.getInstance("SHA-256").digest(email.lowercase().toByteArray())
-            .take(4).joinToString("") { "%02x".format(it) }
 }
