@@ -34,6 +34,10 @@ class MapService(
     @Value("\${app.playdate.invite-mode:enforce}") private val inviteMode: String,
     @Value("\${app.playdate.invite-dedup-window:24h}") private val inviteDedupWindow: Duration,
     @Value("\${app.playdate.max-invite-notifications-per-day:50}") private val maxInviteNotificationsPerDay: Int,
+    @Value("\${app.lost-pet.mode:enforce}") private val lostPetMode: String,
+    @Value("\${app.lost-pet.fanout-cooldown:6h}") private val fanoutCooldown: Duration,
+    @Value("\${app.lost-pet.max-alerts-per-day:10}") private val maxAlertsPerDay: Int,
+    @Value("\${app.lost-pet.max-active-alerts-per-owner:5}") private val maxActiveAlertsPerOwner: Int,
 ) {
 
     private val log = LoggerFactory.getLogger(MapService::class.java)
@@ -103,22 +107,53 @@ class MapService(
         val active = jdbc.sql("SELECT COUNT(*) FROM lost_pet_alerts WHERE pet_id = :pet AND status = 'ACTIVE'").param("pet", request.petId)
             .query(Long::class.java).single()
         if (active > 0) throw ConflictException("This pet already has an active alert")
+        val fanout = checkAlertLimits(ownerId, request.petId)
         val id = UUID.randomUUID()
         jdbc.sql(
             """
             INSERT INTO lost_pet_alerts (id, pet_id, owner_id, photo_media_id, description, contact_phone, last_seen_location,
-                                         last_seen_at, radius_m, status, created_at)
-            VALUES (:id, :pet, :owner, :photo, :description, :phone, $POINT, :seen, :radius, 'ACTIVE', now())
+                                         last_seen_at, radius_m, status, created_at, fanout_sent_at)
+            VALUES (:id, :pet, :owner, :photo, :description, :phone, $POINT, :seen, :radius, 'ACTIVE', now(), CASE WHEN :fanout THEN now() END)
             """,
         ).param("id", id).param("pet", request.petId).param("owner", ownerId).param("photo", request.photoMediaId)
             .param("description", request.description!!.trim()).param("phone", request.contactPhone?.trim()?.ifEmpty { null })
             .param("lat", request.latitude).param("lng", request.longitude).param("seen", Timestamp.from(request.lastSeenAt))
-            .param("radius", request.radiusMeters ?: 3000).update()
-        val petName = jdbc.sql("SELECT name FROM pets WHERE id = :id").param("id", request.petId).query(String::class.java).single()
-        notifier.notifyNearby(ownerId, request.latitude!!, request.longitude!!, request.radiusMeters ?: 3000, NotificationType.LOST_PET,
-            "Lost pet near you: $petName", request.description!!.trim().take(120), mapOf("alertId" to id.toString()))
+            .param("radius", request.radiusMeters ?: 3000).param("fanout", fanout).update()
+        if (fanout) {
+            val petName = jdbc.sql("SELECT name FROM pets WHERE id = :id").param("id", request.petId).query(String::class.java).single()
+            notifier.notifyNearby(ownerId, request.latitude!!, request.longitude!!, request.radiusMeters ?: 3000, NotificationType.LOST_PET,
+                "Lost pet near you: $petName", request.description!!.trim().take(120), mapOf("alertId" to id.toString()))
+        } else {
+            log.info("lost pet fan-out skipped (cooldown) alert={} pet={}", id, request.petId)
+        }
         log.info("lost pet alert created alert={} pet={}", id, request.petId)
         return alert(id, null, null)
+    }
+
+    /**
+     * C8/C18: serializes alert creation per owner (row lock) so the caps hold under concurrency, enforces the daily and
+     * active-alert caps (409) and returns whether this alert may fan out (no fan-out for the same pet inside the cooldown).
+     * `shadow` only logs the excess and keeps the legacy fan-out; `off` is the legacy behavior.
+     */
+    private fun checkAlertLimits(ownerId: UUID, petId: UUID): Boolean {
+        if (lostPetMode == "off") return true
+        jdbc.sql("SELECT id FROM owners WHERE id = :id FOR UPDATE").param("id", ownerId).query(UUID::class.java).optional()
+        val active = jdbc.sql("SELECT COUNT(*) FROM lost_pet_alerts WHERE owner_id = :owner AND status = 'ACTIVE'")
+            .param("owner", ownerId).query(Long::class.java).single()
+        val today = jdbc.sql("SELECT COUNT(*) FROM lost_pet_alerts WHERE owner_id = :owner AND created_at > now() - interval '1 day'")
+            .param("owner", ownerId).query(Long::class.java).single()
+        val overActive = active >= maxActiveAlertsPerOwner
+        val overDaily = today >= maxAlertsPerDay
+        if (overActive || overDaily) {
+            if (lostPetMode == "enforce") {
+                throw ConflictException(if (overActive) "Active lost pet alert limit reached" else "Daily lost pet alert limit reached")
+            }
+            log.warn("lost pet alert cap would be exceeded owner={} active={} today={}", ownerId, active, today)
+        }
+        val recentFanout = jdbc.sql("SELECT COUNT(*) FROM lost_pet_alerts WHERE pet_id = :pet AND fanout_sent_at > :since")
+            .param("pet", petId).param("since", Timestamp.from(Instant.now().minus(fanoutCooldown))).query(Long::class.java).single() > 0
+        if (recentFanout && lostPetMode != "enforce") log.warn("lost pet fan-out would be skipped (cooldown) pet={}", petId)
+        return !(recentFanout && lostPetMode == "enforce")
     }
 
     @Transactional(readOnly = true)

@@ -7,7 +7,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Lote 3 (C8, C18, C23; C24 and C9 moved to regular tests): notifications and cardinality. Spec: security-audit-remediation, task 1. */
+/** Lote 3 (C23; C8, C9, C18 and C24 moved to regular tests): notifications and cardinality. Spec: security-audit-remediation, task 1. */
 @Exploratory
 class Lote3ExploratoryIT : ExploratoryApiTest() {
 
@@ -15,41 +15,6 @@ class Lote3ExploratoryIT : ExploratoryApiTest() {
         "petId" to petId, "description" to "Lost near the park", "latitude" to -23.5615, "longitude" to -46.6559,
         "lastSeenAt" to Instant.now().minusSeconds(600).toString(), "radiusMeters" to 3000,
     )
-
-    @Test
-    fun `C8 two create-resolve cycles respect the fan-out cooldown`() {
-        val ana = registerOwner("Ana")
-        val neighbor = registerOwner("Nina")
-        setLocation(neighbor.ownerId, -23.5616, -46.6560)
-        val thor = createPet(ana, "Thor")
-        repeat(2) {
-            val alert = expect(201, call("POST", "/api/lost-pets", ana.token, alertBody(thor)))["id"].asString()
-            expect(200, call("POST", "/api/lost-pets/$alert/resolve", ana.token, mapOf("found" to false)))
-        }
-        val rows = notificationCount(neighbor.ownerId, "Lost pet near you")
-        assertEquals(1L, rows, "Counterexample C8: 2 create/resolve cycles -> $rows fan-out notifications to the same neighbor")
-    }
-
-    @Test
-    fun `C18 pet creation above the per-owner cap is refused with 409`() {
-        val ana = registerOwner("Ana")
-        val statuses = (1..ProvisionalLimits.MAX_PETS_PER_OWNER + 5).map {
-            call("POST", "/api/pets", ana.token, mapOf("name" to "Pet$it", "species" to "dog", "size" to "small")).status
-        }
-        val created = statuses.count { it == 201 }
-        assertTrue(created <= ProvisionalLimits.MAX_PETS_PER_OWNER && statuses.contains(409),
-            "Counterexample C18: created $created pets (cap ${ProvisionalLimits.MAX_PETS_PER_OWNER}), statuses=${statuses.groupingBy { it }.eachCount()}")
-    }
-
-    @Test
-    fun `C18 active alerts above the per-owner cap are refused with 409`() {
-        val ana = registerOwner("Ana")
-        val pets = (1..ProvisionalLimits.MAX_ACTIVE_ALERTS_PER_OWNER + 2).map { createPet(ana, "Pet$it") }
-        val statuses = pets.map { call("POST", "/api/lost-pets", ana.token, alertBody(it)).status }
-        val created = statuses.count { it == 201 }
-        assertTrue(created <= ProvisionalLimits.MAX_ACTIVE_ALERTS_PER_OWNER && statuses.contains(409),
-            "Counterexample C18: $created active alerts (cap ${ProvisionalLimits.MAX_ACTIVE_ALERTS_PER_OWNER}), statuses=${statuses.groupingBy { it }.eachCount()}")
-    }
 
     @Test
     fun `C23 sightings above the per-reporter cap are refused`() {
