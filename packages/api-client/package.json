@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit --strict src/index.ts src/schema.d.ts"
   },
   "devDependencies": {
-    "openapi-typescript": "^7.9.1",
+    "openapi-typescript": "7.13.0",
     "typescript": "^5.6.0"
   }
 }

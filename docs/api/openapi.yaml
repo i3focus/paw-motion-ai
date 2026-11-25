@@ -4,7 +4,7 @@ info:
   description: "Owner, partner and admin APIs for PETLIFE."
   version: v1
 servers:
-- url: http://localhost:63137
+- url: http://localhost:8080
   description: Generated server url
 security:
 - bearer: []
