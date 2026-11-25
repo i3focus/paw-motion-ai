@@ -7,7 +7,7 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
 (cd "$root/backend" && EXPORT_OPENAPI=true ./gradlew test --tests 'OpenApiExportIT' -q)
 # The exported `servers` URL carries the random test port; normalize it so regeneration is deterministic.
-sed -i.bak -E 's#^- url: http://localhost:[0-9]+#- url: http://localhost:8080#' "$root/docs/api/openapi.yaml"
+sed -i.bak -E 's#^(- |  )url: http://localhost:[0-9]+#\1url: http://localhost:8080#' "$root/docs/api/openapi.yaml"
 rm -f "$root/docs/api/openapi.yaml.bak"
 cd "$root/packages/api-client"
 npm ci

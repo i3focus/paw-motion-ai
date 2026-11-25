@@ -4,47 +4,31 @@
  */
 
 export interface paths {
-    "/api/pets/{petId}/health/records/{recordId}": {
+    "/api/activities": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put: operations["updateRecord"];
-        post?: never;
-        delete: operations["deleteRecord"];
+        get: operations["listActivities"];
+        put?: never;
+        post: operations["recordActivity"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/pets/{petId}/follow": {
+    "/api/admin/campaigns": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put: operations["follow"];
-        post?: never;
-        delete: operations["unfollow"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/services/{serviceId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateService"];
+        get: operations["queue"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -52,23 +36,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/feed/{itemId}/reaction": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["react"];
-        post?: never;
-        delete: operations["unreact"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/webhooks/payments/{provider}": {
+    "/api/admin/campaigns/{campaignId}/approve": {
         parameters: {
             query?: never;
             header?: never;
@@ -77,30 +45,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["receive"];
+        post: operations["approve"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/stories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["stories"];
-        put?: never;
-        post: operations["createStory"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/stories/{storyId}/view": {
+    "/api/admin/campaigns/{campaignId}/reject": {
         parameters: {
             query?: never;
             header?: never;
@@ -109,14 +61,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["viewStory"];
+        post: operations["reject"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/posts": {
+    "/api/admin/challenges": {
         parameters: {
             query?: never;
             header?: never;
@@ -125,30 +77,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["createPost"];
+        post: operations["createChallenge"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/playdates": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["playdates"];
-        put?: never;
-        post: operations["createPlaydate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/playdates/{playdateId}/respond": {
+    "/api/admin/partners/{partnerId}/verify": {
         parameters: {
             query?: never;
             header?: never;
@@ -157,14 +93,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["respond"];
+        post: operations["verify"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/playdates/{playdateId}/cancel": {
+    "/api/admin/partners/{partnerId}/wallet/adjustments": {
         parameters: {
             query?: never;
             header?: never;
@@ -173,14 +109,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["cancelPlaydate"];
+        post: operations["adjust"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/places/{placeId}/check-ins": {
+    "/api/admin/partners/{partnerId}/wallet/unblock": {
         parameters: {
             query?: never;
             header?: never;
@@ -189,30 +125,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["checkIn"];
+        post: operations["unblock"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/pets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listPets"];
-        put?: never;
-        post: operations["createPet"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/pets/{petId}/weights": {
+    "/api/ads/{campaignId}/events": {
         parameters: {
             query?: never;
             header?: never;
@@ -221,14 +141,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["weight"];
+        /** Record a sponsored impression or click; repeated impressions within 30 minutes are ignored */
+        post: operations["adEvent"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/pets/{petId}/health/share": {
+    "/api/assistant/actions/{actionId}/cancel": {
         parameters: {
             query?: never;
             header?: never;
@@ -237,15 +158,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create a read-only vet link; only a hash of the token is stored */
-        post: operations["share"];
-        delete: operations["revoke"];
+        post: operations["cancel_1"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/pets/{petId}/health/records": {
+    "/api/assistant/actions/{actionId}/confirm": {
         parameters: {
             query?: never;
             header?: never;
@@ -254,488 +174,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["addRecord"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/services": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["partnerServices"];
-        put?: never;
-        post: operations["createService"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/campaigns": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/campaigns/{campaignId}/submit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["submit"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/campaigns/{campaignId}/resume": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["resume"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/campaigns/{campaignId}/pause": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["pause"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/campaigns/{campaignId}/end": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["end"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/bookings/{bookingId}/confirm": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["confirm"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/bookings/{bookingId}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["complete"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/billing/purchases": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listPurchases"];
-        put?: never;
-        post: operations["createPurchase"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/billing/purchases/{transactionId}/fake-complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["completeFakePurchase"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/auth/register": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["register"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partner/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["login"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/notifications/{notificationId}/read": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["read"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/notifications/read-all": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["readAll"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/media": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Upload a photo or short video (max 10 MB) for posts, stories and alerts */
-        post: operations["upload"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/lost-pets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["lostPets"];
-        put?: never;
-        post: operations["createLostPet"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/lost-pets/{alertId}/sightings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["sighting"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/lost-pets/{alertId}/resolve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["resolve"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/insights": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["generateInsight"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/feed/{itemId}/comments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["comments"];
-        put?: never;
-        post: operations["comment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/events/{eventId}/rsvp": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["rsvp"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/engagement/challenges/{challengeId}/join": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["join"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/devices/push-tokens": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["registerToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/communities": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["communities"];
-        put?: never;
-        post: operations["create_1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/communities/{communityId}/join": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["join_1"];
-        delete: operations["leave"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/communities/{communityId}/events": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["events"];
-        put?: never;
-        post: operations["createEvent"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/bookings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["myBookings"];
-        put?: never;
-        post: operations["book"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/bookings/{bookingId}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["cancel"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/register": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["register_1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["login_1"];
+        post: operations["confirm_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -775,213 +214,389 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/assistant/actions/{actionId}/confirm": {
+    "/api/assistant/usage": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        post: operations["confirm_1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/assistant/actions/{actionId}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["cancel_1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ads/{campaignId}/events": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Record a sponsored impression or click; repeated impressions within 30 minutes are ignored */
-        post: operations["adEvent"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/partners/{partnerId}/wallet/unblock": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["unblock"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/partners/{partnerId}/wallet/adjustments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adjust"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/partners/{partnerId}/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["verify"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/challenges": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["createChallenge"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/campaigns/{campaignId}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["reject"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/campaigns/{campaignId}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["approve"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/activities": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listActivities"];
-        put?: never;
-        post: operations["recordActivity"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/pets/{petId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getPet"];
+        get: operations["usage"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch: operations["updatePet"];
+        patch?: never;
         trace?: never;
     };
-    "/api/partner/profile": {
+    "/api/auth/login": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["profile"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["login_1"];
         delete?: never;
         options?: never;
         head?: never;
-        patch: operations["updateProfile"];
+        patch?: never;
         trace?: never;
     };
-    "/api/partner/campaigns/{campaignId}": {
+    "/api/auth/register": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["campaign"];
+        get?: never;
+        put?: never;
+        post: operations["register_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["myBookings"];
+        put?: never;
+        post: operations["book"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bookings/{bookingId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/communities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["communities"];
+        put?: never;
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/communities/{communityId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["community"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch: operations["update"];
+        patch?: never;
+        trace?: never;
+    };
+    "/api/communities/{communityId}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["events"];
+        put?: never;
+        post: operations["createEvent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/communities/{communityId}/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["join_1"];
+        delete: operations["leave"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dashboard/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["dashboardSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/devices/push-tokens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["registerToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/devices/push-tokens/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeToken"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["discover"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagement/challenges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["challenges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagement/challenges/{challengeId}/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["join"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagement/leaderboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["leaderboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/{eventId}/rsvp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["rsvp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ranked home feed with at most one sponsored card per five organic cards */
+        get: operations["feed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/feed/{itemId}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["comments"];
+        put?: never;
+        post: operations["comment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/feed/{itemId}/reaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["react"];
+        post?: never;
+        delete: operations["unreact"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["generateInsight"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lost-pets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["lostPets"];
+        put?: never;
+        post: operations["createLostPet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lost-pets/{alertId}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lost-pets/{alertId}/sightings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sighting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/me": {
@@ -1016,15 +631,32 @@ export interface paths {
         patch: operations["updatePreferences"];
         trace?: never;
     };
-    "/api/vet-share/{token}": {
+    "/api/media": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Public read-only health passport for a vet share link */
-        get: operations["shared"];
+        get?: never;
+        put?: never;
+        /** Upload a photo or short video (max 10 MB) for posts, stories and alerts */
+        post: operations["upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public media download by unguessable id */
+        get: operations["download"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1033,15 +665,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/places": {
+    "/api/notifications": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Places within a radius (meters, max 50 km), filtered by category and name */
-        get: operations["places"];
+        get: operations["notifications"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1050,14 +681,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/places/{placeId}": {
+    "/api/notifications/read-all": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["place"];
+        get?: never;
+        put?: never;
+        post: operations["readAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["unreadCount"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1066,15 +713,62 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/pets/{petId}/profile": {
+    "/api/notifications/{notificationId}/read": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Stats count only activities shared to Paw City when the viewer is not the pet owner, so totals seen by third parties can be lower than the owner's. */
-        get: operations["profile_1"];
+        get?: never;
+        put?: never;
+        post: operations["read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/billing/pricing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["pricing"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1083,14 +777,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/pets/{petId}/posts": {
+    "/api/partner/billing/purchases": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["posts"];
+        get: operations["listPurchases"];
+        put?: never;
+        post: operations["createPurchase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/billing/purchases/{transactionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPurchase"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1099,14 +809,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/pets/{petId}/health": {
+    "/api/partner/billing/purchases/{transactionId}/fake-complete": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["passport"];
+        get?: never;
+        put?: never;
+        post: operations["completeFakePurchase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["partnerBookings"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1115,14 +841,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/pets/{petId}/friends": {
+    "/api/partner/bookings/{bookingId}/complete": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["friends"];
+        get?: never;
+        put?: never;
+        post: operations["complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/bookings/{bookingId}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/campaigns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/campaigns/{campaignId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["campaign"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["update"];
+        trace?: never;
+    };
+    "/api/partner/campaigns/{campaignId}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["end"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/campaigns/{campaignId}/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["metrics"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1131,15 +937,95 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/pets/{petId}/engagement": {
+    "/api/partner/campaigns/{campaignId}/pause": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["engagement"];
+        get?: never;
         put?: never;
+        post: operations["pause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/campaigns/{campaignId}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/campaigns/{campaignId}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateProfile"];
+        trace?: never;
+    };
+    "/api/partner/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["partnerServices"];
+        put?: never;
+        post: operations["createService"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/partner/services/{serviceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateService"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1147,64 +1033,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/pets/{petId}/badges": {
+    "/api/partner/v2/campaigns": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["badges"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/pets/{petId}/adventures": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Third parties see only activities shared to Paw City; the owner sees all of them. */
-        get: operations["adventures"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/pets/nearby": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Pets near a point; distances are rounded to 100 m and exact owner locations are never returned */
-        get: operations["nearbyPets"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/partners/{partnerId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["partner"];
+        get: operations["listV2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1245,14 +1081,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/partner/v2/campaigns": {
+    "/api/partners/{partnerId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listV2"];
+        get: operations["partner"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1261,14 +1097,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/partner/campaigns/{campaignId}/metrics": {
+    "/api/pets": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["metrics"];
+        get: operations["listPets"];
+        put?: never;
+        post: operations["createPet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pets/nearby": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pets near a point; distances are rounded to 100 m and exact owner locations are never returned */
+        get: operations["nearbyPets"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1277,14 +1130,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/partner/bookings": {
+    "/api/pets/{petId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["partnerBookings"];
+        get: operations["getPet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updatePet"];
+        trace?: never;
+    };
+    "/api/pets/{petId}/adventures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Third parties see only activities shared to Paw City; the owner sees all of them. */
+        get: operations["adventures"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1293,14 +1163,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/partner/billing/purchases/{transactionId}": {
+    "/api/pets/{petId}/badges": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["getPurchase"];
+        get: operations["badges"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1309,14 +1179,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/partner/billing/pricing": {
+    "/api/pets/{petId}/engagement": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["pricing"];
+        get: operations["engagement"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1325,14 +1195,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/notifications": {
+    "/api/pets/{petId}/follow": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["notifications"];
+        get?: never;
+        put: operations["follow"];
+        post?: never;
+        delete: operations["unfollow"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pets/{petId}/friends": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["friends"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1341,14 +1227,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/notifications/unread-count": {
+    "/api/pets/{petId}/health": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["unreadCount"];
+        get: operations["passport"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1357,15 +1243,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/media/{mediaId}": {
+    "/api/pets/{petId}/health/records": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Public media download by unguessable id */
-        get: operations["download"];
+        get?: never;
+        put?: never;
+        post: operations["addRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pets/{petId}/health/records/{recordId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateRecord"];
+        post?: never;
+        delete: operations["deleteRecord"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pets/{petId}/health/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a read-only vet link; only a hash of the token is stored */
+        post: operations["share"];
+        delete: operations["revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pets/{petId}/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["posts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1374,15 +1308,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/feed": {
+    "/api/pets/{petId}/profile": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Ranked home feed with at most one sponsored card per five organic cards */
-        get: operations["feed"];
+        /** @description Stats count only activities shared to Paw City when the viewer is not the pet owner, so totals seen by third parties can be lower than the owner's. */
+        get: operations["profile_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1391,14 +1325,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/engagement/leaderboard": {
+    "/api/pets/{petId}/weights": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["leaderboard"];
+        get?: never;
+        put?: never;
+        post: operations["weight"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/places": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Places within a radius (meters, max 50 km), filtered by category and name */
+        get: operations["places"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1407,14 +1358,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/engagement/challenges": {
+    "/api/places/{placeId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["challenges"];
+        get: operations["place"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1423,80 +1374,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/discover": {
+    "/api/places/{placeId}/check-ins": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["discover"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["checkIn"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/dashboard/summary": {
+    "/api/playdates": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["dashboardSummary"];
+        get: operations["playdates"];
         put?: never;
-        post?: never;
+        post: operations["createPlaydate"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/communities/{communityId}": {
+    "/api/playdates/{playdateId}/cancel": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["community"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["cancelPlaydate"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/assistant/usage": {
+    "/api/playdates/{playdateId}/respond": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["usage"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["respond"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/admin/campaigns": {
+    "/api/posts": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["queue"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["createPost"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1519,7 +1470,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/devices/push-tokens/{token}": {
+    "/api/stories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["stories"];
+        put?: never;
+        post: operations["createStory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stories/{storyId}/view": {
         parameters: {
             query?: never;
             header?: never;
@@ -1528,8 +1495,41 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        post: operations["viewStory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/vet-share/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public read-only health passport for a vet share link */
+        get: operations["shared"];
+        put?: never;
         post?: never;
-        delete: operations["removeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/webhooks/payments/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["receive"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1539,713 +1539,379 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        HealthRecordRequest: {
-            /** @enum {string|null} */
-            type: "VACCINE" | "DEWORMING" | "VET_VISIT" | "MEDICATION" | null;
-            name: string | null;
-            /** Format: date */
-            administeredOn?: string | null;
-            /** Format: date */
-            dueOn?: string | null;
-            vetName?: string | null;
-            clinicName?: string | null;
-            notes?: string | null;
-        };
-        HealthRecordDto: {
-            /** Format: uuid */
-            id?: string;
-            /** @enum {string} */
-            type?: "VACCINE" | "DEWORMING" | "VET_VISIT" | "MEDICATION";
+        AchievementContentDto: {
+            badgeCode?: string;
+            description?: string;
+            emoji?: string;
             name?: string;
-            /** Format: date */
-            administeredOn?: string | null;
-            /** Format: date */
-            dueOn?: string | null;
-            vetName?: string | null;
-            clinicName?: string | null;
-            notes?: string | null;
-            /** @enum {string} */
-            status?: "DONE" | "UPCOMING" | "DUE_SOON" | "OVERDUE";
         };
-        FollowStateDto: {
+        ActivityContentDto: {
             /** Format: uuid */
-            petId?: string;
-            following?: boolean;
-            /** Format: int64 */
-            followers?: number;
-        };
-        PartnerServiceRequest: {
-            name: string | null;
-            description?: string | null;
-            /** Format: int32 */
-            durationMinutes: number | null;
-            /** Format: int64 */
-            priceCents: number | null;
-            active?: boolean | null;
-        };
-        PartnerServiceDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            partnerId?: string;
-            name?: string;
-            description?: string | null;
-            /** Format: int32 */
-            durationMinutes?: number;
-            /** Format: int64 */
-            priceCents?: number;
-            currency?: string;
-            active?: boolean;
-        };
-        ReactRequest: {
-            /** @enum {string|null} */
-            type: "PAW" | "LAUGH" | "HEART" | null;
-        };
-        ReactionSummaryDto: {
-            counts?: {
-                [key: string]: number;
-            };
-            /** @enum {string|null} */
-            viewerReaction?: "PAW" | "LAUGH" | "HEART" | null;
-        };
-        ContentDisposition: {
-            type?: string;
-            name?: string;
-            filename?: string;
-            charset?: string;
-            inline?: boolean;
-            attachment?: boolean;
-            formData?: boolean;
-        };
-        HttpHeaders: {
-            acceptLanguage?: {
-                range?: string;
-                /** Format: double */
-                weight?: number;
-            }[];
-            /** Format: int64 */
-            accessControlMaxAge?: number;
-            acceptCharset?: string[];
-            contentDisposition?: components["schemas"]["ContentDisposition"];
-            contentLanguage?: string;
-            /** Format: int64 */
-            ifUnmodifiedSince?: number;
-            cacheControl?: string;
-            range?: components["schemas"]["HttpRange"][];
-            connection?: string[];
-            contentType?: components["schemas"]["MediaType"];
-            /** Format: int64 */
-            contentLength?: number;
-            /** Format: int64 */
-            ifModifiedSince?: number;
-            origin?: string;
-            /** Format: uri */
-            location?: string;
-            host?: {
-                hostString?: string;
-                address?: {
-                    hostAddress?: string;
-                    /** Format: byte */
-                    address?: string;
-                    hostName?: string;
-                    linkLocalAddress?: boolean;
-                    anyLocalAddress?: boolean;
-                    multicastAddress?: boolean;
-                    loopbackAddress?: boolean;
-                    siteLocalAddress?: boolean;
-                    mcglobal?: boolean;
-                    mcnodeLocal?: boolean;
-                    mclinkLocal?: boolean;
-                    mcsiteLocal?: boolean;
-                    mcorgLocal?: boolean;
-                    canonicalHostName?: string;
-                };
-                /** Format: int32 */
-                port?: number;
-                unresolved?: boolean;
-                hostName?: string;
-            };
-            etag?: string;
-            basicAuth?: string;
-            accept?: components["schemas"]["MediaType"][];
-            acceptPatch?: components["schemas"]["MediaType"][];
-            allow?: components["schemas"]["HttpMethod"][];
-            bearerAuth?: string;
-            /** Format: int64 */
-            expires?: number;
-            ifMatch?: string[];
-            ifNoneMatch?: string[];
-            pragma?: string;
-            upgrade?: string;
-            vary?: string[];
-            accessControlAllowCredentials?: boolean;
-            acceptLanguageAsLocales?: string[];
-            accessControlAllowHeaders?: string[];
-            accessControlAllowMethods?: components["schemas"]["HttpMethod"][];
-            accessControlAllowOrigin?: string;
-            accessControlExposeHeaders?: string[];
-            accessControlRequestHeaders?: string[];
-            accessControlRequestMethod?: components["schemas"]["HttpMethod"];
-            empty?: boolean;
-            all?: {
-                [key: string]: string;
-            };
-            /** Format: int64 */
-            lastModified?: number;
-            /** Format: int64 */
-            date?: number;
-        };
-        HttpMethod: unknown;
-        HttpRange: unknown;
-        MediaType: {
-            type?: string;
-            subtype?: string;
-            parameters?: {
-                [key: string]: string;
-            };
+            activityId?: string;
             /** Format: double */
-            qualityValue?: number;
-            wildcardSubtype?: boolean;
-            subtypeSuffix?: string;
-            charset?: string;
-            concrete?: boolean;
-            wildcardType?: boolean;
+            distanceMeters?: number | null;
+            /** Format: int64 */
+            durationSeconds?: number;
+            notes?: string | null;
+            /** Format: date-time */
+            startedAt?: string;
+            type?: string;
         };
-        CreateStoryRequest: {
-            /** Format: uuid */
-            petId: string | null;
-            /** Format: uuid */
-            mediaId: string | null;
-            caption?: string | null;
-        };
-        StoryDto: {
-            /** Format: uuid */
-            id?: string;
-            mediaUrl?: string;
-            contentType?: string;
-            caption?: string | null;
+        ActivityResponseDto: {
             /** Format: date-time */
             createdAt?: string;
-            /** Format: date-time */
-            expiresAt?: string;
-            viewed?: boolean;
-        };
-        CreatePostRequest: {
+            /** Format: double */
+            distanceMeters?: number | null;
+            /** Format: int64 */
+            durationSeconds?: number;
             /** Format: uuid */
-            petId: string | null;
-            caption?: string | null;
-            placeName?: string | null;
+            id?: string;
             /** Format: double */
             latitude?: number | null;
             /** Format: double */
             longitude?: number | null;
-            mediaIds?: string[] | null;
-            taggedPetIds?: string[] | null;
-        };
-        PostCreatedDto: {
-            /** Format: uuid */
-            postId?: string;
-            /** Format: uuid */
-            feedItemId?: string;
-        };
-        CreatePlaydateRequest: {
-            /** Format: uuid */
-            petId: string | null;
-            /** @enum {string|null} */
-            mode: "NOW" | "SCHEDULED" | null;
-            /** Format: date-time */
-            startsAt?: string | null;
-            /** Format: uuid */
-            placeId?: string | null;
-            /** Format: double */
-            latitude?: number | null;
-            /** Format: double */
-            longitude?: number | null;
-            locationName?: string | null;
-            message?: string | null;
-            inviteePetIds?: string[] | null;
-        };
-        PlaydateDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            organizerOwnerId?: string;
-            /** Format: uuid */
-            organizerPetId?: string;
-            organizerPetName?: string;
-            /** @enum {string} */
-            mode?: "NOW" | "SCHEDULED";
-            /** Format: date-time */
-            startsAt?: string;
-            /** Format: uuid */
-            placeId?: string | null;
-            locationName?: string | null;
-            /** Format: double */
-            latitude?: number | null;
-            /** Format: double */
-            longitude?: number | null;
-            message?: string | null;
-            status?: string;
-            invites?: components["schemas"]["PlaydateInviteDto"][];
-        };
-        PlaydateInviteDto: {
-            /** Format: uuid */
-            petId?: string;
-            petName?: string;
-            status?: string;
-        };
-        RespondInviteRequest: {
-            /** Format: uuid */
-            petId: string | null;
-            /** @enum {string|null} */
-            response: "ACCEPTED" | "DECLINED" | null;
-        };
-        CheckInRequest: {
-            /** Format: uuid */
-            petId: string | null;
-        };
-        CheckInDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            placeId?: string;
-            /** Format: uuid */
-            petId?: string;
-            /** Format: date-time */
-            createdAt?: string;
-        };
-        CreatePetRequest: {
-            name: string;
-            species: string;
-            breed?: string | null;
-            /** Format: date */
-            birthDate?: string | null;
-            size: string;
-            activityPreference?: string | null;
-        };
-        PetResponseDto: {
-            /** Format: uuid */
-            id?: string;
+            notes?: string | null;
             /** Format: uuid */
             ownerId?: string;
-            name?: string;
-            species?: string;
-            breed?: string | null;
-            /** Format: date */
-            birthDate?: string | null;
-            size?: string;
-            activityPreference?: string | null;
-            status?: string;
-            /** Format: date-time */
-            createdAt?: string;
-        };
-        WeightRequest: {
-            /** Format: date */
-            measuredOn: string | null;
-            weightKg: number | null;
-        };
-        WeightDto: {
-            /** Format: date */
-            measuredOn?: string;
-            weightKg?: number;
-        };
-        ShareLinkRequest: {
-            /** Format: int32 */
-            days?: number | null;
-        };
-        ShareLinkDto: {
-            token?: string;
-            path?: string;
-            /** Format: date-time */
-            expiresAt?: string;
-        };
-        CreateCampaignRequest: {
-            title: string;
-            description: string;
-            targetAudience: string;
-            callToAction: string;
-        };
-        CampaignResponseDto: {
             /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            partnerId?: string;
-            title?: string;
-            description?: string;
-            targetAudience?: string;
-            callToAction?: string;
-            status?: string;
-            aiTopics?: string[];
+            petId?: string;
             /** Format: date-time */
-            analyzedAt?: string | null;
-            /** Format: int64 */
-            creditsCharged?: number;
-            /** Format: int64 */
-            creditsRefunded?: number;
-            /** Format: date-time */
-            expiresAt?: string | null;
-            /** Format: int64 */
-            remainingBalance?: number | null;
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-            endReason?: string | null;
+            startedAt?: string;
+            type?: string;
         };
-        CampaignV2Dto: {
-            /** Format: uuid */
-            id?: string;
-            status?: string;
-            endReason?: string | null;
-            title?: string;
-            description?: string;
-            targetAudience?: string;
+        AdEventRequest: {
+            /** @enum {string|null} */
+            placement: "FEED_CARD" | "MAP_PIN" | "DISCOVER_HIGHLIGHT" | "NEARBY_PROMO" | "AI_RECOMMENDATION" | null;
+            /** @enum {string|null} */
+            type: "IMPRESSION" | "CLICK" | null;
+        };
+        AdminAdjustmentRequest: {
+            /** @enum {string} */
+            accountCode: "MAIN" | "BONUS" | "PARTNER";
+            /** Format: int64 */
+            amount?: number;
+            direction: string;
+            reason: string;
+        };
+        AdminCampaignDto: {
             ctaLabel?: string;
             ctaType?: string;
             ctaUrl?: string | null;
-            /** Format: uuid */
-            serviceId?: string | null;
-            mediaUrl?: string | null;
-            /** Format: int64 */
-            budgetCredits?: number;
-            /** Format: int64 */
-            creditsCharged?: number;
-            /** Format: int64 */
-            creditsRefunded?: number;
-            /** Format: date-time */
-            startsAt?: string;
+            description?: string;
             /** Format: date-time */
             endsAt?: string;
-            targetLocation?: components["schemas"]["TargetLocationDto"] | null;
-            targetSpecies?: string[];
-            targetBreeds?: string[];
-            targetInterests?: string[];
             formats?: string[];
-            /** Format: date-time */
-            reviewedAt?: string | null;
+            /** Format: uuid */
+            id?: string;
+            mediaUrl?: string | null;
+            /** Format: uuid */
+            partnerId?: string;
+            partnerName?: string;
+            partnerVerified?: boolean;
             rejectionReason?: string | null;
             /** Format: date-time */
-            createdAt?: string;
+            reviewedAt?: string | null;
+            /** Format: uuid */
+            serviceId?: string | null;
             /** Format: date-time */
-            updatedAt?: string;
+            startsAt?: string;
+            status?: string;
+            /** Format: date-time */
+            submittedAt?: string;
+            title?: string;
         };
-        TargetLocationDto: {
+        AdventureDto: {
+            /** Format: uuid */
+            activityId?: string;
             /** Format: double */
-            latitude?: number;
-            /** Format: double */
-            longitude?: number;
+            distanceMeters?: number | null;
+            /** Format: int64 */
+            durationSeconds?: number;
+            /** Format: uuid */
+            feedItemId?: string | null;
+            notes?: string | null;
+            /** Format: date-time */
+            startedAt?: string;
+            type?: string;
+        };
+        AiActionDto: {
+            /** Format: uuid */
+            campaignId?: string | null;
+            error?: string | null;
+            /** Format: uuid */
+            id?: string;
+            payload?: {
+                [key: string]: unknown;
+            };
+            /** Format: uuid */
+            resultRef?: string | null;
+            sponsored?: boolean;
+            /** @enum {string} */
+            status?: "PROPOSED" | "CONFIRMED" | "EXECUTED" | "FAILED" | "CANCELLED";
+            /** @enum {string} */
+            type?: "BOOKING" | "REMINDER" | "CAPTION" | "PLAYDATE";
+        };
+        AiMessageDto: {
+            action?: components["schemas"]["AiActionDto"] | null;
+            content?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: uuid */
+            id?: string;
+            role?: string;
+        };
+        AiUsageDto: {
             /** Format: int32 */
-            radiusMeters?: number;
+            limit?: number | null;
+            plan?: string;
+            /** Format: int32 */
+            used?: number;
+        };
+        AuthResponseDto: {
+            accessToken?: string;
+            /** Format: int64 */
+            expiresInSeconds?: number;
+            owner?: components["schemas"]["OwnerResponseDto"];
+            tokenType?: string;
+        };
+        BadgeDto: {
+            awarded?: boolean;
+            /** Format: date-time */
+            awardedAt?: string | null;
+            code?: string;
+            description?: string;
+            emoji?: string;
+            name?: string;
         };
         BookingDto: {
             /** Format: uuid */
+            campaignId?: string | null;
+            currency?: string;
+            /** Format: date-time */
+            endsAt?: string;
+            /** Format: uuid */
             id?: string;
+            notes?: string | null;
             /** Format: uuid */
             ownerId?: string;
             ownerName?: string;
-            /** Format: uuid */
-            petId?: string;
-            petName?: string;
             /** Format: uuid */
             partnerId?: string;
             partnerName?: string;
             /** Format: uuid */
-            serviceId?: string;
-            serviceName?: string;
+            petId?: string;
+            petName?: string;
             /** Format: int64 */
             priceCents?: number;
-            currency?: string;
-            /** Format: date-time */
-            startsAt?: string;
-            /** Format: date-time */
-            endsAt?: string;
-            /** @enum {string} */
-            status?: "REQUESTED" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+            /** Format: uuid */
+            serviceId?: string;
+            serviceName?: string;
             /** @enum {string} */
             source?: "APP" | "AI" | "AD";
+            /** Format: date-time */
+            startsAt?: string;
+            /** @enum {string} */
+            status?: "REQUESTED" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+        };
+        CampaignMetricsDto: {
+            /** Format: double */
+            bookingRate?: number;
+            /** Format: int64 */
+            bookings?: number;
+            byPlacement?: {
+                [key: string]: {
+                    [key: string]: number;
+                };
+            };
             /** Format: uuid */
-            campaignId?: string | null;
-            notes?: string | null;
+            campaignId?: string;
+            /** Format: double */
+            clickThroughRate?: number;
+            /** Format: int64 */
+            clicks?: number;
+            /** Format: double */
+            costPerBooking?: number | null;
+            /** Format: double */
+            costPerClick?: number | null;
+            /** Format: int64 */
+            creditsSpent?: number;
+            /** Format: date-time */
+            from?: string;
+            /** Format: int64 */
+            impressions?: number;
+            /** Format: date-time */
+            to?: string;
         };
-        CreatePurchaseRequest: {
-            amount: number;
-            method?: string | null;
-            customerId?: string | null;
-        };
-        PaymentTransactionResponseDto: {
+        CampaignResponseDto: {
+            aiTopics?: string[];
+            /** Format: date-time */
+            analyzedAt?: string | null;
+            callToAction?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: int64 */
+            creditsCharged?: number;
+            /** Format: int64 */
+            creditsRefunded?: number;
+            description?: string;
+            endReason?: string | null;
+            /** Format: date-time */
+            expiresAt?: string | null;
             /** Format: uuid */
             id?: string;
             /** Format: uuid */
             partnerId?: string;
-            amount?: number;
-            currency?: string;
             /** Format: int64 */
-            expectedCredits?: number;
-            method?: string | null;
-            provider?: string;
-            /** @enum {string} */
-            status?: "PENDING" | "CONFIRMED" | "FAILED" | "EXPIRED" | "CANCELED" | "DISPUTED" | "REFUNDED";
-            providerCheckoutUrl?: string | null;
-            failureReason?: string | null;
-            /** Format: date-time */
-            createdAt?: string;
+            remainingBalance?: number | null;
+            status?: string;
+            targetAudience?: string;
+            title?: string;
             /** Format: date-time */
             updatedAt?: string;
         };
-        RegisterPartnerRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-            displayName: string;
-            businessName: string;
-            website?: string | null;
-            description?: string | null;
-        };
-        AuthResponseDto: {
-            accessToken?: string;
-            tokenType?: string;
+        CampaignV2Dto: {
             /** Format: int64 */
-            expiresInSeconds?: number;
-            owner?: components["schemas"]["OwnerResponseDto"];
-        };
-        OwnerResponseDto: {
-            /** Format: uuid */
-            id?: string;
-            email?: string;
-            displayName?: string;
-            role?: string;
-            bio?: string | null;
-            phone?: string | null;
-            avatarUrl?: string | null;
-        };
-        LoginRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-        };
-        MediaDto: {
-            /** Format: uuid */
-            id?: string;
-            url?: string;
-            contentType?: string;
-        };
-        CreateLostPetAlertRequest: {
-            /** Format: uuid */
-            petId: string | null;
-            description: string | null;
-            contactPhone?: string | null;
-            /** Format: uuid */
-            photoMediaId?: string | null;
-            /** Format: double */
-            latitude: number | null;
-            /** Format: double */
-            longitude: number | null;
-            /** Format: date-time */
-            lastSeenAt: string | null;
-            /** Format: int32 */
-            radiusMeters?: number | null;
-        };
-        LostPetAlertDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            petId?: string;
-            petName?: string;
-            petSpecies?: string;
-            /** Format: uuid */
-            ownerId?: string;
-            description?: string;
-            contactPhone?: string | null;
-            photoUrl?: string | null;
-            /** Format: double */
-            latitude?: number;
-            /** Format: double */
-            longitude?: number;
-            /** Format: date-time */
-            lastSeenAt?: string;
-            /** Format: int32 */
-            radiusMeters?: number;
-            status?: string;
-            /** Format: double */
-            distanceMeters?: number | null;
-            /** Format: int64 */
-            sightings?: number;
-        };
-        SightingRequest: {
-            /** Format: double */
-            latitude: number | null;
-            /** Format: double */
-            longitude: number | null;
-            /** Format: date-time */
-            seenAt: string | null;
-            note?: string | null;
-        };
-        ResolveAlertRequest: {
-            found: boolean | null;
-        };
-        GenerateInsightRequest: {
-            /** Format: uuid */
-            petId?: string | null;
-            /** Format: int32 */
-            periodDays?: number | null;
-        };
-        InsightResponseDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            ownerId?: string;
-            /** Format: uuid */
-            petId?: string | null;
-            text?: string;
-            provider?: string;
-            model?: string | null;
-            fallbackUsed?: boolean;
-            /** Format: date-time */
-            generatedAt?: string;
-        };
-        CommentRequest: {
-            body: string | null;
-        };
-        CommentDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            feedItemId?: string;
-            /** Format: uuid */
-            ownerId?: string;
-            ownerName?: string;
-            ownerAvatarUrl?: string | null;
-            body?: string;
+            budgetCredits?: number;
             /** Format: date-time */
             createdAt?: string;
-        };
-        RsvpRequest: {
-            /** @enum {string|null} */
-            status: "GOING" | "INTERESTED" | null;
-        };
-        CommunityEventDto: {
+            /** Format: int64 */
+            creditsCharged?: number;
+            /** Format: int64 */
+            creditsRefunded?: number;
+            ctaLabel?: string;
+            ctaType?: string;
+            ctaUrl?: string | null;
+            description?: string;
+            endReason?: string | null;
+            /** Format: date-time */
+            endsAt?: string;
+            formats?: string[];
             /** Format: uuid */
             id?: string;
+            mediaUrl?: string | null;
+            rejectionReason?: string | null;
+            /** Format: date-time */
+            reviewedAt?: string | null;
             /** Format: uuid */
-            communityId?: string;
-            communityName?: string | null;
-            title?: string;
-            description?: string | null;
-            locationName?: string | null;
-            /** Format: double */
-            latitude?: number | null;
-            /** Format: double */
-            longitude?: number | null;
+            serviceId?: string | null;
             /** Format: date-time */
             startsAt?: string;
+            status?: string;
+            targetAudience?: string;
+            targetBreeds?: string[];
+            targetInterests?: string[];
+            targetLocation?: components["schemas"]["TargetLocationDto"] | null;
+            targetSpecies?: string[];
+            title?: string;
             /** Format: date-time */
-            endsAt?: string | null;
-            /** Format: int32 */
-            capacity?: number | null;
-            /** Format: int64 */
-            goingCount?: number;
-            /** Format: int64 */
-            interestedCount?: number;
-            /** @enum {string|null} */
-            viewerRsvp?: "GOING" | "INTERESTED" | null;
-        };
-        JoinChallengeRequest: {
-            /** Format: uuid */
-            petId: string | null;
+            updatedAt?: string;
         };
         ChallengeDto: {
-            /** Format: uuid */
-            id?: string;
-            title?: string;
+            author?: string;
             description?: string;
-            /** @enum {string} */
-            metric?: "ACTIVITY_COUNT" | "DISTANCE_METERS" | "DURATION_SECONDS";
-            /** Format: int64 */
-            targetValue?: number;
-            /** Format: int32 */
-            xpReward?: number;
-            /** Format: date */
-            startsOn?: string;
             /** Format: date */
             endsOn?: string;
-            author?: string;
+            /** Format: uuid */
+            id?: string;
             joined?: components["schemas"]["ChallengeParticipantDto"][];
+            /** @enum {string} */
+            metric?: "ACTIVITY_COUNT" | "DISTANCE_METERS" | "DURATION_SECONDS";
+            /** Format: date */
+            startsOn?: string;
+            /** Format: int64 */
+            targetValue?: number;
+            title?: string;
+            /** Format: int32 */
+            xpReward?: number;
         };
         ChallengeParticipantDto: {
+            completed?: boolean;
             /** Format: uuid */
             petId?: string;
             petName?: string;
             /** Format: int64 */
             progress?: number;
-            completed?: boolean;
         };
-        PushTokenRequest: {
-            token: string | null;
-            /** @enum {string|null} */
-            platform: "IOS" | "ANDROID" | "WEB" | null;
-        };
-        CreateCommunityRequest: {
-            name: string | null;
-            /** @enum {string|null} */
-            kind: "BREED" | "NEIGHBORHOOD" | "CAUSE" | null;
-            description?: string | null;
-            coverUrl?: string | null;
-            /** Format: double */
-            latitude?: number | null;
-            /** Format: double */
-            longitude?: number | null;
-        };
-        CommunityDto: {
+        CheckInDto: {
+            /** Format: date-time */
+            createdAt?: string;
             /** Format: uuid */
             id?: string;
-            slug?: string;
-            name?: string;
+            /** Format: uuid */
+            petId?: string;
+            /** Format: uuid */
+            placeId?: string;
+        };
+        CheckInRequest: {
+            /** Format: uuid */
+            petId: string | null;
+        };
+        CommentDto: {
+            body?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: uuid */
+            feedItemId?: string;
+            /** Format: uuid */
+            id?: string;
+            ownerAvatarUrl?: string | null;
+            /** Format: uuid */
+            ownerId?: string;
+            ownerName?: string;
+        };
+        CommentRequest: {
+            body: string | null;
+        };
+        CommunityDto: {
+            coverUrl?: string | null;
+            description?: string | null;
+            /** Format: uuid */
+            id?: string;
+            joined?: boolean;
             /** @enum {string} */
             kind?: "BREED" | "NEIGHBORHOOD" | "CAUSE";
-            description?: string | null;
-            coverUrl?: string | null;
             /** Format: int64 */
             memberCount?: number;
-            joined?: boolean;
+            name?: string;
             role?: string | null;
+            slug?: string;
             /** Format: int64 */
             upcomingEvents?: number;
         };
-        CreateEventRequest: {
-            title: string | null;
+        CommunityEventDto: {
+            /** Format: int32 */
+            capacity?: number | null;
+            /** Format: uuid */
+            communityId?: string;
+            communityName?: string | null;
             description?: string | null;
-            locationName?: string | null;
+            /** Format: date-time */
+            endsAt?: string | null;
+            /** Format: int64 */
+            goingCount?: number;
+            /** Format: uuid */
+            id?: string;
+            /** Format: int64 */
+            interestedCount?: number;
             /** Format: double */
             latitude?: number | null;
+            locationName?: string | null;
             /** Format: double */
             longitude?: number | null;
             /** Format: date-time */
-            startsAt: string | null;
-            /** Format: date-time */
-            endsAt?: string | null;
-            /** Format: int32 */
-            capacity?: number | null;
+            startsAt?: string;
+            title?: string;
+            /** @enum {string|null} */
+            viewerRsvp?: "GOING" | "INTERESTED" | null;
         };
-        CreateBookingRequest: {
-            /** Format: uuid */
-            serviceId: string | null;
-            /** Format: uuid */
-            petId: string | null;
-            /** Format: date-time */
-            startsAt: string | null;
-            notes?: string | null;
-            /** Format: uuid */
-            campaignId?: string | null;
-        };
-        RegisterOwnerRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-            displayName: string;
-        };
-        CreateConversationRequest: {
-            /** Format: uuid */
-            petId?: string | null;
+        ContentDisposition: {
+            attachment?: boolean;
+            charset?: string;
+            filename?: string;
+            formData?: boolean;
+            inline?: boolean;
+            name?: string;
+            type?: string;
         };
         ConversationDto: {
             /** Format: uuid */
@@ -2256,444 +1922,394 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
-        SendMessageRequest: {
-            content: string | null;
-        };
-        AiActionDto: {
-            /** Format: uuid */
-            id?: string;
-            /** @enum {string} */
-            type?: "BOOKING" | "REMINDER" | "CAPTION" | "PLAYDATE";
-            /** @enum {string} */
-            status?: "PROPOSED" | "CONFIRMED" | "EXECUTED" | "FAILED" | "CANCELLED";
-            payload?: {
-                [key: string]: unknown;
-            };
-            sponsored?: boolean;
-            /** Format: uuid */
-            campaignId?: string | null;
-            /** Format: uuid */
-            resultRef?: string | null;
-            error?: string | null;
-        };
-        AiMessageDto: {
-            /** Format: uuid */
-            id?: string;
-            role?: string;
-            content?: string;
-            /** Format: date-time */
-            createdAt?: string;
-            action?: components["schemas"]["AiActionDto"] | null;
-        };
-        AiUsageDto: {
-            plan?: string;
-            /** Format: int32 */
-            used?: number;
-            /** Format: int32 */
-            limit?: number | null;
-        };
-        SendMessageResponse: {
-            userMessage?: components["schemas"]["AiMessageDto"];
-            assistantMessage?: components["schemas"]["AiMessageDto"];
-            usage?: components["schemas"]["AiUsageDto"];
-        };
-        AdEventRequest: {
-            /** @enum {string|null} */
-            type: "IMPRESSION" | "CLICK" | null;
-            /** @enum {string|null} */
-            placement: "FEED_CARD" | "MAP_PIN" | "DISCOVER_HIGHLIGHT" | "NEARBY_PROMO" | "AI_RECOMMENDATION" | null;
-        };
-        LedgerAccountResponseDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            walletId?: string;
-            /** @enum {string} */
-            code?: "MAIN" | "BONUS" | "PARTNER";
-            /** @enum {string} */
-            status?: "OPEN" | "CLOSED";
+        CreateActivityRequest: {
+            /** Format: double */
+            distanceMeters?: number | null;
             /** Format: int64 */
-            balance?: number;
-        };
-        WalletResponseDto: {
-            /** Format: uuid */
-            walletId?: string;
-            /** Format: uuid */
-            partnerId?: string;
-            /** @enum {string} */
-            status?: "ACTIVE" | "BLOCKED";
-            blockedReason?: string | null;
-            accounts?: components["schemas"]["LedgerAccountResponseDto"][];
-            /** Format: int64 */
-            totalBalance?: number;
-        };
-        AdminAdjustmentRequest: {
-            /** @enum {string} */
-            accountCode: "MAIN" | "BONUS" | "PARTNER";
-            direction: string;
-            /** Format: int64 */
-            amount?: number;
-            reason: string;
-        };
-        PartnerProfileDto: {
-            /** Format: uuid */
-            partnerId?: string;
-            businessName?: string;
-            /** @enum {string} */
-            category?: "VET" | "GROOMING" | "HOTEL" | "CAFE" | "PET_SHOP" | "TRAINING" | "WALKER" | "OTHER";
-            description?: string | null;
-            website?: string | null;
-            phone?: string | null;
-            address?: string | null;
+            durationSeconds?: number;
             /** Format: double */
             latitude?: number | null;
             /** Format: double */
             longitude?: number | null;
-            openingHours?: string | null;
-            coverUrl?: string | null;
-            verified?: boolean;
-            /** Format: date-time */
-            verifiedAt?: string | null;
-            /** Format: uuid */
-            placeId?: string | null;
-        };
-        CreateChallengeRequest: {
-            title: string | null;
-            description: string | null;
-            /** @enum {string|null} */
-            metric: "ACTIVITY_COUNT" | "DISTANCE_METERS" | "DURATION_SECONDS" | null;
-            /** Format: int64 */
-            targetValue: number | null;
-            /** Format: int32 */
-            xpReward: number | null;
-            /** Format: date */
-            startsOn: string | null;
-            /** Format: date */
-            endsOn: string | null;
-        };
-        RejectCampaignRequest: {
-            reason?: string | null;
-        };
-        AdminCampaignDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            partnerId?: string;
-            partnerName?: string;
-            partnerVerified?: boolean;
-            status?: string;
-            title?: string;
-            description?: string;
-            ctaLabel?: string;
-            ctaType?: string;
-            ctaUrl?: string | null;
-            /** Format: uuid */
-            serviceId?: string | null;
-            mediaUrl?: string | null;
-            formats?: string[];
-            /** Format: date-time */
-            startsAt?: string;
-            /** Format: date-time */
-            endsAt?: string;
-            /** Format: date-time */
-            submittedAt?: string;
-            /** Format: date-time */
-            reviewedAt?: string | null;
-            rejectionReason?: string | null;
-        };
-        CreateActivityRequest: {
+            notes?: string | null;
             /** Format: uuid */
             petId: string;
-            type: string;
+            shareToPawCity?: boolean | null;
             /** Format: date-time */
             startedAt: string;
-            /** Format: int64 */
-            durationSeconds?: number;
-            /** Format: double */
-            distanceMeters?: number | null;
-            notes?: string | null;
-            /** Format: double */
-            latitude?: number | null;
-            /** Format: double */
-            longitude?: number | null;
-            shareToPawCity?: boolean | null;
+            type: string;
         };
-        ActivityResponseDto: {
+        CreateBookingRequest: {
             /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            ownerId?: string;
-            /** Format: uuid */
-            petId?: string;
-            type?: string;
-            /** Format: date-time */
-            startedAt?: string;
-            /** Format: int64 */
-            durationSeconds?: number;
-            /** Format: double */
-            distanceMeters?: number | null;
+            campaignId?: string | null;
             notes?: string | null;
+            /** Format: uuid */
+            petId: string | null;
+            /** Format: uuid */
+            serviceId: string | null;
             /** Format: date-time */
-            createdAt?: string;
-            /** Format: double */
-            latitude?: number | null;
-            /** Format: double */
-            longitude?: number | null;
+            startsAt: string | null;
         };
-        UpdatePartnerProfileRequest: {
-            businessName?: string | null;
+        CreateCampaignRequest: {
+            callToAction: string;
+            description: string;
+            targetAudience: string;
+            title: string;
+        };
+        CreateChallengeRequest: {
+            description: string | null;
+            /** Format: date */
+            endsOn: string | null;
             /** @enum {string|null} */
-            category?: "VET" | "GROOMING" | "HOTEL" | "CAFE" | "PET_SHOP" | "TRAINING" | "WALKER" | "OTHER" | null;
-            description?: string | null;
-            website?: string | null;
-            phone?: string | null;
-            address?: string | null;
-            /** Format: double */
-            latitude?: number | null;
-            /** Format: double */
-            longitude?: number | null;
-            openingHours?: string | null;
+            metric: "ACTIVITY_COUNT" | "DISTANCE_METERS" | "DURATION_SECONDS" | null;
+            /** Format: date */
+            startsOn: string | null;
+            /** Format: int64 */
+            targetValue: number | null;
+            title: string | null;
+            /** Format: int32 */
+            xpReward: number | null;
+        };
+        CreateCommunityRequest: {
             coverUrl?: string | null;
-            clearLocation?: boolean | null;
-        };
-        UpdateCampaignRequest: {
-            title?: string | null;
             description?: string | null;
-            targetAudience?: string | null;
-            ctaLabel?: string | null;
             /** @enum {string|null} */
-            ctaType?: "LINK" | "BOOKING" | null;
-            ctaUrl?: string | null;
+            kind: "BREED" | "NEIGHBORHOOD" | "CAUSE" | null;
+            /** Format: double */
+            latitude?: number | null;
+            /** Format: double */
+            longitude?: number | null;
+            name: string | null;
+        };
+        CreateConversationRequest: {
             /** Format: uuid */
-            serviceId?: string | null;
-            /** Format: uuid */
-            mediaAssetId?: string | null;
-            /** Format: date-time */
-            startsAt?: string | null;
+            petId?: string | null;
+        };
+        CreateEventRequest: {
+            /** Format: int32 */
+            capacity?: number | null;
+            description?: string | null;
             /** Format: date-time */
             endsAt?: string | null;
             /** Format: double */
-            targetLatitude?: number | null;
+            latitude?: number | null;
+            locationName?: string | null;
             /** Format: double */
-            targetLongitude?: number | null;
+            longitude?: number | null;
+            /** Format: date-time */
+            startsAt: string | null;
+            title: string | null;
+        };
+        CreateLostPetAlertRequest: {
+            contactPhone?: string | null;
+            description: string | null;
+            /** Format: date-time */
+            lastSeenAt: string | null;
+            /** Format: double */
+            latitude: number | null;
+            /** Format: double */
+            longitude: number | null;
+            /** Format: uuid */
+            petId: string | null;
+            /** Format: uuid */
+            photoMediaId?: string | null;
             /** Format: int32 */
-            targetRadiusMeters?: number | null;
-            clearTargetLocation?: boolean | null;
-            targetSpecies?: string[] | null;
-            targetBreeds?: string[] | null;
-            targetInterests?: string[] | null;
-            formats?: ("FEED_CARD" | "MAP_PIN" | "DISCOVER_HIGHLIGHT" | "NEARBY_PROMO" | "AI_RECOMMENDATION")[] | null;
+            radiusMeters?: number | null;
         };
-        UpdateProfileRequest: {
-            displayName?: string | null;
-            bio?: string | null;
-            phone?: string | null;
-            avatarUrl?: string | null;
+        CreatePetRequest: {
+            activityPreference?: string | null;
+            /** Format: date */
+            birthDate?: string | null;
+            breed?: string | null;
+            name: string;
+            size: string;
+            species: string;
         };
-        NotificationPreferencesDto: {
-            healthReminders?: boolean;
-            social?: boolean;
-            playdates?: boolean;
-            lostPets?: boolean;
-            bookings?: boolean;
+        CreatePlaydateRequest: {
+            inviteePetIds?: string[] | null;
+            /** Format: double */
+            latitude?: number | null;
+            locationName?: string | null;
+            /** Format: double */
+            longitude?: number | null;
+            message?: string | null;
+            /** @enum {string|null} */
+            mode: "NOW" | "SCHEDULED" | null;
+            /** Format: uuid */
+            petId: string | null;
+            /** Format: uuid */
+            placeId?: string | null;
+            /** Format: date-time */
+            startsAt?: string | null;
+        };
+        CreatePostRequest: {
+            caption?: string | null;
+            /** Format: double */
+            latitude?: number | null;
+            /** Format: double */
+            longitude?: number | null;
+            mediaIds?: string[] | null;
+            /** Format: uuid */
+            petId: string | null;
+            placeName?: string | null;
+            taggedPetIds?: string[] | null;
+        };
+        CreatePurchaseRequest: {
+            amount: number;
+            customerId?: string | null;
+            method?: string | null;
+        };
+        CreateStoryRequest: {
+            caption?: string | null;
+            /** Format: uuid */
+            mediaId: string | null;
+            /** Format: uuid */
+            petId: string | null;
+        };
+        DashboardSummaryDto: {
+            /** Format: int32 */
+            activityCountLast7Days?: number;
+            /** Format: int32 */
+            currentStreakDays?: number;
+            /** Format: uuid */
+            ownerId?: string;
+            /** Format: int32 */
+            petCount?: number;
+            recentActivities?: components["schemas"]["ActivityResponseDto"][];
+            /** Format: double */
+            totalDistanceMetersLast7Days?: number;
+            /** Format: int64 */
+            totalDurationSecondsLast7Days?: number;
+        };
+        DiscoverDto: {
+            communities?: components["schemas"]["CommunityDto"][];
+            events?: components["schemas"]["CommunityEventDto"][];
+            sponsored?: components["schemas"]["DiscoverPartnerDto"][];
+        };
+        DiscoverPartnerDto: {
+            /** Format: uuid */
+            campaignId?: string;
+            ctaLabel?: string;
+            ctaType?: string;
+            ctaUrl?: string | null;
+            description?: string;
+            label?: string;
+            mediaUrl?: string | null;
+            /** Format: uuid */
+            partnerId?: string;
+            partnerName?: string;
+            /** Format: uuid */
+            serviceId?: string | null;
+            title?: string;
+            verified?: boolean;
+        };
+        FeedAuthorDto: {
+            neighborhood?: string | null;
+            /** Format: uuid */
+            ownerId?: string;
+            ownerName?: string;
+            petAvatarUrl?: string | null;
+            /** Format: uuid */
+            petId?: string | null;
+            petName?: string | null;
+            petSpecies?: string | null;
+        };
+        FeedCardDto: {
+            achievement?: components["schemas"]["AchievementContentDto"] | null;
+            activity?: components["schemas"]["ActivityContentDto"] | null;
+            author?: components["schemas"]["FeedAuthorDto"] | null;
+            /** Format: int64 */
+            commentCount?: number;
+            /** Format: uuid */
+            id?: string;
+            post?: components["schemas"]["PostContentDto"] | null;
+            /** Format: date-time */
+            publishedAt?: string | null;
+            reactions?: components["schemas"]["ReactionSummaryDto"] | null;
+            sponsored?: components["schemas"]["SponsoredContentDto"] | null;
+            /** @enum {string} */
+            type?: "POST" | "ACTIVITY" | "ACHIEVEMENT" | "SPONSORED";
+        };
+        FollowStateDto: {
+            /** Format: int64 */
+            followers?: number;
+            following?: boolean;
+            /** Format: uuid */
+            petId?: string;
+        };
+        GenerateInsightRequest: {
+            /** Format: int32 */
+            periodDays?: number | null;
+            /** Format: uuid */
+            petId?: string | null;
         };
         HealthPassportDto: {
+            breed?: string | null;
             /** Format: uuid */
             petId?: string;
             petName?: string;
-            species?: string;
-            breed?: string | null;
             records?: components["schemas"]["HealthRecordDto"][];
+            species?: string;
             upcoming?: components["schemas"]["HealthRecordDto"][];
             weights?: components["schemas"]["WeightDto"][];
         };
-        StoryGroupDto: {
-            /** Format: uuid */
-            petId?: string;
-            petName?: string;
-            petAvatarUrl?: string | null;
-            /** Format: uuid */
-            ownerId?: string;
-            own?: boolean;
-            allViewed?: boolean;
-            stories?: components["schemas"]["StoryDto"][];
-        };
-        PageResponsePlaceDto: {
-            items?: components["schemas"]["PlaceDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
-        };
-        PlaceDto: {
+        HealthRecordDto: {
+            /** Format: date */
+            administeredOn?: string | null;
+            clinicName?: string | null;
+            /** Format: date */
+            dueOn?: string | null;
             /** Format: uuid */
             id?: string;
             name?: string;
+            notes?: string | null;
             /** @enum {string} */
-            category?: "PARK" | "VET" | "CAFE" | "HOTEL" | "GROOMING" | "PET_SHOP" | "TRAINING" | "OTHER";
-            /** Format: double */
-            latitude?: number;
-            /** Format: double */
-            longitude?: number;
-            /** Format: double */
-            distanceMeters?: number | null;
-            address?: string | null;
-            description?: string | null;
-            /** Format: double */
-            rating?: number | null;
-            /** Format: int32 */
-            ratingCount?: number;
-            /** Format: uuid */
-            partnerId?: string | null;
-            verifiedPartner?: boolean;
-            /** Format: int64 */
-            checkInsToday?: number;
+            status?: "DONE" | "UPCOMING" | "DUE_SOON" | "OVERDUE";
+            /** @enum {string} */
+            type?: "VACCINE" | "DEWORMING" | "VET_VISIT" | "MEDICATION";
+            vetName?: string | null;
         };
-        BadgeDto: {
-            code?: string;
-            name?: string;
-            description?: string;
-            emoji?: string;
-            awarded?: boolean;
+        HealthRecordRequest: {
+            /** Format: date */
+            administeredOn?: string | null;
+            clinicName?: string | null;
+            /** Format: date */
+            dueOn?: string | null;
+            name: string | null;
+            notes?: string | null;
+            /** @enum {string|null} */
+            type: "VACCINE" | "DEWORMING" | "VET_VISIT" | "MEDICATION" | null;
+            vetName?: string | null;
+        };
+        HttpHeaders: {
+            accept?: components["schemas"]["MediaType"][];
+            acceptCharset?: string[];
+            acceptLanguage?: {
+                range?: string;
+                /** Format: double */
+                weight?: number;
+            }[];
+            acceptLanguageAsLocales?: string[];
+            acceptPatch?: components["schemas"]["MediaType"][];
+            accessControlAllowCredentials?: boolean;
+            accessControlAllowHeaders?: string[];
+            accessControlAllowMethods?: components["schemas"]["HttpMethod"][];
+            accessControlAllowOrigin?: string;
+            accessControlExposeHeaders?: string[];
+            /** Format: int64 */
+            accessControlMaxAge?: number;
+            accessControlRequestHeaders?: string[];
+            accessControlRequestMethod?: components["schemas"]["HttpMethod"];
+            all?: {
+                [key: string]: string;
+            };
+            allow?: components["schemas"]["HttpMethod"][];
+            basicAuth?: string;
+            bearerAuth?: string;
+            cacheControl?: string;
+            connection?: string[];
+            contentDisposition?: components["schemas"]["ContentDisposition"];
+            contentLanguage?: string;
+            /** Format: int64 */
+            contentLength?: number;
+            contentType?: components["schemas"]["MediaType"];
+            /** Format: int64 */
+            date?: number;
+            empty?: boolean;
+            etag?: string;
+            /** Format: int64 */
+            expires?: number;
+            host?: {
+                address?: {
+                    /** Format: byte */
+                    address?: string;
+                    anyLocalAddress?: boolean;
+                    canonicalHostName?: string;
+                    hostAddress?: string;
+                    hostName?: string;
+                    linkLocalAddress?: boolean;
+                    loopbackAddress?: boolean;
+                    mcglobal?: boolean;
+                    mclinkLocal?: boolean;
+                    mcnodeLocal?: boolean;
+                    mcorgLocal?: boolean;
+                    mcsiteLocal?: boolean;
+                    multicastAddress?: boolean;
+                    siteLocalAddress?: boolean;
+                };
+                hostName?: string;
+                hostString?: string;
+                /** Format: int32 */
+                port?: number;
+                unresolved?: boolean;
+            };
+            ifMatch?: string[];
+            /** Format: int64 */
+            ifModifiedSince?: number;
+            ifNoneMatch?: string[];
+            /** Format: int64 */
+            ifUnmodifiedSince?: number;
+            /** Format: int64 */
+            lastModified?: number;
+            /** Format: uri */
+            location?: string;
+            origin?: string;
+            pragma?: string;
+            range?: components["schemas"]["HttpRange"][];
+            upgrade?: string;
+            vary?: string[];
+        };
+        HttpMethod: unknown;
+        HttpRange: unknown;
+        InsightResponseDto: {
+            fallbackUsed?: boolean;
             /** Format: date-time */
-            awardedAt?: string | null;
-        };
-        PetEngagementDto: {
+            generatedAt?: string;
             /** Format: uuid */
-            petId?: string;
-            /** Format: int64 */
-            xp?: number;
+            id?: string;
+            model?: string | null;
+            /** Format: uuid */
+            ownerId?: string;
+            /** Format: uuid */
+            petId?: string | null;
+            provider?: string;
+            text?: string;
+        };
+        JoinChallengeRequest: {
+            /** Format: uuid */
+            petId: string | null;
+        };
+        LeaderboardDto: {
+            entries?: components["schemas"]["LeaderboardEntryDto"][];
+            scope?: string;
+        };
+        LeaderboardEntryDto: {
             /** Format: int32 */
             level?: number;
             levelTitle?: string;
-            /** Format: int64 */
-            xpIntoLevel?: number;
-            /** Format: int64 */
-            xpForNextLevel?: number | null;
-            /** Format: int32 */
-            streakDays?: number;
-            /** Format: int64 */
-            badgeCount?: number;
-        };
-        PetProfileDto: {
-            pet?: components["schemas"]["ProfilePetDto"];
-            owner?: components["schemas"]["ProfileOwnerDto"];
-            engagement?: components["schemas"]["PetEngagementDto"];
-            stats?: components["schemas"]["ProfileStatsDto"];
-            badgeShelf?: components["schemas"]["BadgeDto"][];
-            weeklyActivity?: components["schemas"]["WeeklyBarDto"][];
-            following?: boolean;
-            own?: boolean;
-        };
-        ProfileOwnerDto: {
-            /** Format: uuid */
-            id?: string;
-            displayName?: string;
             neighborhood?: string | null;
-            city?: string | null;
-        };
-        ProfilePetDto: {
-            /** Format: uuid */
-            id?: string;
-            name?: string;
-            species?: string;
-            breed?: string | null;
-            /** Format: date */
-            birthDate?: string | null;
-            size?: string;
-            avatarUrl?: string | null;
-            coverUrl?: string | null;
-            bio?: string | null;
-            activityPreference?: string | null;
-        };
-        ProfileStatsDto: {
-            /** Format: int64 */
-            followers?: number;
-            /** Format: int64 */
-            adventures?: number;
-            /** Format: int64 */
-            moments?: number;
-        };
-        WeeklyBarDto: {
-            day?: string;
-            /** Format: int64 */
-            minutes?: number;
-        };
-        PageResponsePetPostDto: {
-            items?: components["schemas"]["PetPostDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
-        };
-        PetPostDto: {
-            /** Format: uuid */
-            postId?: string;
-            /** Format: uuid */
-            feedItemId?: string;
-            caption?: string | null;
-            placeName?: string | null;
-            media?: string[];
-            /** Format: date-time */
-            publishedAt?: string;
-            /** Format: int64 */
-            reactionCount?: number;
-            /** Format: int64 */
-            commentCount?: number;
-        };
-        PageResponsePetFriendDto: {
-            items?: components["schemas"]["PetFriendDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
-        };
-        PetFriendDto: {
-            /** Format: uuid */
-            petId?: string;
-            name?: string;
-            species?: string;
-            breed?: string | null;
-            avatarUrl?: string | null;
+            own?: boolean;
             ownerName?: string;
-            /** Format: date-time */
-            mutualSince?: string;
-        };
-        AdventureDto: {
-            /** Format: uuid */
-            activityId?: string;
-            /** Format: uuid */
-            feedItemId?: string | null;
-            type?: string;
-            /** Format: date-time */
-            startedAt?: string;
-            /** Format: int64 */
-            durationSeconds?: number;
-            /** Format: double */
-            distanceMeters?: number | null;
-            notes?: string | null;
-        };
-        PageResponseAdventureDto: {
-            items?: components["schemas"]["AdventureDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
-        };
-        NearbyPetDto: {
+            petAvatarUrl?: string | null;
             /** Format: uuid */
             petId?: string;
             petName?: string;
-            species?: string;
-            breed?: string | null;
-            avatarUrl?: string | null;
-            ownerName?: string;
-            /** Format: double */
-            distanceMeters?: number;
+            /** Format: int32 */
+            rank?: number;
+            /** Format: int64 */
+            weeklyXp?: number;
+        };
+        LedgerAccountResponseDto: {
+            /** Format: int64 */
+            balance?: number;
+            /** @enum {string} */
+            code?: "MAIN" | "BONUS" | "PARTNER";
+            /** Format: uuid */
+            id?: string;
+            /** @enum {string} */
+            status?: "OPEN" | "CLOSED";
+            /** Format: uuid */
+            walletId?: string;
         };
         LedgerEntryPage: {
             content?: components["schemas"]["LedgerEntryResponseDto"][];
@@ -2707,271 +2323,655 @@ export interface components {
             totalPages?: number;
         };
         LedgerEntryResponseDto: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            accountId?: string;
             /** @enum {string|null} */
             accountCode?: "MAIN" | "BONUS" | "PARTNER" | null;
-            /** @enum {string} */
-            direction?: "CREDIT" | "DEBIT";
+            /** Format: uuid */
+            accountId?: string;
             /** Format: int64 */
             amount?: number;
             /** Format: int64 */
             balanceAfter?: number;
-            /** @enum {string} */
-            referenceType?: "PAYMENT" | "CAMPAIGN" | "CAMPAIGN_REFUND" | "PAYMENT_REVERSAL" | "ADJUSTMENT";
-            /** Format: uuid */
-            referenceId?: string;
             description?: string | null;
+            /** @enum {string} */
+            direction?: "CREDIT" | "DEBIT";
+            /** Format: uuid */
+            id?: string;
             /** Format: date-time */
             occurredAt?: string;
-        };
-        CampaignMetricsDto: {
             /** Format: uuid */
-            campaignId?: string;
-            /** Format: date-time */
-            from?: string;
-            /** Format: date-time */
-            to?: string;
-            /** Format: int64 */
-            impressions?: number;
-            /** Format: int64 */
-            clicks?: number;
-            /** Format: int64 */
-            bookings?: number;
-            /** Format: double */
-            clickThroughRate?: number;
-            /** Format: double */
-            bookingRate?: number;
-            /** Format: int64 */
-            creditsSpent?: number;
-            /** Format: double */
-            costPerClick?: number | null;
-            /** Format: double */
-            costPerBooking?: number | null;
-            byPlacement?: {
-                [key: string]: {
-                    [key: string]: number;
-                };
-            };
-        };
-        PageResponseBookingDto: {
-            items?: components["schemas"]["BookingDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
-        };
-        PricingResponseDto: {
-            currency?: string;
-            creditsPerCurrencyUnit?: number;
-            minPurchaseAmount?: number;
-            maxPurchaseAmount?: number;
-            campaignPriceAmount?: number;
-            /** Format: int64 */
-            campaignCreationCostCredits?: number;
-            /** Format: int32 */
-            campaignDurationDays?: number;
-            provider?: string;
-        };
-        NotificationDto: {
-            /** Format: uuid */
-            id?: string;
+            referenceId?: string;
             /** @enum {string} */
-            type?: "HEALTH_REMINDER" | "ACHIEVEMENT" | "CHALLENGE" | "SOCIAL" | "PLAYDATE" | "LOST_PET" | "BOOKING" | "SYSTEM";
-            title?: string;
-            body?: string;
-            data?: {
-                [key: string]: unknown;
-            };
-            read?: boolean;
-            /** Format: date-time */
-            createdAt?: string;
+            referenceType?: "PAYMENT" | "CAMPAIGN" | "CAMPAIGN_REFUND" | "PAYMENT_REVERSAL" | "ADJUSTMENT";
         };
-        PageResponseNotificationDto: {
-            items?: components["schemas"]["NotificationDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
+        LoginRequest: {
+            /** Format: email */
+            email: string;
+            password: string;
         };
-        AchievementContentDto: {
-            badgeCode?: string;
-            name?: string;
+        LostPetAlertDto: {
+            contactPhone?: string | null;
             description?: string;
-            emoji?: string;
-        };
-        ActivityContentDto: {
-            /** Format: uuid */
-            activityId?: string;
-            type?: string;
-            /** Format: date-time */
-            startedAt?: string;
-            /** Format: int64 */
-            durationSeconds?: number;
             /** Format: double */
             distanceMeters?: number | null;
-            notes?: string | null;
-        };
-        FeedAuthorDto: {
-            /** Format: uuid */
-            ownerId?: string;
-            ownerName?: string;
-            /** Format: uuid */
-            petId?: string | null;
-            petName?: string | null;
-            petAvatarUrl?: string | null;
-            petSpecies?: string | null;
-            neighborhood?: string | null;
-        };
-        FeedCardDto: {
             /** Format: uuid */
             id?: string;
-            /** @enum {string} */
-            type?: "POST" | "ACTIVITY" | "ACHIEVEMENT" | "SPONSORED";
             /** Format: date-time */
-            publishedAt?: string | null;
-            author?: components["schemas"]["FeedAuthorDto"] | null;
-            post?: components["schemas"]["PostContentDto"] | null;
-            activity?: components["schemas"]["ActivityContentDto"] | null;
-            achievement?: components["schemas"]["AchievementContentDto"] | null;
-            sponsored?: components["schemas"]["SponsoredContentDto"] | null;
-            reactions?: components["schemas"]["ReactionSummaryDto"] | null;
-            /** Format: int64 */
-            commentCount?: number;
-        };
-        PageResponseFeedCardDto: {
-            items?: components["schemas"]["FeedCardDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
-        };
-        PostContentDto: {
+            lastSeenAt?: string;
+            /** Format: double */
+            latitude?: number;
+            /** Format: double */
+            longitude?: number;
             /** Format: uuid */
-            postId?: string;
-            caption?: string | null;
-            placeName?: string | null;
-            media?: components["schemas"]["MediaDto"][];
-            taggedPetIds?: string[];
-        };
-        SponsoredContentDto: {
-            /** Format: uuid */
-            campaignId?: string;
-            /** Format: uuid */
-            partnerId?: string;
-            partnerName?: string;
-            verified?: boolean;
-            title?: string;
-            description?: string;
-            ctaLabel?: string;
-            ctaType?: string;
-            ctaUrl?: string | null;
-            /** Format: uuid */
-            serviceId?: string | null;
-            mediaUrl?: string | null;
-            label?: string;
-        };
-        PageResponseCommentDto: {
-            items?: components["schemas"]["CommentDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
-        };
-        LeaderboardDto: {
-            scope?: string;
-            entries?: components["schemas"]["LeaderboardEntryDto"][];
-        };
-        LeaderboardEntryDto: {
-            /** Format: int32 */
-            rank?: number;
+            ownerId?: string;
             /** Format: uuid */
             petId?: string;
             petName?: string;
-            petAvatarUrl?: string | null;
-            ownerName?: string;
-            neighborhood?: string | null;
+            petSpecies?: string;
+            photoUrl?: string | null;
             /** Format: int32 */
-            level?: number;
-            levelTitle?: string;
+            radiusMeters?: number;
             /** Format: int64 */
-            weeklyXp?: number;
-            own?: boolean;
+            sightings?: number;
+            status?: string;
         };
-        DiscoverDto: {
-            sponsored?: components["schemas"]["DiscoverPartnerDto"][];
-            communities?: components["schemas"]["CommunityDto"][];
-            events?: components["schemas"]["CommunityEventDto"][];
+        MediaDto: {
+            contentType?: string;
+            /** Format: uuid */
+            id?: string;
+            url?: string;
         };
-        DiscoverPartnerDto: {
-            /** Format: uuid */
-            campaignId?: string;
-            /** Format: uuid */
-            partnerId?: string;
-            partnerName?: string;
-            verified?: boolean;
-            title?: string;
-            description?: string;
-            ctaLabel?: string;
-            ctaType?: string;
-            ctaUrl?: string | null;
-            /** Format: uuid */
-            serviceId?: string | null;
-            mediaUrl?: string | null;
-            label?: string;
-        };
-        DashboardSummaryDto: {
-            /** Format: uuid */
-            ownerId?: string;
-            /** Format: int32 */
-            petCount?: number;
-            /** Format: int32 */
-            activityCountLast7Days?: number;
+        MediaType: {
+            charset?: string;
+            concrete?: boolean;
+            parameters?: {
+                [key: string]: string;
+            };
             /** Format: double */
-            totalDistanceMetersLast7Days?: number;
-            /** Format: int64 */
-            totalDurationSecondsLast7Days?: number;
-            /** Format: int32 */
-            currentStreakDays?: number;
-            recentActivities?: components["schemas"]["ActivityResponseDto"][];
+            qualityValue?: number;
+            subtype?: string;
+            subtypeSuffix?: string;
+            type?: string;
+            wildcardSubtype?: boolean;
+            wildcardType?: boolean;
         };
-        PageResponseCommunityDto: {
-            items?: components["schemas"]["CommunityDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
+        NearbyPetDto: {
+            avatarUrl?: string | null;
+            breed?: string | null;
+            /** Format: double */
+            distanceMeters?: number;
+            ownerName?: string;
+            /** Format: uuid */
+            petId?: string;
+            petName?: string;
+            species?: string;
         };
-        PageResponseCommunityEventDto: {
-            items?: components["schemas"]["CommunityEventDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
+        NotificationDto: {
+            body?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            data?: {
+                [key: string]: unknown;
+            };
+            /** Format: uuid */
+            id?: string;
+            read?: boolean;
+            title?: string;
+            /** @enum {string} */
+            type?: "HEALTH_REMINDER" | "ACHIEVEMENT" | "CHALLENGE" | "SOCIAL" | "PLAYDATE" | "LOST_PET" | "BOOKING" | "SYSTEM";
         };
-        PageResponseConversationDto: {
-            items?: components["schemas"]["ConversationDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            hasNext?: boolean;
+        NotificationPreferencesDto: {
+            bookings?: boolean;
+            healthReminders?: boolean;
+            lostPets?: boolean;
+            playdates?: boolean;
+            social?: boolean;
+        };
+        OwnerResponseDto: {
+            avatarUrl?: string | null;
+            bio?: string | null;
+            displayName?: string;
+            email?: string;
+            /** Format: uuid */
+            id?: string;
+            phone?: string | null;
+            role?: string;
         };
         PageResponseAdminCampaignDto: {
+            hasNext?: boolean;
             items?: components["schemas"]["AdminCampaignDto"][];
             /** Format: int32 */
             page?: number;
             /** Format: int32 */
             size?: number;
+        };
+        PageResponseAdventureDto: {
             hasNext?: boolean;
+            items?: components["schemas"]["AdventureDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponseBookingDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["BookingDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponseCommentDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["CommentDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponseCommunityDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["CommunityDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponseCommunityEventDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["CommunityEventDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponseConversationDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["ConversationDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponseFeedCardDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["FeedCardDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponseNotificationDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["NotificationDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponsePetFriendDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["PetFriendDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponsePetPostDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["PetPostDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PageResponsePlaceDto: {
+            hasNext?: boolean;
+            items?: components["schemas"]["PlaceDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        PartnerProfileDto: {
+            address?: string | null;
+            businessName?: string;
+            /** @enum {string} */
+            category?: "VET" | "GROOMING" | "HOTEL" | "CAFE" | "PET_SHOP" | "TRAINING" | "WALKER" | "OTHER";
+            coverUrl?: string | null;
+            description?: string | null;
+            /** Format: double */
+            latitude?: number | null;
+            /** Format: double */
+            longitude?: number | null;
+            openingHours?: string | null;
+            /** Format: uuid */
+            partnerId?: string;
+            phone?: string | null;
+            /** Format: uuid */
+            placeId?: string | null;
+            verified?: boolean;
+            /** Format: date-time */
+            verifiedAt?: string | null;
+            website?: string | null;
+        };
+        PartnerServiceDto: {
+            active?: boolean;
+            currency?: string;
+            description?: string | null;
+            /** Format: int32 */
+            durationMinutes?: number;
+            /** Format: uuid */
+            id?: string;
+            name?: string;
+            /** Format: uuid */
+            partnerId?: string;
+            /** Format: int64 */
+            priceCents?: number;
+        };
+        PartnerServiceRequest: {
+            active?: boolean | null;
+            description?: string | null;
+            /** Format: int32 */
+            durationMinutes: number | null;
+            name: string | null;
+            /** Format: int64 */
+            priceCents: number | null;
+        };
+        PaymentTransactionResponseDto: {
+            amount?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            currency?: string;
+            /** Format: int64 */
+            expectedCredits?: number;
+            failureReason?: string | null;
+            /** Format: uuid */
+            id?: string;
+            method?: string | null;
+            /** Format: uuid */
+            partnerId?: string;
+            provider?: string;
+            providerCheckoutUrl?: string | null;
+            /** @enum {string} */
+            status?: "PENDING" | "CONFIRMED" | "FAILED" | "EXPIRED" | "CANCELED" | "DISPUTED" | "REFUNDED";
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        PetEngagementDto: {
+            /** Format: int64 */
+            badgeCount?: number;
+            /** Format: int32 */
+            level?: number;
+            levelTitle?: string;
+            /** Format: uuid */
+            petId?: string;
+            /** Format: int32 */
+            streakDays?: number;
+            /** Format: int64 */
+            xp?: number;
+            /** Format: int64 */
+            xpForNextLevel?: number | null;
+            /** Format: int64 */
+            xpIntoLevel?: number;
+        };
+        PetFriendDto: {
+            avatarUrl?: string | null;
+            breed?: string | null;
+            /** Format: date-time */
+            mutualSince?: string;
+            name?: string;
+            ownerName?: string;
+            /** Format: uuid */
+            petId?: string;
+            species?: string;
+        };
+        PetPostDto: {
+            caption?: string | null;
+            /** Format: int64 */
+            commentCount?: number;
+            /** Format: uuid */
+            feedItemId?: string;
+            media?: string[];
+            placeName?: string | null;
+            /** Format: uuid */
+            postId?: string;
+            /** Format: date-time */
+            publishedAt?: string;
+            /** Format: int64 */
+            reactionCount?: number;
+        };
+        PetProfileDto: {
+            badgeShelf?: components["schemas"]["BadgeDto"][];
+            engagement?: components["schemas"]["PetEngagementDto"];
+            following?: boolean;
+            own?: boolean;
+            owner?: components["schemas"]["ProfileOwnerDto"];
+            pet?: components["schemas"]["ProfilePetDto"];
+            stats?: components["schemas"]["ProfileStatsDto"];
+            weeklyActivity?: components["schemas"]["WeeklyBarDto"][];
+        };
+        PetResponseDto: {
+            activityPreference?: string | null;
+            /** Format: date */
+            birthDate?: string | null;
+            breed?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: uuid */
+            id?: string;
+            name?: string;
+            /** Format: uuid */
+            ownerId?: string;
+            size?: string;
+            species?: string;
+            status?: string;
+        };
+        PlaceDto: {
+            address?: string | null;
+            /** @enum {string} */
+            category?: "PARK" | "VET" | "CAFE" | "HOTEL" | "GROOMING" | "PET_SHOP" | "TRAINING" | "OTHER";
+            /** Format: int64 */
+            checkInsToday?: number;
+            description?: string | null;
+            /** Format: double */
+            distanceMeters?: number | null;
+            /** Format: uuid */
+            id?: string;
+            /** Format: double */
+            latitude?: number;
+            /** Format: double */
+            longitude?: number;
+            name?: string;
+            /** Format: uuid */
+            partnerId?: string | null;
+            /** Format: double */
+            rating?: number | null;
+            /** Format: int32 */
+            ratingCount?: number;
+            verifiedPartner?: boolean;
+        };
+        PlaydateDto: {
+            /** Format: uuid */
+            id?: string;
+            invites?: components["schemas"]["PlaydateInviteDto"][];
+            /** Format: double */
+            latitude?: number | null;
+            locationName?: string | null;
+            /** Format: double */
+            longitude?: number | null;
+            message?: string | null;
+            /** @enum {string} */
+            mode?: "NOW" | "SCHEDULED";
+            /** Format: uuid */
+            organizerOwnerId?: string;
+            /** Format: uuid */
+            organizerPetId?: string;
+            organizerPetName?: string;
+            /** Format: uuid */
+            placeId?: string | null;
+            /** Format: date-time */
+            startsAt?: string;
+            status?: string;
+        };
+        PlaydateInviteDto: {
+            /** Format: uuid */
+            petId?: string;
+            petName?: string;
+            status?: string;
+        };
+        PostContentDto: {
+            caption?: string | null;
+            media?: components["schemas"]["MediaDto"][];
+            placeName?: string | null;
+            /** Format: uuid */
+            postId?: string;
+            taggedPetIds?: string[];
+        };
+        PostCreatedDto: {
+            /** Format: uuid */
+            feedItemId?: string;
+            /** Format: uuid */
+            postId?: string;
+        };
+        PricingResponseDto: {
+            /** Format: int64 */
+            campaignCreationCostCredits?: number;
+            /** Format: int32 */
+            campaignDurationDays?: number;
+            campaignPriceAmount?: number;
+            creditsPerCurrencyUnit?: number;
+            currency?: string;
+            maxPurchaseAmount?: number;
+            minPurchaseAmount?: number;
+            provider?: string;
+        };
+        ProfileOwnerDto: {
+            city?: string | null;
+            displayName?: string;
+            /** Format: uuid */
+            id?: string;
+            neighborhood?: string | null;
+        };
+        ProfilePetDto: {
+            activityPreference?: string | null;
+            avatarUrl?: string | null;
+            bio?: string | null;
+            /** Format: date */
+            birthDate?: string | null;
+            breed?: string | null;
+            coverUrl?: string | null;
+            /** Format: uuid */
+            id?: string;
+            name?: string;
+            size?: string;
+            species?: string;
+        };
+        ProfileStatsDto: {
+            /** Format: int64 */
+            adventures?: number;
+            /** Format: int64 */
+            followers?: number;
+            /** Format: int64 */
+            moments?: number;
+        };
+        PushTokenRequest: {
+            /** @enum {string|null} */
+            platform: "IOS" | "ANDROID" | "WEB" | null;
+            token: string | null;
+        };
+        ReactRequest: {
+            /** @enum {string|null} */
+            type: "PAW" | "LAUGH" | "HEART" | null;
+        };
+        ReactionSummaryDto: {
+            counts?: {
+                [key: string]: number;
+            };
+            /** @enum {string|null} */
+            viewerReaction?: "PAW" | "LAUGH" | "HEART" | null;
+        };
+        RegisterOwnerRequest: {
+            displayName: string;
+            /** Format: email */
+            email: string;
+            password: string;
+        };
+        RegisterPartnerRequest: {
+            businessName: string;
+            description?: string | null;
+            displayName: string;
+            /** Format: email */
+            email: string;
+            password: string;
+            website?: string | null;
+        };
+        RejectCampaignRequest: {
+            reason?: string | null;
+        };
+        ResolveAlertRequest: {
+            found: boolean | null;
+        };
+        RespondInviteRequest: {
+            /** Format: uuid */
+            petId: string | null;
+            /** @enum {string|null} */
+            response: "ACCEPTED" | "DECLINED" | null;
+        };
+        RsvpRequest: {
+            /** @enum {string|null} */
+            status: "GOING" | "INTERESTED" | null;
+        };
+        SendMessageRequest: {
+            content: string | null;
+        };
+        SendMessageResponse: {
+            assistantMessage?: components["schemas"]["AiMessageDto"];
+            usage?: components["schemas"]["AiUsageDto"];
+            userMessage?: components["schemas"]["AiMessageDto"];
+        };
+        ShareLinkDto: {
+            /** Format: date-time */
+            expiresAt?: string;
+            path?: string;
+            token?: string;
+        };
+        ShareLinkRequest: {
+            /** Format: int32 */
+            days?: number | null;
+        };
+        SightingRequest: {
+            /** Format: double */
+            latitude: number | null;
+            /** Format: double */
+            longitude: number | null;
+            note?: string | null;
+            /** Format: date-time */
+            seenAt: string | null;
+        };
+        SponsoredContentDto: {
+            /** Format: uuid */
+            campaignId?: string;
+            ctaLabel?: string;
+            ctaType?: string;
+            ctaUrl?: string | null;
+            description?: string;
+            label?: string;
+            mediaUrl?: string | null;
+            /** Format: uuid */
+            partnerId?: string;
+            partnerName?: string;
+            /** Format: uuid */
+            serviceId?: string | null;
+            title?: string;
+            verified?: boolean;
+        };
+        StoryDto: {
+            caption?: string | null;
+            contentType?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            expiresAt?: string;
+            /** Format: uuid */
+            id?: string;
+            mediaUrl?: string;
+            viewed?: boolean;
+        };
+        StoryGroupDto: {
+            allViewed?: boolean;
+            own?: boolean;
+            /** Format: uuid */
+            ownerId?: string;
+            petAvatarUrl?: string | null;
+            /** Format: uuid */
+            petId?: string;
+            petName?: string;
+            stories?: components["schemas"]["StoryDto"][];
+        };
+        TargetLocationDto: {
+            /** Format: double */
+            latitude?: number;
+            /** Format: double */
+            longitude?: number;
+            /** Format: int32 */
+            radiusMeters?: number;
+        };
+        UpdateCampaignRequest: {
+            clearTargetLocation?: boolean | null;
+            ctaLabel?: string | null;
+            /** @enum {string|null} */
+            ctaType?: "LINK" | "BOOKING" | null;
+            ctaUrl?: string | null;
+            description?: string | null;
+            /** Format: date-time */
+            endsAt?: string | null;
+            formats?: ("FEED_CARD" | "MAP_PIN" | "DISCOVER_HIGHLIGHT" | "NEARBY_PROMO" | "AI_RECOMMENDATION")[] | null;
+            /** Format: uuid */
+            mediaAssetId?: string | null;
+            /** Format: uuid */
+            serviceId?: string | null;
+            /** Format: date-time */
+            startsAt?: string | null;
+            targetAudience?: string | null;
+            targetBreeds?: string[] | null;
+            targetInterests?: string[] | null;
+            /** Format: double */
+            targetLatitude?: number | null;
+            /** Format: double */
+            targetLongitude?: number | null;
+            /** Format: int32 */
+            targetRadiusMeters?: number | null;
+            targetSpecies?: string[] | null;
+            title?: string | null;
+        };
+        UpdatePartnerProfileRequest: {
+            address?: string | null;
+            businessName?: string | null;
+            /** @enum {string|null} */
+            category?: "VET" | "GROOMING" | "HOTEL" | "CAFE" | "PET_SHOP" | "TRAINING" | "WALKER" | "OTHER" | null;
+            clearLocation?: boolean | null;
+            coverUrl?: string | null;
+            description?: string | null;
+            /** Format: double */
+            latitude?: number | null;
+            /** Format: double */
+            longitude?: number | null;
+            openingHours?: string | null;
+            phone?: string | null;
+            website?: string | null;
+        };
+        UpdateProfileRequest: {
+            avatarUrl?: string | null;
+            bio?: string | null;
+            displayName?: string | null;
+            phone?: string | null;
+        };
+        WalletResponseDto: {
+            accounts?: components["schemas"]["LedgerAccountResponseDto"][];
+            blockedReason?: string | null;
+            /** Format: uuid */
+            partnerId?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "BLOCKED";
+            /** Format: int64 */
+            totalBalance?: number;
+            /** Format: uuid */
+            walletId?: string;
+        };
+        WeeklyBarDto: {
+            day?: string;
+            /** Format: int64 */
+            minutes?: number;
+        };
+        WeightDto: {
+            /** Format: date */
+            measuredOn?: string;
+            weightKg?: number;
+        };
+        WeightRequest: {
+            /** Format: date */
+            measuredOn: string | null;
+            weightKg: number | null;
         };
     };
     responses: never;
@@ -2982,1059 +2982,85 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    updateRecord: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
-                recordId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["HealthRecordRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["HealthRecordDto"];
-                };
-            };
-        };
-    };
-    deleteRecord: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
-                recordId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    follow: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["FollowStateDto"];
-                };
-            };
-        };
-    };
-    unfollow: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["FollowStateDto"];
-                };
-            };
-        };
-    };
-    updateService: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                serviceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PartnerServiceRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartnerServiceDto"];
-                };
-            };
-        };
-    };
-    react: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                itemId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReactRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReactionSummaryDto"];
-                };
-            };
-        };
-    };
-    unreact: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                itemId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReactionSummaryDto"];
-                };
-            };
-        };
-    };
-    receive: {
-        parameters: {
-            query?: never;
-            header: {
-                headers: components["schemas"]["HttpHeaders"];
-            };
-            path: {
-                provider: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": string;
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    stories: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StoryGroupDto"][];
-                };
-            };
-        };
-    };
-    createStory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateStoryRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StoryDto"];
-                };
-            };
-        };
-    };
-    viewStory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                storyId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    createPost: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePostRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PostCreatedDto"];
-                };
-            };
-        };
-    };
-    playdates: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PlaydateDto"][];
-                };
-            };
-        };
-    };
-    createPlaydate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePlaydateRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PlaydateDto"];
-                };
-            };
-        };
-    };
-    respond: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                playdateId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RespondInviteRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PlaydateDto"];
-                };
-            };
-        };
-    };
-    cancelPlaydate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                playdateId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PlaydateDto"];
-                };
-            };
-        };
-    };
-    checkIn: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                placeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CheckInRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CheckInDto"];
-                };
-            };
-        };
-    };
-    listPets: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PetResponseDto"][];
-                };
-            };
-        };
-    };
-    createPet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePetRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PetResponseDto"];
-                };
-            };
-        };
-    };
-    weight: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WeightRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WeightDto"][];
-                };
-            };
-        };
-    };
-    share: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["ShareLinkRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ShareLinkDto"];
-                };
-            };
-        };
-    };
-    revoke: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    addRecord: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["HealthRecordRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["HealthRecordDto"];
-                };
-            };
-        };
-    };
-    partnerServices: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartnerServiceDto"][];
-                };
-            };
-        };
-    };
-    createService: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PartnerServiceRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartnerServiceDto"];
-                };
-            };
-        };
-    };
-    create: {
-        parameters: {
-            query?: never;
-            header?: {
-                "Idempotency-Key"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateCampaignRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignResponseDto"];
-                };
-            };
-        };
-    };
-    submit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                campaignId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignV2Dto"];
-                };
-            };
-        };
-    };
-    resume: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                campaignId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignV2Dto"];
-                };
-            };
-        };
-    };
-    pause: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                campaignId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignV2Dto"];
-                };
-            };
-        };
-    };
-    end: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                campaignId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignV2Dto"];
-                };
-            };
-        };
-    };
-    confirm: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                bookingId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BookingDto"];
-                };
-            };
-        };
-    };
-    complete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                bookingId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BookingDto"];
-                };
-            };
-        };
-    };
-    listPurchases: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PaymentTransactionResponseDto"][];
-                };
-            };
-        };
-    };
-    createPurchase: {
-        parameters: {
-            query?: never;
-            header?: {
-                "Idempotency-Key"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePurchaseRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PaymentTransactionResponseDto"];
-                };
-            };
-        };
-    };
-    completeFakePurchase: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                transactionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PaymentTransactionResponseDto"];
-                };
-            };
-        };
-    };
-    register: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RegisterPartnerRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AuthResponseDto"];
-                };
-            };
-        };
-    };
-    login: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LoginRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AuthResponseDto"];
-                };
-            };
-        };
-    };
-    read: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                notificationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readAll: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    upload: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MediaDto"];
-                };
-            };
-        };
-    };
-    lostPets: {
-        parameters: {
-            query: {
-                lat: number;
-                lng: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["LostPetAlertDto"][];
-                };
-            };
-        };
-    };
-    createLostPet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateLostPetAlertRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["LostPetAlertDto"];
-                };
-            };
-        };
-    };
-    sighting: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                alertId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SightingRequest"];
-            };
-        };
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    resolve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                alertId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResolveAlertRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["LostPetAlertDto"];
-                };
-            };
-        };
-    };
-    generateInsight: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["GenerateInsightRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["InsightResponseDto"];
-                };
-            };
-        };
-    };
-    comments: {
+    listActivities: {
         parameters: {
             query?: {
+                petId?: string;
+                from?: string;
+                to?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ActivityResponseDto"][];
+                };
+            };
+        };
+    };
+    recordActivity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateActivityRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ActivityResponseDto"];
+                };
+            };
+        };
+    };
+    queue: {
+        parameters: {
+            query?: {
+                status?: string;
                 page?: number;
                 size?: number;
             };
             header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseAdminCampaignDto"];
+                };
+            };
+        };
+    };
+    approve: {
+        parameters: {
+            query?: never;
+            header?: never;
             path: {
-                itemId: string;
+                campaignId: string;
             };
             cookie?: never;
         };
@@ -4046,80 +3072,52 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageResponseCommentDto"];
+                    "*/*": components["schemas"]["AdminCampaignDto"];
                 };
             };
         };
     };
-    comment: {
+    reject: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                itemId: string;
+                campaignId: string;
             };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RejectCampaignRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminCampaignDto"];
+                };
+            };
+        };
+    };
+    createChallenge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CommentRequest"];
+                "application/json": components["schemas"]["CreateChallengeRequest"];
             };
         };
         responses: {
             /** @description Created */
             201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CommentDto"];
-                };
-            };
-        };
-    };
-    rsvp: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                eventId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RsvpRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CommunityEventDto"];
-                };
-            };
-        };
-    };
-    join: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                challengeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["JoinChallengeRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4129,16 +3127,88 @@ export interface operations {
             };
         };
     };
-    registerToken: {
+    verify: {
+        parameters: {
+            query?: {
+                verified?: boolean;
+            };
+            header?: never;
+            path: {
+                partnerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartnerProfileDto"];
+                };
+            };
+        };
+    };
+    adjust: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                partnerId: string;
+            };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PushTokenRequest"];
+                "application/json": components["schemas"]["AdminAdjustmentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    unblock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partnerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WalletResponseDto"];
+                };
+            };
+        };
+    };
+    adEvent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdEventRequest"];
             };
         };
         responses: {
@@ -4151,61 +3221,12 @@ export interface operations {
             };
         };
     };
-    communities: {
-        parameters: {
-            query?: {
-                kind?: "BREED" | "NEIGHBORHOOD" | "CAUSE";
-                q?: string;
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageResponseCommunityDto"];
-                };
-            };
-        };
-    };
-    create_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateCommunityRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CommunityDto"];
-                };
-            };
-        };
-    };
-    join_1: {
+    cancel_1: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                communityId: string;
+                actionId: string;
             };
             cookie?: never;
         };
@@ -4217,17 +3238,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CommunityDto"];
+                    "*/*": components["schemas"]["AiActionDto"];
                 };
             };
         };
     };
-    leave: {
+    confirm_1: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                communityId: string;
+                actionId: string;
             };
             cookie?: never;
         };
@@ -4239,176 +3260,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CommunityDto"];
-                };
-            };
-        };
-    };
-    events: {
-        parameters: {
-            query?: {
-                upcoming?: boolean;
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path: {
-                communityId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageResponseCommunityEventDto"];
-                };
-            };
-        };
-    };
-    createEvent: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                communityId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateEventRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CommunityEventDto"];
-                };
-            };
-        };
-    };
-    myBookings: {
-        parameters: {
-            query?: {
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageResponseBookingDto"];
-                };
-            };
-        };
-    };
-    book: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateBookingRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BookingDto"];
-                };
-            };
-        };
-    };
-    cancel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                bookingId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BookingDto"];
-                };
-            };
-        };
-    };
-    register_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RegisterOwnerRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AuthResponseDto"];
-                };
-            };
-        };
-    };
-    login_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LoginRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AuthResponseDto"];
+                    "*/*": components["schemas"]["AiActionDto"];
                 };
             };
         };
@@ -4508,12 +3360,127 @@ export interface operations {
             };
         };
     };
-    confirm_1: {
+    usage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AiUsageDto"];
+                };
+            };
+        };
+    };
+    login_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthResponseDto"];
+                };
+            };
+        };
+    };
+    register_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterOwnerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthResponseDto"];
+                };
+            };
+        };
+    };
+    myBookings: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseBookingDto"];
+                };
+            };
+        };
+    };
+    book: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BookingDto"];
+                };
+            };
+        };
+    };
+    cancel: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                actionId: string;
+                bookingId: string;
             };
             cookie?: never;
         };
@@ -4525,17 +3492,66 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AiActionDto"];
+                    "*/*": components["schemas"]["BookingDto"];
                 };
             };
         };
     };
-    cancel_1: {
+    communities: {
+        parameters: {
+            query?: {
+                kind?: "BREED" | "NEIGHBORHOOD" | "CAUSE";
+                q?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseCommunityDto"];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCommunityRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CommunityDto"];
+                };
+            };
+        };
+    };
+    community: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                actionId: string;
+                communityId: string;
             };
             cookie?: never;
         };
@@ -4547,23 +3563,137 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AiActionDto"];
+                    "*/*": components["schemas"]["CommunityDto"];
                 };
             };
         };
     };
-    adEvent: {
+    events: {
+        parameters: {
+            query?: {
+                upcoming?: boolean;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                communityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseCommunityEventDto"];
+                };
+            };
+        };
+    };
+    createEvent: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                campaignId: string;
+                communityId: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AdEventRequest"];
+                "application/json": components["schemas"]["CreateEventRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CommunityEventDto"];
+                };
+            };
+        };
+    };
+    join_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                communityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CommunityDto"];
+                };
+            };
+        };
+    };
+    leave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                communityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CommunityDto"];
+                };
+            };
+        };
+    };
+    dashboardSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DashboardSummaryDto"];
+                };
+            };
+        };
+    };
+    registerToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenRequest"];
             };
         };
         responses: {
@@ -4576,45 +3706,19 @@ export interface operations {
             };
         };
     };
-    unblock: {
+    removeToken: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                partnerId: string;
+                token: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WalletResponseDto"];
-                };
-            };
-        };
-    };
-    adjust: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                partnerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAdjustmentRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4622,15 +3726,14 @@ export interface operations {
             };
         };
     };
-    verify: {
+    discover: {
         parameters: {
             query?: {
-                verified?: boolean;
+                lat?: number;
+                lng?: number;
             };
             header?: never;
-            path: {
-                partnerId: string;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -4641,26 +3744,48 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PartnerProfileDto"];
+                    "*/*": components["schemas"]["DiscoverDto"];
                 };
             };
         };
     };
-    createChallenge: {
+    challenges: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ChallengeDto"][];
+                };
+            };
+        };
+    };
+    join: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                challengeId: string;
+            };
+            cookie?: never;
+        };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateChallengeRequest"];
+                "application/json": components["schemas"]["JoinChallengeRequest"];
             };
         };
         responses: {
-            /** @description Created */
-            201: {
+            /** @description OK */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4670,18 +3795,188 @@ export interface operations {
             };
         };
     };
-    reject: {
+    leaderboard: {
+        parameters: {
+            query?: {
+                scope?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LeaderboardDto"];
+                };
+            };
+        };
+    };
+    rsvp: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                campaignId: string;
+                eventId: string;
             };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RsvpRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CommunityEventDto"];
+                };
+            };
+        };
+    };
+    feed: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+                lat?: number;
+                lng?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseFeedCardDto"];
+                };
+            };
+        };
+    };
+    comments: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseCommentDto"];
+                };
+            };
+        };
+    };
+    comment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CommentDto"];
+                };
+            };
+        };
+    };
+    react: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReactRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReactionSummaryDto"];
+                };
+            };
+        };
+    };
+    unreact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReactionSummaryDto"];
+                };
+            };
+        };
+    };
+    generateInsight: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["RejectCampaignRequest"];
+                "application/json": components["schemas"]["GenerateInsightRequest"];
             };
         };
         responses: {
@@ -4691,40 +3986,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AdminCampaignDto"];
+                    "*/*": components["schemas"]["InsightResponseDto"];
                 };
             };
         };
     };
-    approve: {
+    lostPets: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                campaignId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AdminCampaignDto"];
-                };
-            };
-        };
-    };
-    listActivities: {
-        parameters: {
-            query?: {
-                petId?: string;
-                from?: string;
-                to?: string;
-                limit?: number;
+            query: {
+                lat: number;
+                lng: number;
             };
             header?: never;
             path?: never;
@@ -4738,12 +4009,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ActivityResponseDto"][];
+                    "*/*": components["schemas"]["LostPetAlertDto"][];
                 };
             };
         };
     };
-    recordActivity: {
+    createLostPet: {
         parameters: {
             query?: never;
             header?: never;
@@ -4752,55 +4023,33 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateActivityRequest"];
+                "application/json": components["schemas"]["CreateLostPetAlertRequest"];
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ActivityResponseDto"];
+                    "*/*": components["schemas"]["LostPetAlertDto"];
                 };
             };
         };
     };
-    getPet: {
+    resolve: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PetResponseDto"];
-                };
-            };
-        };
-    };
-    updatePet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
+                alertId: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreatePetRequest"];
+                "application/json": components["schemas"]["ResolveAlertRequest"];
             };
         };
         responses: {
@@ -4810,100 +4059,32 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PetResponseDto"];
+                    "*/*": components["schemas"]["LostPetAlertDto"];
                 };
             };
         };
     };
-    profile: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartnerProfileDto"];
-                };
-            };
-        };
-    };
-    updateProfile: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdatePartnerProfileRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartnerProfileDto"];
-                };
-            };
-        };
-    };
-    campaign: {
+    sighting: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                campaignId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignV2Dto"];
-                };
-            };
-        };
-    };
-    update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                campaignId: string;
+                alertId: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateCampaignRequest"];
+                "application/json": components["schemas"]["SightingRequest"];
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["CampaignV2Dto"];
-                };
+                content?: never;
             };
         };
     };
@@ -4995,12 +4176,1011 @@ export interface operations {
             };
         };
     };
-    shared: {
+    upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MediaDto"];
+                };
+            };
+        };
+    };
+    download: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                token: string;
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    notifications: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseNotificationDto"];
+                };
+            };
+        };
+    };
+    readAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    unreadCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": {
+                        [key: string]: number;
+                    };
+                };
+            };
+        };
+    };
+    read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notificationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthResponseDto"];
+                };
+            };
+        };
+    };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterPartnerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthResponseDto"];
+                };
+            };
+        };
+    };
+    pricing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PricingResponseDto"];
+                };
+            };
+        };
+    };
+    listPurchases: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PaymentTransactionResponseDto"][];
+                };
+            };
+        };
+    };
+    createPurchase: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePurchaseRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PaymentTransactionResponseDto"];
+                };
+            };
+        };
+    };
+    getPurchase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transactionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PaymentTransactionResponseDto"];
+                };
+            };
+        };
+    };
+    completeFakePurchase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transactionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PaymentTransactionResponseDto"];
+                };
+            };
+        };
+    };
+    partnerBookings: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseBookingDto"];
+                };
+            };
+        };
+    };
+    complete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BookingDto"];
+                };
+            };
+        };
+    };
+    confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BookingDto"];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCampaignRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignResponseDto"];
+                };
+            };
+        };
+    };
+    campaign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignV2Dto"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCampaignRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignV2Dto"];
+                };
+            };
+        };
+    };
+    end: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignV2Dto"];
+                };
+            };
+        };
+    };
+    metrics: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignMetricsDto"];
+                };
+            };
+        };
+    };
+    pause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignV2Dto"];
+                };
+            };
+        };
+    };
+    resume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignV2Dto"];
+                };
+            };
+        };
+    };
+    submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaignId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignV2Dto"];
+                };
+            };
+        };
+    };
+    profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartnerProfileDto"];
+                };
+            };
+        };
+    };
+    updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePartnerProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartnerProfileDto"];
+                };
+            };
+        };
+    };
+    partnerServices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartnerServiceDto"][];
+                };
+            };
+        };
+    };
+    createService: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartnerServiceRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartnerServiceDto"];
+                };
+            };
+        };
+    };
+    updateService: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                serviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartnerServiceRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartnerServiceDto"];
+                };
+            };
+        };
+    };
+    listV2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CampaignV2Dto"][];
+                };
+            };
+        };
+    };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WalletResponseDto"];
+                };
+            };
+        };
+    };
+    entries: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LedgerEntryPage"];
+                };
+            };
+        };
+    };
+    partner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partnerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartnerProfileDto"];
+                };
+            };
+        };
+    };
+    listPets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PetResponseDto"][];
+                };
+            };
+        };
+    };
+    createPet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePetRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PetResponseDto"];
+                };
+            };
+        };
+    };
+    nearbyPets: {
+        parameters: {
+            query: {
+                lat: number;
+                lng: number;
+                radius?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NearbyPetDto"][];
+                };
+            };
+        };
+    };
+    getPet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PetResponseDto"];
+                };
+            };
+        };
+    };
+    updatePet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePetRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PetResponseDto"];
+                };
+            };
+        };
+    };
+    adventures: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseAdventureDto"];
+                };
+            };
+        };
+    };
+    badges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BadgeDto"][];
+                };
+            };
+        };
+    };
+    engagement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PetEngagementDto"];
+                };
+            };
+        };
+    };
+    follow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FollowStateDto"];
+                };
+            };
+        };
+    };
+    unfollow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FollowStateDto"];
+                };
+            };
+        };
+    };
+    friends: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponsePetFriendDto"];
+                };
+            };
+        };
+    };
+    passport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
             };
             cookie?: never;
         };
@@ -5013,6 +5193,199 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["HealthPassportDto"];
+                };
+            };
+        };
+    };
+    addRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HealthRecordRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["HealthRecordDto"];
+                };
+            };
+        };
+    };
+    updateRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HealthRecordRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["HealthRecordDto"];
+                };
+            };
+        };
+    };
+    deleteRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    share: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ShareLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShareLinkDto"];
+                };
+            };
+        };
+    };
+    revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    posts: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponsePetPostDto"];
+                };
+            };
+        };
+    };
+    profile_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PetProfileDto"];
+                };
+            };
+        };
+    };
+    weight: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                petId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WeightRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WeightDto"][];
                 };
             };
         };
@@ -5070,38 +5443,37 @@ export interface operations {
             };
         };
     };
-    profile_1: {
+    checkIn: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                petId: string;
+                placeId: string;
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckInRequest"];
+            };
+        };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PetProfileDto"];
+                    "*/*": components["schemas"]["CheckInDto"];
                 };
             };
         };
     };
-    posts: {
+    playdates: {
         parameters: {
-            query?: {
-                page?: number;
-                size?: number;
-            };
+            query?: never;
             header?: never;
-            path: {
-                petId: string;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -5112,17 +5484,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageResponsePetPostDto"];
+                    "*/*": components["schemas"]["PlaydateDto"][];
                 };
             };
         };
     };
-    passport: {
+    createPlaydate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlaydateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlaydateDto"];
+                };
+            };
+        };
+    };
+    cancelPlaydate: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                petId: string;
+                playdateId: string;
             };
             cookie?: never;
         };
@@ -5134,46 +5530,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["HealthPassportDto"];
+                    "*/*": components["schemas"]["PlaydateDto"];
                 };
             };
         };
     };
-    friends: {
-        parameters: {
-            query?: {
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageResponsePetFriendDto"];
-                };
-            };
-        };
-    };
-    engagement: {
+    respond: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                petId: string;
+                playdateId: string;
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RespondInviteRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -5181,498 +5556,31 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PetEngagementDto"];
+                    "*/*": components["schemas"]["PlaydateDto"];
                 };
             };
         };
     };
-    badges: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BadgeDto"][];
-                };
-            };
-        };
-    };
-    adventures: {
-        parameters: {
-            query?: {
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path: {
-                petId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageResponseAdventureDto"];
-                };
-            };
-        };
-    };
-    nearbyPets: {
-        parameters: {
-            query: {
-                lat: number;
-                lng: number;
-                radius?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["NearbyPetDto"][];
-                };
-            };
-        };
-    };
-    partner: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                partnerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartnerProfileDto"];
-                };
-            };
-        };
-    };
-    get: {
+    createPost: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePostRequest"];
+            };
+        };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WalletResponseDto"];
-                };
-            };
-        };
-    };
-    entries: {
-        parameters: {
-            query?: {
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path: {
-                accountId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["LedgerEntryPage"];
-                };
-            };
-        };
-    };
-    listV2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignV2Dto"][];
-                };
-            };
-        };
-    };
-    metrics: {
-        parameters: {
-            query?: {
-                from?: string;
-                to?: string;
-            };
-            header?: never;
-            path: {
-                campaignId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CampaignMetricsDto"];
-                };
-            };
-        };
-    };
-    partnerBookings: {
-        parameters: {
-            query?: {
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageResponseBookingDto"];
-                };
-            };
-        };
-    };
-    getPurchase: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                transactionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PaymentTransactionResponseDto"];
-                };
-            };
-        };
-    };
-    pricing: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PricingResponseDto"];
-                };
-            };
-        };
-    };
-    notifications: {
-        parameters: {
-            query?: {
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageResponseNotificationDto"];
-                };
-            };
-        };
-    };
-    unreadCount: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": {
-                        [key: string]: number;
-                    };
-                };
-            };
-        };
-    };
-    download: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                mediaId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": string;
-                };
-            };
-        };
-    };
-    feed: {
-        parameters: {
-            query?: {
-                page?: number;
-                size?: number;
-                lat?: number;
-                lng?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageResponseFeedCardDto"];
-                };
-            };
-        };
-    };
-    leaderboard: {
-        parameters: {
-            query?: {
-                scope?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["LeaderboardDto"];
-                };
-            };
-        };
-    };
-    challenges: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ChallengeDto"][];
-                };
-            };
-        };
-    };
-    discover: {
-        parameters: {
-            query?: {
-                lat?: number;
-                lng?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DiscoverDto"];
-                };
-            };
-        };
-    };
-    dashboardSummary: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DashboardSummaryDto"];
-                };
-            };
-        };
-    };
-    community: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                communityId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CommunityDto"];
-                };
-            };
-        };
-    };
-    usage: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AiUsageDto"];
-                };
-            };
-        };
-    };
-    queue: {
-        parameters: {
-            query?: {
-                status?: string;
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PageResponseAdminCampaignDto"];
+                    "*/*": components["schemas"]["PostCreatedDto"];
                 };
             };
         };
@@ -5697,7 +5605,71 @@ export interface operations {
             };
         };
     };
-    removeToken: {
+    stories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StoryGroupDto"][];
+                };
+            };
+        };
+    };
+    createStory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStoryRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StoryDto"];
+                };
+            };
+        };
+    };
+    viewStory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                storyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    shared: {
         parameters: {
             query?: never;
             header?: never;
@@ -5708,8 +5680,36 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No Content */
-            204: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["HealthPassportDto"];
+                };
+            };
+        };
+    };
+    receive: {
+        parameters: {
+            query?: never;
+            header: {
+                headers: components["schemas"]["HttpHeaders"];
+            };
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

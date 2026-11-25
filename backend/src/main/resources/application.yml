@@ -18,6 +18,8 @@ spring:
     locations: classpath:db/migration
 
 springdoc:
+  # Ordena chaves do JSON/YAML gerado: a reflexao sobre tipos do Spring (HttpHeaders) varia entre JVMs.
+  writer-with-order-by-keys: true
   api-docs:
     enabled: ${API_DOCS_ENABLED:true}
   swagger-ui:
