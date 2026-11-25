@@ -16,6 +16,7 @@ import java.time.Instant
 class JwtTokenIssuer(
     private val jwtEncoder: JwtEncoder,
     @param:Value("\${app.security.jwt.issuer}") private val issuer: String,
+    @param:Value("\${app.security.jwt.audience}") private val audience: String,
     @param:Value("\${app.security.jwt.ttl-seconds}") private val ttlSeconds: Long,
 ) : TokenIssuer {
 
@@ -23,6 +24,7 @@ class JwtTokenIssuer(
         val now = Instant.now()
         val claims = JwtClaimsSet.builder()
             .issuer(issuer)
+            .audience(listOf(audience))
             .issuedAt(now)
             .expiresAt(now.plusSeconds(ttlSeconds))
             .subject(owner.id.toString())

@@ -95,6 +95,8 @@ abstract class ApiIntegrationTest {
         )
         val now = Instant.now()
         val claims = JwtClaimsSet.builder()
+            .issuer("https://api.pawmotion.ai")
+            .audience(listOf("paw-motion-ai-api"))
             .subject(id.toString())
             .issuedAt(now)
             .expiresAt(now.plusSeconds(3600))
