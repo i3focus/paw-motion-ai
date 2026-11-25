@@ -11,6 +11,7 @@ import com.pawmotionai.ledger.domain.model.LedgerAccountCode
 import com.pawmotionai.ledger.domain.model.LedgerEntryDirection
 import com.pawmotionai.ledger.domain.model.LedgerReferenceType
 import com.pawmotionai.shared.BadRequestException
+import com.pawmotionai.shared.UrlValidation
 import com.pawmotionai.shared.ConflictException
 import com.pawmotionai.shared.ForbiddenException
 import com.pawmotionai.shared.MediaUrls
@@ -66,8 +67,8 @@ class AdsService(
         if (status !in setOf("DRAFT", "PAUSED")) {
             throw ConflictException("Campaigns can only be edited while draft or paused (current: ${status.lowercase()})")
         }
-        if (request.ctaUrl != null && !request.ctaUrl.matches(Regex("(?i)^https?://.*"))) {
-            throw BadRequestException("ctaUrl must start with http:// or https://")
+        if (request.ctaUrl != null && !UrlValidation.isHttpUrl(request.ctaUrl)) {
+            throw BadRequestException("ctaUrl must be a valid http:// or https:// URL")
         }
         if (request.serviceId != null) {
             val owner = jdbc.sql("SELECT partner_id FROM partner_services WHERE id = :id").param("id", request.serviceId)
@@ -151,7 +152,7 @@ class AdsService(
                         if (rs.getObject("media_asset_id") == null) add("media")
                         if (rs.getString("cta").isNullOrBlank()) add("ctaLabel")
                         if (rs.getString("cta_type") == "LINK" && rs.getString("cta_url") == null) add("ctaUrl")
-                        if (rs.getString("cta_url") != null && !rs.getString("cta_url").matches(Regex("(?i)^https?://.*"))) add("valid ctaUrl")
+                        if (rs.getString("cta_url") != null && !UrlValidation.isHttpUrl(rs.getString("cta_url"))) add("valid ctaUrl")
                         if (rs.getString("cta_type") == "BOOKING") {
                             if (rs.getObject("service_id") == null) add("serviceId")
                             else if (rs.getObject("service_active") != true) add("an active service")
@@ -314,6 +315,8 @@ class AdsService(
         if (request.latitude != null && request.longitude != null && (request.latitude !in -90.0..90.0 || request.longitude !in -180.0..180.0)) {
             throw BadRequestException("latitude/longitude out of range")
         }
+        val website = UrlValidation.requireHttpUrlOrNull("website", request.website)
+        val coverUrl = UrlValidation.requireHttpUrlOrNull("coverUrl", request.coverUrl)
         jdbc.sql(
             """
             INSERT INTO partner_profiles (partner_id, business_name, category, description, website, phone, address, location,
@@ -338,10 +341,10 @@ class AdsService(
                 updated_at = now(), version = partner_profiles.version + 1
             """,
         ).param("id", partnerId).param("name", request.businessName?.trim()).param("category", request.category?.name)
-            .param("description", request.description?.trim()).param("website", request.website?.trim())
+            .param("description", request.description?.trim()).param("website", website)
             .param("phone", request.phone?.trim()).param("address", request.address?.trim())
             .param("lat", request.latitude).param("lng", request.longitude).param("clear", request.clearLocation == true)
-            .param("hours", request.openingHours?.trim()).param("cover", request.coverUrl?.trim()).update()
+            .param("hours", request.openingHours?.trim()).param("cover", coverUrl).update()
         syncPlace(partnerId)
         return profile(partnerId)
     }

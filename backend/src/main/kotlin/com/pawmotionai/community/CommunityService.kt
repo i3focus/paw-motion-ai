@@ -5,6 +5,7 @@ import com.pawmotionai.shared.BadRequestException
 import com.pawmotionai.shared.ConflictException
 import com.pawmotionai.shared.ForbiddenException
 import com.pawmotionai.shared.MediaUrls
+import com.pawmotionai.shared.UrlValidation
 import com.pawmotionai.shared.NotFoundException
 import com.pawmotionai.shared.PageRequest
 import com.pawmotionai.shared.OwnerQuotas
@@ -65,6 +66,7 @@ class CommunityService(private val jdbc: JdbcClient, private val quotas: OwnerQu
     @Transactional
     fun create(viewerId: UUID, request: CreateCommunityRequest): CommunityDto {
         if ((request.latitude == null) != (request.longitude == null)) throw BadRequestException("latitude and longitude must be provided together")
+        val coverUrl = UrlValidation.requireHttpUrlOrNull("coverUrl", request.coverUrl)
         quotas.beforeCreateCommunity(viewerId)
         val id = UUID.randomUUID()
         val name = request.name!!.trim()
@@ -76,7 +78,7 @@ class CommunityService(private val jdbc: JdbcClient, private val quotas: OwnerQu
             ON CONFLICT (slug) DO NOTHING
             """,
         ).param("id", id).param("name", name).param("kind", request.kind!!.name)
-            .param("description", request.description?.trim()?.ifEmpty { null }).param("cover", request.coverUrl?.trim()?.ifEmpty { null })
+            .param("description", request.description?.trim()?.ifEmpty { null }).param("cover", coverUrl)
             .param("lat", request.latitude).param("lng", request.longitude).param("creator", viewerId)
         // ON CONFLICT keeps the transaction usable after a slug collision (a raised unique violation would abort it in Postgres).
         // DuplicateKeyException can still come from another unique constraint and is reported as 409.
