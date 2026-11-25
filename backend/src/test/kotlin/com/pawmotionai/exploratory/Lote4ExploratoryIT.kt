@@ -4,25 +4,9 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Lote 4 (C12, C13; C10 moved to MediaQuotaIT; C5 moved to CommunitySlugIT; C16 moved to ReadLimitsIT): data and resources. Spec: security-audit-remediation, task 1. */
+/** Lote 4 (C13; C12 moved to InsightsOwnershipIT; C10 moved to MediaQuotaIT; C5 moved to CommunitySlugIT; C16 moved to ReadLimitsIT): data and resources. Spec: security-audit-remediation, task 1. */
 @Exploratory
 class Lote4ExploratoryIT : ExploratoryApiTest() {
-
-    @Test
-    fun `C12 insight for a pet of another owner does not scan activities before the ownership check`() {
-        val victim = registerOwner("Vera")
-        val attacker = registerOwner("Alex")
-        val foreignPet = createPet(victim)
-        val mark = startStatementLog()
-        try {
-            val response = call("POST", "/api/insights", attacker.token, mapOf("petId" to foreignPet, "periodDays" to 90))
-            val activityScans = statementLogSince(mark).count { it.contains("execute") && it.contains("from activities", ignoreCase = true) }
-            assertTrue(response.status in 400..499, "foreign pet must be refused, got HTTP ${response.status}")
-            assertEquals(0, activityScans, "Counterexample C12: foreign-pet insight (HTTP ${response.status}) ran $activityScans activity scans before the ownership check")
-        } finally {
-            stopStatementLog()
-        }
-    }
 
     @Test
     fun `C13 five insight calls on the same day create one row`() {
