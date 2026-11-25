@@ -38,7 +38,6 @@ class Lote0ExploratoryTest {
     }
 
     /** C20: seed-demo.sh must refuse to run without explicit local mode, before touching the network. */
-    @Exploratory
     @Test
     fun `C20 seed-demo script aborts on a remote target without explicit opt-in`() {
         val script = repoRoot.resolve("scripts/seed-demo.sh")
@@ -63,8 +62,28 @@ class Lote0ExploratoryTest {
         )
     }
 
+    /** C20: with local mode on but a remote host and no SEED_ALLOW_REMOTE, the script must stop before the network. */
+    @Test
+    fun `C20 seed-demo script refuses a remote target without SEED_ALLOW_REMOTE`() {
+        val process = ProcessBuilder("bash", repoRoot.resolve("scripts/seed-demo.sh").toString())
+            .redirectErrorStream(true)
+            .apply {
+                environment().clear()
+                environment()["PATH"] = System.getenv("PATH") ?: "/usr/bin:/bin"
+                environment()["HOME"] = System.getProperty("java.io.tmpdir")
+                environment()["SEED_ALLOW_LOCAL"] = "1"
+                environment()["POSTGRES_PASSWORD"] = "not-a-real-password"
+                environment()["API_BASE_URL"] = "http://seed-target.invalid"
+            }.start()
+        val finished = process.waitFor(60, TimeUnit.SECONDS)
+        if (!finished) process.destroyForcibly()
+        val output = process.inputStream.bufferedReader().readText()
+        assertTrue(finished, "script did not terminate")
+        assertNotEquals(0, process.exitValue())
+        assertTrue(output.contains("SEED_ALLOW_REMOTE"), "expected SEED_ALLOW_REMOTE guard; output: ${output.takeLast(300)}")
+    }
+
     /** C20: no published seed password and no database password fallback in the script. */
-    @Exploratory
     @Test
     fun `C20 seed-demo script has no published password or database fallback`() {
         val text = Files.readString(repoRoot.resolve("scripts/seed-demo.sh"))
