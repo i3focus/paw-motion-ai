@@ -33,7 +33,8 @@ annotation class Exploratory
 object ProvisionalLimits {
     const val MAX_PETS_PER_OWNER = 10
     const val MAX_ACTIVE_ALERTS_PER_OWNER = 5
-    const val MAX_SIGHTINGS_PER_REPORTER = 20 // decision 3.2: 20 per alert; the test uses a single reporter
+    const val MAX_SIGHTINGS_PER_ALERT = 20 // decision 3.2 (per alert)
+    const val MAX_SIGHTINGS_PER_REPORTER = 3 // design C23 (per alert and reporter)
     const val MAX_MEDIA_OBJECTS_PER_OWNER = 50
     const val MAX_MEDIA_BYTES_PER_OWNER = 5L * 1024 * 1024 * 1024
     const val DAILY_XP_CAP_PER_PET_AND_SOURCE = 150
