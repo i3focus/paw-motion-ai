@@ -1,6 +1,8 @@
 package com.pawmotionai.configuration
 
 import com.pawmotionai.identity.application.port.out.OwnerRepository
+import io.micrometer.core.instrument.MeterRegistry
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -31,8 +33,14 @@ class SecurityConfiguration {
     @Bean
     fun securityFilterChain(http: HttpSecurity, corsConfigurationSource: CorsConfigurationSource,
                             ownerRepository: OwnerRepository,
-                            @Value("\${app.security.trusted-proxies}") trustedProxies: String): SecurityFilterChain =
-        http
+                            @Value("\${app.security.trusted-proxies}") trustedProxies: String,
+                            @Value("\${app.rate-limit.mode:shadow}") rateLimitMode: String,
+                            @Value("\${app.rate-limit.webhook-per-minute:600}") webhookPerMinute: Int,
+                            meterRegistry: ObjectProvider<MeterRegistry>): SecurityFilterChain {
+        val clientIpResolver = ClientIpResolver(trustedProxies)
+        val registry = meterRegistry.getIfAvailable()
+        val settings = RateLimitSettings(RateLimitSettings.Mode.parse(rateLimitMode), webhookPerMinute)
+        return http
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource) }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
@@ -42,11 +50,12 @@ class SecurityConfiguration {
                 .requestMatchers(HttpMethod.GET, "/api/media/*", "/api/vet-share/*").permitAll()
                 .anyRequest().authenticated()
             }
-            .addFilterBefore(AuthRateLimitFilter(trustedProxies), BearerTokenAuthenticationFilter::class.java)
-            .addFilterAfter(WriteRateLimitFilter(), BearerTokenAuthenticationFilter::class.java)
+            .addFilterBefore(AuthRateLimitFilter(clientIpResolver, registry), BearerTokenAuthenticationFilter::class.java)
+            .addFilterAfter(WriteRateLimitFilter(clientIpResolver, settings, registry), BearerTokenAuthenticationFilter::class.java)
             .addFilterAfter(ActiveAccountFilter(ownerRepository), BearerTokenAuthenticationFilter::class.java)
             .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()) } }
             .build()
+    }
 
     @Bean
     fun jwtAuthenticationConverter(): JwtAuthenticationConverter {
