@@ -1,6 +1,7 @@
 package com.pawmotionai.notification
 
 import com.pawmotionai.configuration.MailProperties
+import com.pawmotionai.shared.LogSafe
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Primary
 import org.springframework.http.MediaType
@@ -34,7 +35,7 @@ class LoggingEmailSender : EmailSenderPort {
     private val log = LoggerFactory.getLogger(LoggingEmailSender::class.java)
 
     override fun send(message: OutboundEmail): String? {
-        log.info("email stub to={} subject={}", message.to, message.subject)
+        log.info("email stub to={}", LogSafe.email(message.to))
         return null
     }
 }
@@ -67,7 +68,7 @@ class ResendEmailSender(private val properties: MailProperties) : EmailSenderPor
                 .retrieve()
                 .body(JsonNode::class.java)
             val id = response?.path("id")?.asString(null)
-            log.info("resend email sent to={} id={}", message.to, id)
+            log.info("resend email sent to={} id={}", LogSafe.email(message.to), id)
             return id
         } catch (exception: RestClientResponseException) {
             throw EmailSendException(

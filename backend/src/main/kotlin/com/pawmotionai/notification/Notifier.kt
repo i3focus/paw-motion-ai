@@ -1,5 +1,6 @@
 package com.pawmotionai.notification
 
+import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.simple.JdbcClient
@@ -25,7 +26,7 @@ interface PushGatewayPort {
 class LoggingPushGateway : PushGatewayPort {
     private val log = LoggerFactory.getLogger(LoggingPushGateway::class.java)
     override fun send(tokens: List<String>, title: String, body: String, data: Map<String, Any?>) {
-        log.info("push stub tokens={} title={}", tokens.size, title)
+        log.info("push stub tokens={}", tokens.size)
     }
 }
 
@@ -51,7 +52,7 @@ class ExpoPushGateway(
                     .header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(payload)).build()
                 val response = http.send(request, HttpResponse.BodyHandlers.ofString())
                 if (response.statusCode() == 200) return
-                log.warn("expo push failed status={} attempt={} body={}", response.statusCode(), attempt, response.body().take(300))
+                log.warn("expo push failed status={} attempt={} ", response.statusCode(), attempt)
                 if (response.statusCode() != 429 && response.statusCode() < 500) return
             } catch (e: InterruptedException) {
                 Thread.currentThread().interrupt()
@@ -82,6 +83,7 @@ class Notifier(
     private val push: PushGatewayPort,
     private val mapper: ObjectMapper,
     private val dispatcher: PostCommitDispatcher,
+    private val meterRegistry: MeterRegistry,
 ) {
 
     private val log = LoggerFactory.getLogger(Notifier::class.java)
@@ -93,6 +95,7 @@ class Notifier(
             "INSERT INTO notifications (id, owner_id, type, title, body, data, created_at) VALUES (:id, :owner, :type, :title, :body, CAST(:data AS jsonb), now())",
         ).param("id", id).param("owner", ownerId).param("type", type.name).param("title", title.take(120))
             .param("body", body.take(300)).param("data", mapper.writeValueAsString(data)).update()
+        meterRegistry.counter("notifications.inserted", "type", type.name).increment()
         if (pushEnabled(ownerId, type)) {
             val tokens = jdbc.sql("SELECT token FROM push_tokens WHERE owner_id = :owner").param("owner", ownerId).query(String::class.java).list().filterNotNull()
             if (tokens.isNotEmpty()) {

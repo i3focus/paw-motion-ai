@@ -1,6 +1,7 @@
 package com.pawmotionai.notification
 
 import com.pawmotionai.configuration.MailProperties
+import com.pawmotionai.shared.LogSafe
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
@@ -118,13 +119,13 @@ class WelcomeEmailService(
             for (attempt in 1..MAX_ATTEMPTS) {
                 val result = runCatching { sender.send(OutboundEmail(email, rendered.subject, rendered.html, rendered.text)) }
                 if (result.isSuccess) {
-                    log.info("welcome email queued to={} id={}", email, result.getOrNull())
+                    log.info("welcome email queued to={} id={}", LogSafe.email(email), result.getOrNull())
                     return@afterCommit
                 }
                 lastFailure = result.exceptionOrNull()
                 if (attempt < MAX_ATTEMPTS) Thread.sleep(RETRY_BACKOFF_MS)
             }
-            log.warn("welcome email failed to={} reason={}", email, lastFailure?.message)
+            log.warn("welcome email failed to={} reason={}", LogSafe.email(email), lastFailure?.javaClass?.simpleName)
         }
     }
 
