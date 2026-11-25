@@ -5,6 +5,7 @@ import com.pawmotionai.ledger.application.dto.WalletResponseDto
 import com.pawmotionai.ledger.application.port.`in`.EnsureWalletUseCase
 import com.pawmotionai.ledger.application.port.`in`.GetWalletUseCase
 import com.pawmotionai.ledger.application.port.`in`.ListWalletEntriesUseCase
+import com.pawmotionai.shared.PageRequest
 import com.pawmotionai.shared.SecurityRoles
 import org.springframework.security.access.annotation.Secured
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -36,8 +37,9 @@ class PartnerWalletController(
     fun entries(@AuthenticationPrincipal jwt: Jwt, @PathVariable accountId: UUID,
                 @RequestParam(defaultValue = "0") page: Int,
                 @RequestParam(defaultValue = "20") size: Int): LedgerEntryPage {
+        val paging = PageRequest.of(page, size, 20)
         val partnerId = UUID.fromString(jwt.subject)
         ensureWalletUseCase.ensureWallet(partnerId)
-        return listWalletEntriesUseCase.listByPartner(partnerId, accountId, page, size)
+        return listWalletEntriesUseCase.listByPartner(partnerId, accountId, paging.page, paging.size)
     }
 }

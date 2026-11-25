@@ -1,5 +1,6 @@
 package com.pawmotionai.configuration
 
+import com.pawmotionai.shared.PageOutOfRangeException
 import com.pawmotionai.activity.domain.exception.ActivityNotFoundException
 import com.pawmotionai.activity.domain.exception.InvalidActivityException
 import com.pawmotionai.billing.domain.exception.InvalidPaymentStateException
@@ -101,6 +102,10 @@ class ApiExceptionHandler {
     @ExceptionHandler(InvalidPetException::class, InvalidActivityException::class, IllegalArgumentException::class)
     fun handleInvalidDomain(exception: RuntimeException): ResponseEntity<ProblemDetail> =
         problem(HttpStatus.UNPROCESSABLE_ENTITY, "Invalid request", exception.message)
+
+    @ExceptionHandler(PageOutOfRangeException::class)
+    fun handlePageOutOfRange(exception: PageOutOfRangeException): ResponseEntity<ProblemDetail> =
+        problem(HttpStatus.BAD_REQUEST, "Invalid page", exception.message)
 
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(exception: Exception): ResponseEntity<ProblemDetail> {
