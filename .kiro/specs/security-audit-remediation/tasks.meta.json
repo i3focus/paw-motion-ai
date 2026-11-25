@@ -1,0 +1,1021 @@
+{
+  "pbtResults": {
+    "1. Escrever os testes exploratórios de condição de bug (todos os lotes)": {
+      "status": "passed",
+      "failingExample": "C1: fake-complete answered 200 and the wallet holds 10000 credits (profiles=[]); C15: token roles=[ADMIN], db role=OWNER -> HTTP 200; C3: distanceMeters=NaN -> HTTP 500; C24: 5 ACCEPTED responses -> 5 notifications. Full list in docs/security/exploratory-bug-condition-tests.md",
+      "lastRunTimestamp": 1795630931175
+    }
+  },
+  "executionHistory": {
+    "1. Escrever os testes exploratórios de condição de bug (todos os lotes)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630207648
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630218312
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630945746
+      }
+    ],
+    "2. Escrever os testes de preservação (ANTES de implementar qualquer correção)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630208844
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630951542
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631564874
+      }
+    ],
+    "3.1 Corrigir a atribuição de IDs em `bugfix.md`": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209068
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631838089
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631840766
+      }
+    ],
+    "3.2 Decisão de produto: números dos limites": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209430
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631845258
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631893139
+      }
+    ],
+    "3.3 Decisão de operação: promoção de ADMIN": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209468
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631897313
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631899874
+      }
+    ],
+    "3.4 Decisão de operação: campanhas `PAUSED` legadas": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209507
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631902197
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631904537
+      }
+    ],
+    "3.5 Decisão de produto: resposta de convite one-shot (C24)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209555
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631906964
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631909344
+      }
+    ],
+    "3.6 Registrar itens fora de escopo e pendências": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209586
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631912075
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631947422
+      }
+    ],
+    "4.1 PR 0a: validador de startup e `fake-complete` desligado": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209638
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631954313
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632246614
+      }
+    ],
+    "4.2 PR 0b: `.env.example`, `docker-compose.yml` e `dev-up.sh`": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209698
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632249200
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632423501
+      }
+    ],
+    "4.3 PR 0c: `seed-demo.sh` e runbook de inventário": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209732
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632427572
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632572456
+      }
+    ],
+    "4.4 Verificar que os testes exploratórios do Lote 0 agora passam": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209773
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632576654
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632632590
+      }
+    ],
+    "4.5 Verificar que os testes de preservação continuam passando": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209815
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632635771
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632710341
+      }
+    ],
+    "5.1 PR 1a: autoridade do papel vinda do banco (C15)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209845
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632714748
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632823008
+      }
+    ],
+    "5.2 PR 1b: bootstrap explícito de admin e `role_source` (C15)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209878
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632825890
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632964896
+      }
+    ],
+    "5.3 PR 1c: predicado único de visibilidade do feed (C7)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209916
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632967615
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633071025
+      }
+    ],
+    "5.4 PR 1d: perfil (C19) e conteúdo aprovado de campanha (C4)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209955
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633081016
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633282795
+      }
+    ],
+    "5.5 Verificar que os testes exploratórios do Lote 1 agora passam": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630209994
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633288703
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633355702
+      }
+    ],
+    "5.6 Verificar que os testes de preservação continuam passando": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210046
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633358282
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633361038
+      }
+    ],
+    "6.1 PR 2a: caminho normalizado, IP do cliente e buckets anônimo e de webhook (C25, C26, C14)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210082
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633365901
+      },
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633728259
+      }
+    ],
+    "6.2 PR 2b: leituras e paginação (C16; N1, N11, N16)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210116
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795637647322
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795638525403
+      }
+    ],
+    "6.3 PR 2c: insights no bucket de IA e quota atômica (C17; N12)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210149
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795638528085
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795638694623
+      }
+    ],
+    "6.4 PR 2d: proxy confiável e memória dos buckets (N13)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210193
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795638695121
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639057923
+      }
+    ],
+    "6.5 Verificar que os testes exploratórios do Lote 2 agora passam": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210230
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639058050
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639064683
+      }
+    ],
+    "6.6 Verificar que os testes de preservação continuam passando": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210264
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639064794
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639067960
+      }
+    ],
+    "7.1 PR 3a: resposta de playdate one-shot e cancelamento (C24)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210301
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639068206
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639233092
+      }
+    ],
+    "7.2 PR 3b: deduplicação e teto de convites (C9)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210337
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639233733
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639395656
+      }
+    ],
+    "7.3 PR 3c: cooldown de fan-out e tetos por dono (C8, C18)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210369
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639395888
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639603206
+      }
+    ],
+    "7.4 PR 3d: limites de sightings (C23)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210408
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639603816
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639783305
+      }
+    ],
+    "7.5 Verificar que os testes exploratórios do Lote 3 agora passam": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210441
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639783384
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639786313
+      }
+    ],
+    "7.6 Verificar que os testes de preservação continuam passando": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210785
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639786847
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639789812
+      }
+    ],
+    "8.1 PR 4a: slug de comunidade (C5)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210867
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639790119
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639927421
+      }
+    ],
+    "8.2 PR 4b: quota, exclusão e isolamento de mídia (C10)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210904
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639928107
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640178542
+      }
+    ],
+    "8.3 PR 4c: insights por posse e SQL limitado (C12)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210950
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640178961
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640311974
+      }
+    ],
+    "8.4 PR 4d: upsert de insights com retenção opcional (C13)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630210986
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640312709
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640472538
+      }
+    ],
+    "8.5 Verificar que os testes exploratórios do Lote 4 agora passam": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211026
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640473251
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640476525
+      }
+    ],
+    "8.6 Verificar que os testes de preservação continuam passando": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211053
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640477187
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640480613
+      }
+    ],
+    "9.1 PR 5a: faixa plausível de atividades (C3, C21)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211083
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640481118
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640692381
+      }
+    ],
+    "9.2 PR 5b: teto de XP e recompensas (C6)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211123
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640693150
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795642627991
+      }
+    ],
+    "9.3 PR 5c: eventos de anúncio (C22)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211170
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795642628449
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795642918298
+      }
+    ],
+    "9.4 Verificar que os testes exploratórios do Lote 5 agora passam": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211209
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795642918381
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795642923003
+      }
+    ],
+    "9.5 Verificar que os testes de preservação continuam passando": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211236
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795642923480
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795642928804
+      }
+    ],
+    "10.1 PR 6a: codegen reprodutível (C11)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211266
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795642928232
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795643099890
+      }
+    ],
+    "10.2 PR 6b: tempo constante no login (C27)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211305
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795643100019
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795643643828
+      }
+    ],
+    "10.3 Verificar que os testes exploratórios do Lote 6 agora passam": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211345
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795643650286
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795644380675
+      }
+    ],
+    "10.4 Verificar que os testes de preservação continuam passando": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211374
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795644380807
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795644386072
+      }
+    ],
+    "11.1 Validar N1, N11, N16 e N2 (consultas e cardinalidade)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211408
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795644385440
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795645666890
+      }
+    ],
+    "11.2 Validar N7, N8, N9 e N12 (concorrência e produto)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211443
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795645667113
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795646048570
+      }
+    ],
+    "11.3 Validar N13 e N4 (borda e actuator)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211487
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795646048871
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795646447808
+      }
+    ],
+    "11.4 Validar N5, N6 e N15 (pagamentos e I/O em transação)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211519
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795646448477
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795646816515
+      }
+    ],
+    "11.5 Validar N3, N10 e N14 (URLs, mobile e JWT)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211553
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795646817086
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795647265184
+      }
+    ],
+    "12.1 Observabilidade e higiene de logs": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211578
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795647265703
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795647537624
+      }
+    ],
+    "12.2 Documentação, contrato e rollback por entrega": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211610
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795647538352
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795647543095
+      }
+    ],
+    "12.3 Encerramento do programa": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211644
+      },
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795647543936
+      },
+      {
+        "executionId": "9486052b-6174-4414-8bdb-fb72cbe54732",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795648323718
+      },
+      {
+        "executionId": "9486052b-6174-4414-8bdb-fb72cbe54732",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795648766264
+      }
+    ],
+    "13. Checkpoint - Garantir que todos os testes passam": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795630211675
+      },
+      {
+        "executionId": "9486052b-6174-4414-8bdb-fb72cbe54732",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795648769102
+      },
+      {
+        "executionId": "9486052b-6174-4414-8bdb-fb72cbe54732",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795648912753
+      }
+    ],
+    "3. Registrar as decisões em aberto e corrigir os documentos de origem": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795631947465
+      }
+    ],
+    "4. Lote 0: contenção operacional (P0: C1, C2, C20)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795632710752
+      }
+    ],
+    "5. Lote 1: autorização e moderação (P0: C4, C7, C15, C19)": [
+      {
+        "executionId": "746a8a22-f491-462a-997f-c542bee29978",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795633361095
+      }
+    ],
+    "6. Lote 2: limites na borda (P0/P1: C14, C16, C17, C25, C26; N13)": [
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639068032
+      }
+    ],
+    "7. Lote 3: notificações e cardinalidade (P1: C8, C9, C18, C23, C24)": [
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795639789869
+      }
+    ],
+    "8. Lote 4: dados e recursos (P1: C5, C10, C12, C13)": [
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795640480685
+      }
+    ],
+    "9. Lote 5: integridade do produto (P1/P2: C3, C6, C21, C22)": [
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795642928853
+      }
+    ],
+    "10. Lote 6: ferramentas e autenticação (P1/P2: C11, C27)": [
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795644386200
+      }
+    ],
+    "11. Trilhas de validação N1-N16 (sem alterar comportamento até confirmar)": [
+      {
+        "executionId": "a4d8aa08-b1b8-4c10-b31a-a6778e06cb95",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795647265435
+      }
+    ],
+    "12. Aceite transversal e operação": [
+      {
+        "executionId": "9486052b-6174-4414-8bdb-fb72cbe54732",
+        "chatSessionId": "sess_4886ebad-3812-464c-841f-cd5fb33115c9",
+        "timestamp": 1795648766340
+      }
+    ]
+  }
+}
