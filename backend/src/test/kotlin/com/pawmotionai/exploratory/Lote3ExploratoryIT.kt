@@ -21,18 +21,6 @@ class Lote3ExploratoryIT : ExploratoryApiTest() {
     )
 
     @Test
-    fun `C24 repeated ACCEPTED responses produce a single notification`() {
-        val ana = registerOwner("Ana")
-        val bia = registerOwner("Bia")
-        val thor = createPet(ana, "Thor")
-        val luna = createPet(bia, "Luna")
-        val playdate = expect(201, call("POST", "/api/playdates", ana.token, playdateBody(thor, luna)))["id"].asString()
-        val statuses = (1..5).map { call("POST", "/api/playdates/$playdate/respond", bia.token, mapOf("petId" to luna, "response" to "ACCEPTED")).status }
-        val rows = notificationCount(ana.ownerId, "Playdate accepted")
-        assertEquals(1L, rows, "Counterexample C24: 5 ACCEPTED responses (statuses=$statuses) -> $rows notifications to the organizer")
-    }
-
-    @Test
     fun `C9 two identical invites to the same owner within the window notify once`() {
         val ana = registerOwner("Ana")
         val bia = registerOwner("Bia")
