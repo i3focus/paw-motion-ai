@@ -23,7 +23,7 @@ Mecanismo: `backend/build.gradle.kts` aplica `excludeTags("exploratory")` por pa
 
 Em vez de `@Disabled("explora C<n>")`, o gate é a tag. Assim os testes continuam executáveis com `-Pexploratory` para reexecução em cada PR de correção. No PR de correção de um achado, remova `@Exploratory` dos testes daquele achado para que passem a rodar no CI.
 
-Os limites numéricos usados como limiar estão em `ProvisionalLimits` e são **provisórios** (decisão de produto 3.2 pendente). Ajuste lá quando os valores forem definidos.
+Os limites numéricos usados como limiar estão em `ProvisionalLimits` e seguem a decisão registrada (decisão 3.2 registrada em `docs/security/decisions.md`). Ajuste lá quando os valores forem definidos.
 
 ## Arquivos
 

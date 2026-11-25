@@ -27,14 +27,15 @@ import java.util.UUID
 annotation class Exploratory
 
 /**
- * Provisional numeric limits used only to give the exploratory tests a concrete threshold. The real values are an open
- * product decision (tasks.md 3.2) and will be calibrated in `shadow` mode. Update here when the decision is made.
+ * Numeric limits used as thresholds by the exploratory tests. Values follow the product decision 3.2 recorded in
+ * docs/security/decisions.md (initial values, configurable via `app.*`, rolled out in `shadow` mode first).
  */
 object ProvisionalLimits {
-    const val MAX_PETS_PER_OWNER = 20
-    const val MAX_ACTIVE_ALERTS_PER_OWNER = 3
-    const val MAX_SIGHTINGS_PER_REPORTER = 3
+    const val MAX_PETS_PER_OWNER = 10
+    const val MAX_ACTIVE_ALERTS_PER_OWNER = 5
+    const val MAX_SIGHTINGS_PER_REPORTER = 20 // decision 3.2: 20 per alert; the test uses a single reporter
     const val MAX_MEDIA_OBJECTS_PER_OWNER = 50
+    const val MAX_MEDIA_BYTES_PER_OWNER = 5L * 1024 * 1024 * 1024
     const val DAILY_XP_CAP_PER_PET_AND_SOURCE = 150
     const val MAX_SLUG_ATTEMPTS = 4
     const val MAX_DURATION_SECONDS = 86_400L
