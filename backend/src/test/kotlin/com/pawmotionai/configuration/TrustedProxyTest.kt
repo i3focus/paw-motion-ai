@@ -50,6 +50,25 @@ class TrustedProxyTest {
     }
 
     @Test
+    fun `rotating X-Forwarded-For from an untrusted peer is ignored and the auth limit binds (11_3)`() {
+        val filter = AuthRateLimitFilter(trusted)
+        val statuses = (1..12).map { index ->
+            MockHttpServletResponse().also { filter.doFilter(request("198.51.100.7", "203.0.113.$index"), it, MockFilterChain()) }.status
+        }
+        assertEquals(listOf(429, 429), statuses.takeLast(2), "statuses=$statuses")
+    }
+
+    @Test
+    fun `new safe default (loopback only) ignores XFF from a docker-range peer (11_3)`() {
+        val resolver = ClientIpResolver("127.0.0.1,::1")
+        assertEquals("172.18.0.5", resolver.clientKey(request("172.18.0.5", "203.0.113.9")))
+        // compose default: only the frontend nginx at its fixed address is trusted
+        val compose = ClientIpResolver("172.28.0.10/32")
+        assertEquals("203.0.113.9", compose.clientKey(request("172.28.0.10", "203.0.113.9")))
+        assertEquals("172.28.0.11", compose.clientKey(request("172.28.0.11", "203.0.113.9")))
+    }
+
+    @Test
     fun `real client behind a trusted proxy keeps a distinct key`() {
         assertEquals("203.0.113.8", ClientIpResolver(trusted).clientKey(request("10.1.0.5", "203.0.113.8, 10.2.0.4")))
     }
