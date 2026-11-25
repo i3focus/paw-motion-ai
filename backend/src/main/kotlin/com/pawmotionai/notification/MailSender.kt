@@ -4,11 +4,14 @@ import com.pawmotionai.configuration.MailProperties
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Primary
 import org.springframework.http.MediaType
+import org.springframework.http.client.JdkClientHttpRequestFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
 import tools.jackson.databind.JsonNode
+import java.net.http.HttpClient
+import java.time.Duration
 
 /** Outbound email ready to be handed to a provider. Plain text is required alongside HTML. */
 data class OutboundEmail(
@@ -40,7 +43,12 @@ class LoggingEmailSender : EmailSenderPort {
 class ResendEmailSender(private val properties: MailProperties) : EmailSenderPort {
 
     private val log = LoggerFactory.getLogger(ResendEmailSender::class.java)
-    private val restClient: RestClient = RestClient.builder().baseUrl(properties.resend.baseUrl).build()
+    // Explicit connect/read timeouts (N15): a stalled provider can never hold a worker thread indefinitely.
+    private val restClient: RestClient = RestClient.builder().baseUrl(properties.resend.baseUrl)
+        .requestFactory(JdkClientHttpRequestFactory(
+            HttpClient.newBuilder().connectTimeout(Duration.ofMillis(properties.resend.connectTimeoutMs)).build())
+            .apply { setReadTimeout(Duration.ofMillis(properties.resend.readTimeoutMs)) })
+        .build()
 
     override fun send(message: OutboundEmail): String? {
         val body = mapOf(

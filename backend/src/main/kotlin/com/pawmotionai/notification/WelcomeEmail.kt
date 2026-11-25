@@ -96,7 +96,11 @@ class WelcomeEmailTemplates(private val properties: MailProperties) {
  * but never propagate — a broken mail provider must not break account registration.
  */
 @Service
-class WelcomeEmailService(private val templates: WelcomeEmailTemplates, private val sender: EmailSenderPort) : SendWelcomeEmailUseCase {
+class WelcomeEmailService(
+    private val templates: WelcomeEmailTemplates,
+    private val sender: EmailSenderPort,
+    private val dispatcher: PostCommitDispatcher,
+) : SendWelcomeEmailUseCase {
 
     private val log = LoggerFactory.getLogger(WelcomeEmailService::class.java)
 
@@ -107,8 +111,25 @@ class WelcomeEmailService(private val templates: WelcomeEmailTemplates, private 
         deliver(email, templates.partnerEmail(displayName, businessName))
 
     private fun deliver(email: String, rendered: RenderedEmail) {
-        runCatching { sender.send(OutboundEmail(email, rendered.subject, rendered.html, rendered.text)) }
-            .onSuccess { log.info("welcome email queued to={} id={}", email, it) }
-            .onFailure { log.warn("welcome email failed to={} reason={}", email, it.message) }
+        // N15: sent only after the registration transaction commits (a rolled-back sign-up sends nothing) and off the
+        // request thread. Retries are bounded to MAX_ATTEMPTS inside the task.
+        dispatcher.afterCommit {
+            var lastFailure: Throwable? = null
+            for (attempt in 1..MAX_ATTEMPTS) {
+                val result = runCatching { sender.send(OutboundEmail(email, rendered.subject, rendered.html, rendered.text)) }
+                if (result.isSuccess) {
+                    log.info("welcome email queued to={} id={}", email, result.getOrNull())
+                    return@afterCommit
+                }
+                lastFailure = result.exceptionOrNull()
+                if (attempt < MAX_ATTEMPTS) Thread.sleep(RETRY_BACKOFF_MS)
+            }
+            log.warn("welcome email failed to={} reason={}", email, lastFailure?.message)
+        }
+    }
+
+    private companion object {
+        const val MAX_ATTEMPTS = 2
+        const val RETRY_BACKOFF_MS = 300L
     }
 }

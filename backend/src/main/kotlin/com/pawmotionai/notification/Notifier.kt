@@ -12,6 +12,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 
@@ -29,24 +30,43 @@ class LoggingPushGateway : PushGatewayPort {
 }
 
 @Component
-class ExpoPushGateway(private val mapper: ObjectMapper, @Value("\${app.push.expo.enabled:false}") private val enabled: Boolean) : PushGatewayPort {
+class ExpoPushGateway(
+    private val mapper: ObjectMapper,
+    @Value("\${app.push.expo.enabled:false}") private val enabled: Boolean,
+    @Value("\${app.push.expo.url:https://exp.host/--/api/v2/push/send}") private val url: String,
+    @Value("\${app.push.expo.connect-timeout-ms:3000}") connectTimeoutMs: Long,
+    @Value("\${app.push.expo.request-timeout-ms:8000}") private val requestTimeoutMs: Long,
+    @Value("\${app.push.expo.max-attempts:2}") private val maxAttempts: Int,
+) : PushGatewayPort {
     private val log = LoggerFactory.getLogger(ExpoPushGateway::class.java)
-    private val http: HttpClient = HttpClient.newHttpClient()
+    private val http: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofMillis(connectTimeoutMs)).build()
 
     override fun send(tokens: List<String>, title: String, body: String, data: Map<String, Any?>) {
         if (!enabled || tokens.isEmpty()) return
         val payload = mapper.writeValueAsString(tokens.map { mapOf("to" to it, "title" to title, "body" to body, "data" to data, "sound" to "default") })
-        try {
-            val request = HttpRequest.newBuilder(URI.create("https://exp.host/--/api/v2/push/send"))
-                .header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(payload)).build()
-            val response = http.send(request, HttpResponse.BodyHandlers.ofString())
-            if (response.statusCode() != 200) log.warn("expo push failed status={} body={}", response.statusCode(), response.body().take(300))
-        } catch (e: Exception) {
-            log.warn("expo push error: {}", e.message)
+        // Bounded retries (N15): only transport errors, 429 and 5xx are retried; each attempt has hard timeouts.
+        for (attempt in 1..maxAttempts.coerceIn(1, 3)) {
+            try {
+                val request = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofMillis(requestTimeoutMs))
+                    .header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(payload)).build()
+                val response = http.send(request, HttpResponse.BodyHandlers.ofString())
+                if (response.statusCode() == 200) return
+                log.warn("expo push failed status={} attempt={} body={}", response.statusCode(), attempt, response.body().take(300))
+                if (response.statusCode() != 429 && response.statusCode() < 500) return
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+                return
+            } catch (e: Exception) {
+                log.warn("expo push error attempt={}: {}", attempt, e.message)
+            }
+            if (attempt < maxAttempts.coerceIn(1, 3)) Thread.sleep(RETRY_BACKOFF_MS * attempt)
         }
     }
-}
 
+    private companion object {
+        const val RETRY_BACKOFF_MS = 250L
+    }
+}
 /** Chooses the real Expo gateway when enabled, otherwise the logging stub (D-014). */
 @Component
 @org.springframework.context.annotation.Primary
@@ -57,7 +77,12 @@ class PushGateway(expo: ExpoPushGateway, stub: LoggingPushGateway, @Value("\${ap
 
 /** Records an in-app notification and fans out to Expo push, honoring per-owner preferences. */
 @Service
-class Notifier(private val jdbc: JdbcClient, private val push: PushGatewayPort, private val mapper: ObjectMapper) {
+class Notifier(
+    private val jdbc: JdbcClient,
+    private val push: PushGatewayPort,
+    private val mapper: ObjectMapper,
+    private val dispatcher: PostCommitDispatcher,
+) {
 
     private val log = LoggerFactory.getLogger(Notifier::class.java)
 
@@ -71,9 +96,12 @@ class Notifier(private val jdbc: JdbcClient, private val push: PushGatewayPort, 
         if (pushEnabled(ownerId, type)) {
             val tokens = jdbc.sql("SELECT token FROM push_tokens WHERE owner_id = :owner").param("owner", ownerId).query(String::class.java).list().filterNotNull()
             if (tokens.isNotEmpty()) {
-                runCatching { push.send(tokens, title, body, data + mapOf("notificationId" to id.toString())) }
-                    .onSuccess { jdbc.sql("UPDATE notifications SET sent_at = now() WHERE id = :id").param("id", id).update() }
-                    .onFailure { jdbc.sql("UPDATE notifications SET error = :err WHERE id = :id").param("err", it.message?.take(300)).param("id", id).update() }
+                // N15: the provider call runs only after the DB transaction commits, off the request thread.
+                dispatcher.afterCommit {
+                    runCatching { push.send(tokens, title, body, data + mapOf("notificationId" to id.toString())) }
+                        .onSuccess { jdbc.sql("UPDATE notifications SET sent_at = now() WHERE id = :id").param("id", id).update() }
+                        .onFailure { jdbc.sql("UPDATE notifications SET error = :err WHERE id = :id").param("err", it.message?.take(300)).param("id", id).update() }
+                }
             }
         }
         return id
