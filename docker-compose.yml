@@ -44,6 +44,13 @@ services:
       ABACATEPAY_API_KEY: ${ABACATEPAY_API_KEY:-}
       ABACATEPAY_WEBHOOK_SECRET: ${ABACATEPAY_WEBHOOK_SECRET:-}
       ABACATEPAY_CREDIT_PRODUCT_EXTERNAL_ID: ${ABACATEPAY_CREDIT_PRODUCT_EXTERNAL_ID:-pawmotion-credits-brl}
+      MEDIA_ROOT: /app/data/media
+      MEDIA_MODE: ${MEDIA_MODE:-enforce}
+      MEDIA_MAX_BYTES_PER_OWNER: ${MEDIA_MAX_BYTES_PER_OWNER:-5368709120}
+      MEDIA_MAX_OBJECTS_PER_OWNER: ${MEDIA_MAX_OBJECTS_PER_OWNER:-50}
+    volumes:
+      # Isolated from postgres-data. Same path as the previous default (./data/media under WORKDIR /app).
+      - media-data:/app/data/media
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:
@@ -72,3 +79,4 @@ services:
 
 volumes:
   postgres-data:
+  media-data:

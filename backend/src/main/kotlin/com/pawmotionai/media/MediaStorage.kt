@@ -7,10 +7,16 @@ import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.time.Instant
 
 interface MediaStoragePort {
     fun store(key: String, bytes: ByteArray)
     fun load(key: String): Resource?
+    /** Idempotent: a missing file is not an error. */
+    fun delete(key: String)
+    fun exists(key: String): Boolean
+    /** Stored files older than [olderThan] (relative keys), at most [limit]. Used only by the read-only orphan sweep. */
+    fun listOlderThan(olderThan: Instant, limit: Int): List<String>
 }
 
 /** Local-disk storage (D-007). Keys are server-generated, so they never contain user input. */
@@ -28,6 +34,23 @@ class LocalDiskMediaStorage(@Value("\${app.media.root:./data/media}") root: Stri
     }
 
     override fun load(key: String): Resource? = resolve(key).takeIf { Files.isRegularFile(it) }?.let(::FileSystemResource)
+
+    override fun delete(key: String) {
+        Files.deleteIfExists(resolve(key))
+    }
+
+    override fun exists(key: String): Boolean = Files.isRegularFile(resolve(key))
+
+    override fun listOlderThan(olderThan: Instant, limit: Int): List<String> {
+        if (!Files.isDirectory(root)) return emptyList()
+        Files.walk(root).use { stream ->
+            return stream.filter { Files.isRegularFile(it) && !it.fileName.toString().endsWith(".tmp") }
+                .filter { Files.getLastModifiedTime(it).toInstant().isBefore(olderThan) }
+                .limit(limit.toLong())
+                .map { root.relativize(it).toString().replace('\\', '/') }
+                .toList()
+        }
+    }
 
     private fun resolve(key: String): Path {
         val path = root.resolve(key).normalize()
