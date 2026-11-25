@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.core.env.Environment
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm
 import org.springframework.security.oauth2.jwt.JwsHeader
@@ -21,10 +22,15 @@ import java.net.http.HttpResponse
 import java.time.Instant
 import java.util.UUID
 
+@ActiveProfiles("local")
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = [
-        "app.security.jwt.secret=integration-test-secret-integration-test-secret",
+        "app.security.jwt.secret=integration-test-signing-key-0123456789-abcdef",
+        // Explicit fake provider under the `local` profile (the application has no provider default). `fake-complete`
+        // stays off unless a test turns it on, mirroring the production default.
+        "app.billing.provider=fake",
+        "app.billing.fake-complete-enabled=false",
         "app.billing.reconciliation-interval-ms=3600000",
         "app.campaign.expiration-interval-ms=3600000",
     ],
