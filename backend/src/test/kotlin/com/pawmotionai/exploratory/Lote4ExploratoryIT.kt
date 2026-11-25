@@ -8,33 +8,10 @@ import java.util.concurrent.Executors
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Lote 4 (C5, C10, C12, C13; C16 moved to ReadLimitsIT): data and resources. Spec: security-audit-remediation, task 1. */
+/** Lote 4 (C10, C12, C13; C5 moved to CommunitySlugIT; C16 moved to ReadLimitsIT): data and resources. Spec: security-audit-remediation, task 1. */
 @Exploratory
 @TestPropertySource(properties = ["app.media.root=build/tmp/exploratory-media"])
 class Lote4ExploratoryIT : ExploratoryApiTest() {
-
-    @Test
-    fun `C5 community creation with many slug collisions runs a bounded number of slug queries`() {
-        val creator = registerOwner("Ana")
-        val name = "Collision Club ${UUID.randomUUID().toString().take(8)}"
-        val base = name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-')
-        val collisions = 12
-        (0 until collisions).forEach { i ->
-            val slug = if (i == 0) base else "$base-${i + 1}"
-            jdbc.update("INSERT INTO communities (id, slug, name, kind, created_by, created_at) VALUES (?, ?, ?, 'NEIGHBORHOOD', ?, now())", UUID.randomUUID(), slug, name, creator.ownerId)
-        }
-        val mark = startStatementLog()
-        try {
-            call("POST", "/api/communities", creator.token, mapOf("name" to name, "kind" to "NEIGHBORHOOD"))
-            val slugStatements = statementLogSince(mark).count { line ->
-                line.contains("execute") && (line.contains("FROM communities WHERE slug") || line.contains("INSERT INTO communities"))
-            }
-            assertTrue(slugStatements <= ProvisionalLimits.MAX_SLUG_ATTEMPTS,
-                "Counterexample C5: $collisions pre-existing slugs -> $slugStatements slug statements for one creation (max ${ProvisionalLimits.MAX_SLUG_ATTEMPTS})")
-        } finally {
-            stopStatementLog()
-        }
-    }
 
     @Test
     fun `C10 concurrent uploads never exceed the per-owner object quota`() {
