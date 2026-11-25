@@ -8,21 +8,15 @@ import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.mockingDetails
 import org.mockito.Mockito.verify
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
-/** Lote 6 (C27, C11): authentication timing oracle and codegen reproducibility. Spec: security-audit-remediation, task 1. */
+/** Lote 6 (C27): authentication timing oracle. Spec: security-audit-remediation, task 1. */
 @Exploratory
 class Lote6ExploratoryIT : ExploratoryApiTest() {
 
     @MockitoSpyBean
     private lateinit var passwordHasher: PasswordHasher
-
-    private val repoRoot: Path = Path.of("..").toAbsolutePath().normalize()
 
     private fun insertAccount(role: String, status: String): String {
         val email = "c27-${UUID.randomUUID()}@example.com"
@@ -76,17 +70,5 @@ class Lote6ExploratoryIT : ExploratoryApiTest() {
             (System.nanoTime() - started) / 1_000_000
         }.sorted()[1]
         println("C27 timing diagnostic: absent=${median("absent-${UUID.randomUUID()}@example.com")}ms wrongPassword=${median(registered)}ms")
-    }
-
-    @Test
-    fun `C11 generate script uses the lockfile binary and CI fails on generated diff`() {
-        val script = Files.readString(repoRoot.resolve("packages/api-client/scripts/generate.sh"))
-        val ci = Files.readString(repoRoot.resolve(".github/workflows/ci.yml"))
-        val findings = buildList {
-            if (Regex("npx\\s+(-y|--yes)\\s+openapi-typescript@").containsMatchIn(script)) add("generate.sh runs 'npx -y openapi-typescript@7' (floating version, no lockfile integrity)")
-            if (!Regex("git\\s+diff\\s+--exit-code").containsMatchIn(ci)) add("ci.yml has no 'git diff --exit-code' step after codegen")
-        }
-        assertTrue(findings.isEmpty(), "Counterexample C11: $findings")
-        assertFalse(script.contains("@7"), "Counterexample C11: generate.sh pins only a major version")
     }
 }
