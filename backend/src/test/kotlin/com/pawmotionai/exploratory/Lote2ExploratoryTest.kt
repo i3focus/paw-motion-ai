@@ -7,17 +7,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.mock.web.MockFilterChain
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import kotlin.random.Random
 
 /**
- * Lote 2 (C25, C26, C14, C16, C17, N13): edge limits, exercised directly against the filters (follows the model of
+ * Lote 2 (C16, C17, N13; C25, C26 and C14 moved to configuration/EdgeLimitsTest): edge limits, exercised directly against the filters (follows the model of
  * AuthRateLimitFilterTest). The filters receive the RAW request URI, like a servlet container delivers it.
  */
 @Exploratory
@@ -39,80 +36,6 @@ class Lote2ExploratoryTest {
 
     private fun authenticateAs(name: String) {
         SecurityContextHolder.getContext().authentication = UsernamePasswordAuthenticationToken(name, null, emptyList())
-    }
-
-    /** Percent-encodes some letters and appends matrix params, keeping the path semantically equal after normalization. */
-    private fun variantOf(path: String, random: Random): String {
-        val segments = path.removePrefix("/").split("/")
-        val mutated = segments.mapIndexed { index, segment ->
-            val encoded = buildString {
-                segment.forEachIndexed { i, ch ->
-                    val force = index == 1 && i == 0
-                    if (ch.isLetter() && (force || random.nextInt(100) < 25)) append("%%%02X".format(ch.code)) else append(ch)
-                }
-            }
-            if (random.nextBoolean()) "$encoded;k=v" else encoded
-        }
-        return "/" + mutated.joinToString("/")
-    }
-
-    // ---------------- C25 ----------------
-
-    @Test
-    fun `C25 encoded login path counts against the 10 per minute limit`() {
-        val filter = AuthRateLimitFilter(trusted)
-        repeat(10) { assertEquals(200, send(filter, "POST", "/api/auth/login")) }
-        val status = send(filter, "POST", "/api/auth/log%69n")
-        assertEquals(429, status, "Counterexample C25: POST /api/auth/log%69n after 10 canonical attempts -> HTTP $status")
-    }
-
-    @ParameterizedTest(name = "C25 seed {0}")
-    @ValueSource(longs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-    fun `C25 every equivalent encoding of an auth route is limited like the canonical path`(seed: Long) {
-        val filter = AuthRateLimitFilter(trusted)
-        val variant = variantOf("/api/auth/login", Random(seed))
-        repeat(10) { assertEquals(200, send(filter, "POST", "/api/auth/login")) }
-        val status = send(filter, "POST", variant)
-        assertEquals(429, status, "Counterexample C25 (seed=$seed): $variant -> HTTP $status")
-    }
-
-    // ---------------- C26 ----------------
-
-    @Test
-    fun `C26 encoded assistant path counts against the AI bucket`() {
-        val filter = WriteRateLimitFilter()
-        authenticateAs("owner-c26")
-        val canonical = "/api/assistant/conversations/1/messages"
-        repeat(30) { assertEquals(200, send(filter, "POST", canonical)) }
-        val variant = "/api/%61ssistant/conversations/1/messages;x=1"
-        val status = send(filter, "POST", variant)
-        assertEquals(429, status, "Counterexample C26: $variant after 30 AI messages -> HTTP $status")
-    }
-
-    @ParameterizedTest(name = "C26 seed {0}")
-    @ValueSource(longs = [1, 2, 3, 4, 5, 6, 7, 8])
-    fun `C26 every equivalent encoding of an assistant route is limited like the canonical path`(seed: Long) {
-        val filter = WriteRateLimitFilter()
-        authenticateAs("owner-c26-$seed")
-        repeat(30) { assertEquals(200, send(filter, "POST", "/api/assistant/conversations/1/messages")) }
-        val variant = variantOf("/api/assistant/conversations/1/messages", Random(seed))
-        val status = send(filter, "POST", variant)
-        assertEquals(429, status, "Counterexample C26 (seed=$seed): $variant -> HTTP $status")
-    }
-
-    // ---------------- C14 ----------------
-
-    @Test
-    fun `C14 anonymous writes from IP X never throttle IP Y or the payment webhooks`() {
-        val filter = WriteRateLimitFilter()
-        SecurityContextHolder.clearContext()
-        repeat(121) { send(filter, "POST", "/api/auth/login", remote = "203.0.113.7") }
-        val otherIp = send(filter, "POST", "/api/auth/login", remote = "198.51.100.9")
-        val webhook = send(filter, "POST", "/api/webhooks/payments/abacatepay", remote = "198.51.100.77")
-        assertEquals(
-            200 to 200, otherIp to webhook,
-            "Counterexample C14: after 121 anonymous writes from 203.0.113.7, IP Y got HTTP $otherIp and a webhook got HTTP $webhook",
-        )
     }
 
     // ---------------- C16 / C17 ----------------
