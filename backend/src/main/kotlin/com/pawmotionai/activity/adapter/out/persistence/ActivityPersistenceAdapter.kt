@@ -75,6 +75,19 @@ class ActivityPersistenceAdapter(
         }, *args.toTypedArray())
     }
 
+    override fun findForInsights(ownerId: UUID, petId: UUID?, from: Instant, limit: Int): WeeklyTotals {
+        val sql = StringBuilder("""
+            SELECT COUNT(*), COALESCE(SUM(distance_meters), 0), COALESCE(SUM(duration_seconds), 0) FROM (
+                SELECT distance_meters, duration_seconds FROM activities
+                WHERE owner_id = ? AND started_at >= ?""")
+        val args = mutableListOf<Any>(ownerId, Timestamp.from(from))
+        if (petId != null) { sql.append(" AND pet_id = ?"); args.add(petId) }
+        sql.append(" ORDER BY started_at DESC LIMIT ?) recent")
+        args.add(limit)
+        return jdbcTemplate.queryForObject(sql.toString(),
+            { rs, _ -> WeeklyTotals(rs.getInt(1), rs.getDouble(2), rs.getLong(3)) }, *args.toTypedArray())!!
+    }
+
     override fun weeklyTotals(ownerId: UUID, since: Instant): WeeklyTotals =
         jdbcTemplate.queryForObject(
             "SELECT COUNT(*), COALESCE(SUM(distance_meters), 0), COALESCE(SUM(duration_seconds), 0) " +
