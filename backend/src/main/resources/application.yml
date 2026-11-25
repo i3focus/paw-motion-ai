@@ -40,6 +40,13 @@ app:
   activity:
     # how far back startedAt may be (ISO-8601 duration); decision 3.2
     max-backdate: ${ACTIVITY_MAX_BACKDATE:P14D}
+  xp:
+    # enforce: caps XP per (pet, source type, UTC day), no XP for same-owner playdates, challenge reward once per owner;
+    # shadow: only logs the excess; off: legacy behavior (rollback)
+    mode: ${XP_MODE:enforce}
+    daily-cap:
+      default: ${XP_DAILY_CAP:150}
+      # per-type override, e.g. ACTIVITY: 150 (keys: ACTIVITY, POST, CHECK_IN, PLAYDATE, CHALLENGE)
   media:
     root: ${MEDIA_ROOT:./data/media}
     # enforce: 409 above the per-owner quota (atomic reservation); shadow: only records the excess; off: no cap (rollback)
