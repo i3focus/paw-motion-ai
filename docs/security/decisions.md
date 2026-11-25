@@ -49,3 +49,4 @@ Cada convite aceita uma única resposta, sem troca posterior.
 - **Ajuste do design (C23)**: o design cita `app.lost-pet.max-sightings-per-reporter` (3). A decisão 3.2 define o limite por alerta (`app.lost-pet.max-sightings-per-alert`, 20). Corrigir no PR 3d.
 - **Objetos de mídia por dono**: o limite de 50 continua provisório (só bytes foram decididos).
 - **N1-N16**: não são achados confirmados. Seguem como trilhas de validação e só viram correção após confirmação.
+- **N13 (PR 2d, validação pendente)**: aplicado como fix defensivo sem staging. Pendente (tarefa 11.3): confirmar o caminho até `backend:8080`, a cadeia `X-Forwarded-For` real e fixar `TRUSTED_PROXIES` só com os proxies reais (o default ainda lista ranges privados amplos e não foi alterado). Se o proxy real estiver fora de `TRUSTED_PROXIES`, todos os clientes compartilham a chave do proxy. Rollback: restaurar `TRUSTED_PROXIES` ou reverter o PR.
