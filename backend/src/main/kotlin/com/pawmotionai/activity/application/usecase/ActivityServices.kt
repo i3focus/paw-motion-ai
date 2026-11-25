@@ -13,6 +13,7 @@ import com.pawmotionai.activity.domain.model.ActivityType
 import com.pawmotionai.activity.domain.service.ActivityStatisticsCalculator
 import com.pawmotionai.pet.application.port.`in`.GetPetUseCase
 import com.pawmotionai.pet.application.port.`in`.ListPetsUseCase
+import com.pawmotionai.shared.OwnerQuotas
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,6 +26,7 @@ import java.util.UUID
 class RecordActivityService(
     private val activityRepository: ActivityRepository,
     private val getPetUseCase: GetPetUseCase,
+    private val quotas: OwnerQuotas,
     @Value("\${app.activity.max-backdate:P14D}") private val maxBackdate: Duration = Activity.DEFAULT_MAX_BACKDATE,
 ) : RecordActivityUseCase {
 
@@ -34,6 +36,7 @@ class RecordActivityService(
         if (pet.status != "active") {
             throw InvalidActivityException("Cannot record activity for an inactive pet")
         }
+        quotas.beforeRecordActivity(command.ownerId)
 
         val activity = Activity.record(
             UUID.randomUUID(),
