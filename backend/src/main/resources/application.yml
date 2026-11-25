@@ -52,7 +52,7 @@ app:
     credits-per-currency-unit: ${BILLING_CREDITS_PER_CURRENCY_UNIT:1}
     min-purchase-amount: ${BILLING_MIN_PURCHASE_AMOUNT:10.00}
     max-purchase-amount: ${BILLING_MAX_PURCHASE_AMOUNT:10000.00}
-    provider: ${PAYMENT_PROVIDER:fake}
+    provider: ${PAYMENT_PROVIDER:}
     pending-ttl: ${BILLING_PENDING_TTL:24h}
     partner-portal-base-url: ${PARTNER_PORTAL_BASE_URL:http://localhost:5173/partner}
     fake-webhook-secret: ${FAKE_WEBHOOK_SECRET:}

@@ -1,0 +1,5 @@
+# Local development only. Activate explicitly with SPRING_PROFILES_ACTIVE=local.
+app:
+  billing:
+    provider: fake
+    fake-complete-enabled: true

@@ -30,7 +30,7 @@ class BillingProperties {
     var maxPurchaseAmount: BigDecimal = BigDecimal("10000.00")
 
     @field:NotBlank
-    var provider: String = "fake"
+    var provider: String = ""
 
     @field:NotNull
     var pendingTtl: Duration = Duration.ofHours(24)
@@ -39,4 +39,7 @@ class BillingProperties {
     var partnerPortalBaseUrl: String = "http://localhost:5173/partner"
 
     var fakeWebhookSecret: String? = null
+
+    /** Enables `fake-complete`. Only `application-local.yml` turns it on. */
+    var fakeCompleteEnabled: Boolean = false
 }
