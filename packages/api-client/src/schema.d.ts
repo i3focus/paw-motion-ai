@@ -164,6 +164,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/playdates/{playdateId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelPlaydate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/places/{placeId}/check-ins": {
         parameters: {
             query?: never;
@@ -1602,13 +1618,19 @@ export interface components {
             formData?: boolean;
         };
         HttpHeaders: {
-            acceptLanguageAsLocales?: string[];
-            accessControlAllowHeaders?: string[];
-            accessControlAllowMethods?: components["schemas"]["HttpMethod"][];
-            accessControlAllowOrigin?: string;
-            accessControlExposeHeaders?: string[];
-            accessControlRequestHeaders?: string[];
-            accessControlRequestMethod?: components["schemas"]["HttpMethod"];
+            acceptLanguage?: {
+                range?: string;
+                /** Format: double */
+                weight?: number;
+            }[];
+            /** Format: int64 */
+            accessControlMaxAge?: number;
+            acceptCharset?: string[];
+            contentDisposition?: components["schemas"]["ContentDisposition"];
+            contentLanguage?: string;
+            /** Format: int64 */
+            ifUnmodifiedSince?: number;
+            cacheControl?: string;
             range?: components["schemas"]["HttpRange"][];
             connection?: string[];
             contentType?: components["schemas"]["MediaType"];
@@ -1643,10 +1665,6 @@ export interface components {
                 unresolved?: boolean;
                 hostName?: string;
             };
-            contentDisposition?: components["schemas"]["ContentDisposition"];
-            acceptCharset?: string[];
-            cacheControl?: string;
-            contentLanguage?: string;
             etag?: string;
             basicAuth?: string;
             accept?: components["schemas"]["MediaType"][];
@@ -1661,15 +1679,13 @@ export interface components {
             upgrade?: string;
             vary?: string[];
             accessControlAllowCredentials?: boolean;
-            acceptLanguage?: {
-                range?: string;
-                /** Format: double */
-                weight?: number;
-            }[];
-            /** Format: int64 */
-            accessControlMaxAge?: number;
-            /** Format: int64 */
-            ifUnmodifiedSince?: number;
+            acceptLanguageAsLocales?: string[];
+            accessControlAllowHeaders?: string[];
+            accessControlAllowMethods?: components["schemas"]["HttpMethod"][];
+            accessControlAllowOrigin?: string;
+            accessControlExposeHeaders?: string[];
+            accessControlRequestHeaders?: string[];
+            accessControlRequestMethod?: components["schemas"]["HttpMethod"];
             empty?: boolean;
             all?: {
                 [key: string]: string;
@@ -1689,11 +1705,11 @@ export interface components {
             };
             /** Format: double */
             qualityValue?: number;
+            wildcardSubtype?: boolean;
+            subtypeSuffix?: string;
             charset?: string;
             concrete?: boolean;
             wildcardType?: boolean;
-            wildcardSubtype?: boolean;
-            subtypeSuffix?: string;
         };
         CreateStoryRequest: {
             /** Format: uuid */
@@ -3304,6 +3320,28 @@ export interface operations {
                 "application/json": components["schemas"]["RespondInviteRequest"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlaydateDto"];
+                };
+            };
+        };
+    };
+    cancelPlaydate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                playdateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
