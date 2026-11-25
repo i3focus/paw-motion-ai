@@ -35,6 +35,9 @@ management:
         include: health,info,metrics
   endpoint:
     health:
+      # N4: o health publico nunca traz detalhes (componentes, banco, disco)
+      show-details: never
+      show-components: never
       probes:
         enabled: true
 
@@ -69,7 +72,8 @@ app:
       days: ${INSIGHTS_RETENTION_DAYS:365}
       batch-size: ${INSIGHTS_RETENTION_BATCH_SIZE:1000}
   security:
-    trusted-proxies: "${TRUSTED_PROXIES:127.0.0.1,::1,0:0:0:0:0:0:0:1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16}"
+    # N13: so loopback por padrao (bootRun local). Em Docker/Hostinger use o IP fixo do nginx do frontend (docker-compose.yml).
+    trusted-proxies: "${TRUSTED_PROXIES:127.0.0.1,::1}"
     jwt:
       issuer: ${JWT_ISSUER:paw-motion-ai}
       secret: ${JWT_SECRET}

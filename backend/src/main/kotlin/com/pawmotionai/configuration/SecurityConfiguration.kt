@@ -1,6 +1,7 @@
 package com.pawmotionai.configuration
 
 import com.pawmotionai.identity.application.port.out.OwnerRepository
+import com.pawmotionai.shared.SecurityRoles
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
@@ -51,6 +52,8 @@ class SecurityConfiguration {
             .authorizeHttpRequests { authorize -> authorize
                 .requestMatchers("/api/auth/**", "/api/partner/auth/**", "/api/webhooks/payments/**", "/actuator/health", "/actuator/health/**", "/error",
                     "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+                // N4: health e publico (sem detalhes); info, metrics e o resto de /actuator exigem ADMIN
+                .requestMatchers("/actuator/**").hasAuthority(SecurityRoles.ADMIN)
                 .requestMatchers(HttpMethod.GET, "/api/media/*", "/api/vet-share/*").permitAll()
                 .anyRequest().authenticated()
             }

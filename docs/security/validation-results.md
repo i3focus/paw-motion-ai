@@ -80,3 +80,25 @@ O modo é o mesmo dos pets: `app.limits.mode` (`LIMITS_MODE`): `enforce` (padrã
 - `backend/src/main/resources/application.yml` (chaves `app.limits.*`).
 - `V30__owner_quota_indexes.sql` (aditiva, `IF NOT EXISTS`): índices `communities(created_by, created_at)`, `community_events(created_by, created_at)` e `activities(owner_id, created_at)`. Em tabela grande de produção, criar em janela de baixo tráfego.
 - `docs/api/openapi.yaml` e `packages/api-client/src/schema.d.ts` regenerados com `generate.sh` (nova rota).
+
+## 11.3 N13 e N4 (borda e actuator)
+
+### Método
+Topologia lida em `docs/deploy-hostinger.md` (não versionado): `Internet -> Caddy -> nginx do frontend (/api/) -> backend:8080`, só o Caddy publica portas. Sem staging disponível, a validação foi por código, `docker compose config` e testes: `backend/src/test/kotlin/com/pawmotionai/preservation/EdgeActuatorIT.kt` (HTTP real, Postgres via Testcontainers, contexto Spring padrão) para N4 e `backend/src/test/kotlin/com/pawmotionai/configuration/TrustedProxyTest.kt` (filtro e resolver, dois casos novos) para N13. Suíte completa (`./gradlew test`) verde ao final.
+
+### Veredito por item
+| Item | Situação encontrada | Veredito | Correção |
+|---|---|---|---|
+| N4 actuator | `/actuator/info` e `/actuator/metrics` na porta da aplicação, liberados a qualquer JWT autenticado, e dono se autoregistra de graça. O nginx só encaminha `/api/`, então a internet não os alcança no desenho documentado; o risco existe em LAN (`docs/run-all-projects.md`) ou se alguém criar regra de proxy | **Confirmado (defesa dependia só da topologia) e corrigido** | `SecurityConfiguration`: `/actuator/**` exige `ROLE_ADMIN`; `health` e `health/**` seguem públicos. `application.yml`: `show-details: never` e `show-components: never`. Teste: anônimo 401 e dono 403 em info, metrics, metrics/{nome} e env; admin 200; health 200 sem `components`/`details`. |
+| N13 `TRUSTED_PROXIES` | Padrão cobria loopback e todo RFC1918/link-local, tanto no `application.yml` quanto no compose; qualquer contêiner ou proxy da faixa escolhia a chave do limite via `X-Forwarded-For`. O guia Hostinger recomendava `172.16.0.0/12` | **Confirmado (configuração) e corrigido** | `ClientIpResolver` (PR 2d) já ignora hops forjados. Agora o padrão é estreito: `application.yml` só loopback; compose fixa a rede `172.28.0.0/24`, o frontend em `172.28.0.10` e `TRUSTED_PROXIES=172.28.0.10/32`. Em produção, `TRUSTED_PROXY_CIDRS=172.28.0.2/32` (Caddy). Testes: peer não confiável com 12 logins e XFF rotativo termina em 429; com o padrão novo, peer da faixa Docker (`172.18.0.5`) tem o XFF ignorado; com o padrão do compose só `172.28.0.10` repassa o IP do cliente. |
+| Backend fora do proxy | Compose de desenvolvimento publica `127.0.0.1:8080` (e `5432`) | **Aceito em dev; fechado em produção** | O override de produção usa `ports: !reset []` em backend, postgres e frontend (ver checklist). Só o Caddy publica. |
+
+### Pendências de observação no deploy real
+- Confirmar no VPS os itens da checklist (`docs/security/hostinger-deploy-checklist.md`): portas publicadas, `TRUSTED_PROXY_CIDRS`/`TRUSTED_PROXIES`, IP do cliente real nos logs, teste de XFF rotativo contra o domínio.
+- Se houver CDN ou outro proxy antes do Caddy, o Caddy precisa de `trusted_proxies` próprio; do contrário o IP do cliente será o do CDN.
+- Quem já tem `.env` com `TRUSTED_PROXIES=172.16.0.0/12` mantém o valor antigo: o compose só aplica o padrão novo quando a variável está vazia. Atualizar o `.env`.
+- Atenção à migração: o compose passa a fixar a sub-rede `172.28.0.0/24`. Se ela colidir com outra rede do VPS, troque a faixa nos três pontos descritos na checklist.
+
+### Mudanças aplicadas
+- `backend/src/main/kotlin/com/pawmotionai/configuration/SecurityConfiguration.kt`, `backend/src/main/resources/application.yml`, `docker-compose.yml`, `.env.example`.
+- Testes: `EdgeActuatorIT` (novo) e dois casos em `TrustedProxyTest`. Checklist: `docs/security/hostinger-deploy-checklist.md`.
