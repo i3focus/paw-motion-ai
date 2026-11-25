@@ -8,7 +8,7 @@ import java.util.concurrent.Executors
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Lote 4 (C5, C10, C12, C13, C16 pagination): data and resources. Spec: security-audit-remediation, task 1. */
+/** Lote 4 (C5, C10, C12, C13; C16 moved to ReadLimitsIT): data and resources. Spec: security-audit-remediation, task 1. */
 @Exploratory
 @TestPropertySource(properties = ["app.media.root=build/tmp/exploratory-media"])
 class Lote4ExploratoryIT : ExploratoryApiTest() {
@@ -74,24 +74,5 @@ class Lote4ExploratoryIT : ExploratoryApiTest() {
         repeat(5) { expect(200, call("POST", "/api/insights", owner.token, mapOf("petId" to pet, "periodDays" to 7))) }
         val rows = jdbc.queryForObject("SELECT COUNT(*) FROM insights WHERE owner_id = ?", Long::class.java, owner.ownerId)
         assertEquals(1L, rows, "Counterexample C13: 5 insight calls on the same day -> $rows rows")
-    }
-
-    @Test
-    fun `C16 absurd page numbers are rejected with 400`() {
-        val owner = registerOwner("Ana")
-        val feed = call("GET", "/api/feed?page=100000000&size=50", owner.token).status
-        assertEquals(400, feed, "Counterexample C16/N16: GET /api/feed?page=100000000 -> HTTP $feed (offset scan)")
-    }
-
-    @Test
-    fun `C16 wallet entries page size is limited`() {
-        val partner = registerOwner("Spa", role = "PARTNER")
-        fundPartner(partner)
-        val wallet = expect(200, call("GET", "/api/partner/wallet", partner.token))
-        val accountId = wallet["accounts"][0]["id"].asString()
-        val size = call("GET", "/api/partner/wallet/accounts/$accountId/entries?size=1000000", partner.token)
-        val pageSize = runCatching { json(size)["size"].asInt() }.getOrDefault(-1)
-        assertTrue(size.status == 400 || (size.status == 200 && pageSize in 1..50),
-            "Counterexample N11: wallet entries size=1000000 -> HTTP ${size.status}, effective size=$pageSize")
     }
 }

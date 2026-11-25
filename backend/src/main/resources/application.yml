@@ -49,6 +49,13 @@ app:
     # shadow: mede e registra (ratelimit.shadow_violations) sem responder 429; enforce: bloqueia. Vale para os buckets novos.
     mode: ${RATE_LIMIT_MODE:shadow}
     webhook-per-minute: ${RATE_LIMIT_WEBHOOK_PER_MINUTE:600}
+    read:
+      # enforce por padrão (limites generosos); shadow = só mede (rollback)
+      mode: ${RATE_LIMIT_READ_MODE:enforce}
+      per-minute: ${RATE_LIMIT_READ_PER_MINUTE:600}
+      costly-per-minute: ${RATE_LIMIT_READ_COSTLY_PER_MINUTE:240}
+  pagination:
+    max-page: ${PAGINATION_MAX_PAGE:10000}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
   billing:

@@ -1057,6 +1057,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Stats count only activities shared to Paw City when the viewer is not the pet owner, so totals seen by third parties can be lower than the owner's. */
         get: operations["profile_1"];
         put?: never;
         post?: never;
@@ -1153,6 +1154,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Third parties see only activities shared to Paw City; the owner sees all of them. */
         get: operations["adventures"];
         put?: never;
         post?: never;
@@ -1600,19 +1602,6 @@ export interface components {
             formData?: boolean;
         };
         HttpHeaders: {
-            accessControlAllowCredentials?: boolean;
-            acceptLanguage?: {
-                range?: string;
-                /** Format: double */
-                weight?: number;
-            }[];
-            /** Format: int64 */
-            accessControlMaxAge?: number;
-            acceptCharset?: string[];
-            contentDisposition?: components["schemas"]["ContentDisposition"];
-            contentLanguage?: string;
-            /** Format: int64 */
-            ifUnmodifiedSince?: number;
             acceptLanguageAsLocales?: string[];
             accessControlAllowHeaders?: string[];
             accessControlAllowMethods?: components["schemas"]["HttpMethod"][];
@@ -1620,7 +1609,6 @@ export interface components {
             accessControlExposeHeaders?: string[];
             accessControlRequestHeaders?: string[];
             accessControlRequestMethod?: components["schemas"]["HttpMethod"];
-            cacheControl?: string;
             range?: components["schemas"]["HttpRange"][];
             connection?: string[];
             contentType?: components["schemas"]["MediaType"];
@@ -1655,6 +1643,10 @@ export interface components {
                 unresolved?: boolean;
                 hostName?: string;
             };
+            contentDisposition?: components["schemas"]["ContentDisposition"];
+            acceptCharset?: string[];
+            cacheControl?: string;
+            contentLanguage?: string;
             etag?: string;
             basicAuth?: string;
             accept?: components["schemas"]["MediaType"][];
@@ -1668,6 +1660,16 @@ export interface components {
             pragma?: string;
             upgrade?: string;
             vary?: string[];
+            accessControlAllowCredentials?: boolean;
+            acceptLanguage?: {
+                range?: string;
+                /** Format: double */
+                weight?: number;
+            }[];
+            /** Format: int64 */
+            accessControlMaxAge?: number;
+            /** Format: int64 */
+            ifUnmodifiedSince?: number;
             empty?: boolean;
             all?: {
                 [key: string]: string;
@@ -1687,11 +1689,11 @@ export interface components {
             };
             /** Format: double */
             qualityValue?: number;
-            wildcardSubtype?: boolean;
-            subtypeSuffix?: string;
             charset?: string;
             concrete?: boolean;
             wildcardType?: boolean;
+            wildcardSubtype?: boolean;
+            subtypeSuffix?: string;
         };
         CreateStoryRequest: {
             /** Format: uuid */
@@ -1721,7 +1723,7 @@ export interface components {
             latitude?: number | null;
             /** Format: double */
             longitude?: number | null;
-            mediaIds: string[] | null;
+            mediaIds?: string[] | null;
             taggedPetIds?: string[] | null;
         };
         PostCreatedDto: {
@@ -1799,11 +1801,11 @@ export interface components {
         CreatePetRequest: {
             name: string;
             species: string;
-            breed?: string;
+            breed?: string | null;
             /** Format: date */
-            birthDate?: string;
+            birthDate?: string | null;
             size: string;
-            activityPreference?: string;
+            activityPreference?: string | null;
         };
         PetResponseDto: {
             /** Format: uuid */
@@ -1812,11 +1814,11 @@ export interface components {
             ownerId?: string;
             name?: string;
             species?: string;
-            breed?: string;
+            breed?: string | null;
             /** Format: date */
-            birthDate?: string;
+            birthDate?: string | null;
             size?: string;
-            activityPreference?: string;
+            activityPreference?: string | null;
             status?: string;
             /** Format: date-time */
             createdAt?: string;
@@ -1859,20 +1861,20 @@ export interface components {
             status?: string;
             aiTopics?: string[];
             /** Format: date-time */
-            analyzedAt?: string;
+            analyzedAt?: string | null;
             /** Format: int64 */
             creditsCharged?: number;
             /** Format: int64 */
             creditsRefunded?: number;
             /** Format: date-time */
-            expiresAt?: string;
+            expiresAt?: string | null;
             /** Format: int64 */
-            remainingBalance?: number;
+            remainingBalance?: number | null;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
-            endReason?: string;
+            endReason?: string | null;
         };
         CampaignV2Dto: {
             /** Format: uuid */
@@ -1951,8 +1953,8 @@ export interface components {
         };
         CreatePurchaseRequest: {
             amount: number;
-            method?: string;
-            customerId?: string;
+            method?: string | null;
+            customerId?: string | null;
         };
         PaymentTransactionResponseDto: {
             /** Format: uuid */
@@ -1963,12 +1965,12 @@ export interface components {
             currency?: string;
             /** Format: int64 */
             expectedCredits?: number;
-            method?: string;
+            method?: string | null;
             provider?: string;
             /** @enum {string} */
             status?: "PENDING" | "CONFIRMED" | "FAILED" | "EXPIRED" | "CANCELED" | "DISPUTED" | "REFUNDED";
-            providerCheckoutUrl?: string;
-            failureReason?: string;
+            providerCheckoutUrl?: string | null;
+            failureReason?: string | null;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
@@ -1980,8 +1982,8 @@ export interface components {
             password: string;
             displayName: string;
             businessName: string;
-            website?: string;
-            description?: string;
+            website?: string | null;
+            description?: string | null;
         };
         AuthResponseDto: {
             accessToken?: string;
@@ -1996,9 +1998,9 @@ export interface components {
             email?: string;
             displayName?: string;
             role?: string;
-            bio?: string;
-            phone?: string;
-            avatarUrl?: string;
+            bio?: string | null;
+            phone?: string | null;
+            avatarUrl?: string | null;
         };
         LoginRequest: {
             /** Format: email */
@@ -2067,9 +2069,9 @@ export interface components {
         };
         GenerateInsightRequest: {
             /** Format: uuid */
-            petId?: string;
+            petId?: string | null;
             /** Format: int32 */
-            periodDays?: number;
+            periodDays?: number | null;
         };
         InsightResponseDto: {
             /** Format: uuid */
@@ -2077,10 +2079,10 @@ export interface components {
             /** Format: uuid */
             ownerId?: string;
             /** Format: uuid */
-            petId?: string;
+            petId?: string | null;
             text?: string;
             provider?: string;
-            model?: string;
+            model?: string | null;
             fallbackUsed?: boolean;
             /** Format: date-time */
             generatedAt?: string;
@@ -2304,7 +2306,7 @@ export interface components {
             partnerId?: string;
             /** @enum {string} */
             status?: "ACTIVE" | "BLOCKED";
-            blockedReason?: string;
+            blockedReason?: string | null;
             accounts?: components["schemas"]["LedgerAccountResponseDto"][];
             /** Format: int64 */
             totalBalance?: number;
@@ -2392,13 +2394,13 @@ export interface components {
             /** Format: int64 */
             durationSeconds?: number;
             /** Format: double */
-            distanceMeters?: number;
-            notes?: string;
+            distanceMeters?: number | null;
+            notes?: string | null;
             /** Format: double */
-            latitude?: number;
+            latitude?: number | null;
             /** Format: double */
-            longitude?: number;
-            shareToPawCity?: boolean;
+            longitude?: number | null;
+            shareToPawCity?: boolean | null;
         };
         ActivityResponseDto: {
             /** Format: uuid */
@@ -2413,14 +2415,14 @@ export interface components {
             /** Format: int64 */
             durationSeconds?: number;
             /** Format: double */
-            distanceMeters?: number;
-            notes?: string;
+            distanceMeters?: number | null;
+            notes?: string | null;
             /** Format: date-time */
             createdAt?: string;
             /** Format: double */
-            latitude?: number;
+            latitude?: number | null;
             /** Format: double */
-            longitude?: number;
+            longitude?: number | null;
         };
         UpdatePartnerProfileRequest: {
             businessName?: string | null;
@@ -2467,10 +2469,10 @@ export interface components {
             formats?: ("FEED_CARD" | "MAP_PIN" | "DISCOVER_HIGHLIGHT" | "NEARBY_PROMO" | "AI_RECOMMENDATION")[] | null;
         };
         UpdateProfileRequest: {
-            displayName?: string;
-            bio?: string;
-            phone?: string;
-            avatarUrl?: string;
+            displayName?: string | null;
+            bio?: string | null;
+            phone?: string | null;
+            avatarUrl?: string | null;
         };
         NotificationPreferencesDto: {
             healthReminders?: boolean;
@@ -2693,8 +2695,8 @@ export interface components {
             id?: string;
             /** Format: uuid */
             accountId?: string;
-            /** @enum {string} */
-            accountCode?: "MAIN" | "BONUS" | "PARTNER";
+            /** @enum {string|null} */
+            accountCode?: "MAIN" | "BONUS" | "PARTNER" | null;
             /** @enum {string} */
             direction?: "CREDIT" | "DEBIT";
             /** Format: int64 */
@@ -2705,7 +2707,7 @@ export interface components {
             referenceType?: "PAYMENT" | "CAMPAIGN" | "CAMPAIGN_REFUND" | "PAYMENT_REVERSAL" | "ADJUSTMENT";
             /** Format: uuid */
             referenceId?: string;
-            description?: string;
+            description?: string | null;
             /** Format: date-time */
             occurredAt?: string;
         };
@@ -4684,6 +4686,7 @@ export interface operations {
                 petId?: string;
                 from?: string;
                 to?: string;
+                limit?: number;
             };
             header?: never;
             path?: never;

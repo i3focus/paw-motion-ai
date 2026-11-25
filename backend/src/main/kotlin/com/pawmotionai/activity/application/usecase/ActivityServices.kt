@@ -61,12 +61,13 @@ class RecordActivityService(
 class ListActivitiesService(private val activityRepository: ActivityRepository) : ListActivitiesUseCase {
 
     @Transactional(readOnly = true)
-    override fun listActivities(ownerId: UUID, petId: UUID?, from: Instant?, to: Instant?): List<ActivityResponseDto> =
-        activityRepository.findByOwnerIdOrderByStartedAtDesc(ownerId)
-            .filter { petId == null || it.petId == petId }
-            .filter { from == null || !it.startedAt.isBefore(from) }
-            .filter { to == null || !it.startedAt.isAfter(to) }
+    override fun listActivities(ownerId: UUID, petId: UUID?, from: Instant?, to: Instant?, limit: Int?): List<ActivityResponseDto> =
+        activityRepository.findFiltered(ownerId, petId, from, to, (limit ?: MAX_LIMIT).coerceIn(1, MAX_LIMIT))
             .map(ActivityResponseDto::from)
+
+    companion object {
+        const val MAX_LIMIT = 1000
+    }
 }
 
 @Service
@@ -79,20 +80,17 @@ class GetDashboardSummaryService(
     override fun getSummary(ownerId: UUID): DashboardSummaryDto {
         val now = Instant.now()
         val weekStart = now.minus(7, ChronoUnit.DAYS)
-        val activities = activityRepository.findByOwnerIdOrderByStartedAtDesc(ownerId)
-        val last7Days = activities.filter { !it.startedAt.isBefore(weekStart) }
-
-        val distance = last7Days.sumOf { it.distanceMeters ?: 0.0 }
-        val duration = last7Days.sumOf { it.durationSeconds }
-        val streak = ActivityStatisticsCalculator.currentStreakDays(activities, now)
-        val recent = activities.take(RECENT_ACTIVITY_LIMIT).map(ActivityResponseDto::from)
+        val totals = activityRepository.weeklyTotals(ownerId, weekStart)
+        val streak = ActivityStatisticsCalculator.currentStreakDaysFromDays(activityRepository.activeDays(ownerId), now)
+        val recent = activityRepository.findFiltered(ownerId, null, null, null, RECENT_ACTIVITY_LIMIT)
+            .map(ActivityResponseDto::from)
 
         return DashboardSummaryDto(
             ownerId,
             listPetsUseCase.listPets(ownerId).size,
-            last7Days.size,
-            distance,
-            duration,
+            totals.count,
+            totals.distanceMeters,
+            totals.durationSeconds,
             streak,
             recent)
     }
