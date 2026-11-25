@@ -76,6 +76,10 @@ class MapController(private val service: MapService) {
     fun respond(@AuthenticationPrincipal jwt: Jwt, @PathVariable playdateId: UUID, @Valid @RequestBody request: RespondInviteRequest): PlaydateDto =
         service.respondToInvite(jwt.ownerId, playdateId, request.petId!!, request.response!!)
 
+    @PostMapping("/playdates/{playdateId}/cancel")
+    fun cancelPlaydate(@AuthenticationPrincipal jwt: Jwt, @PathVariable playdateId: UUID): PlaydateDto =
+        service.cancelPlaydate(jwt.ownerId, playdateId)
+
     @Secured(SecurityRoles.OWNER)
     @GetMapping("/pets/nearby")
     @Operation(summary = "Pets near a point; distances are rounded to 100 m and exact owner locations are never returned")
