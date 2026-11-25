@@ -193,10 +193,16 @@ class MapService(
             """
             UPDATE playdate_invites SET status = :status, responded_at = now()
             WHERE playdate_id = :playdate AND invitee_pet_id = :pet AND invitee_owner_id = :owner
+              AND status = 'PENDING'
               AND EXISTS (SELECT 1 FROM playdates d WHERE d.id = :playdate AND d.status = 'OPEN')
             """,
         ).param("status", response.name).param("playdate", playdateId).param("pet", petId).param("owner", ownerId).update()
-        if (updated == 0) throw NotFoundException("Invite not found")
+        if (updated == 0) {
+            val exists = jdbc.sql("SELECT count(*) FROM playdate_invites WHERE playdate_id = :playdate AND invitee_pet_id = :pet AND invitee_owner_id = :owner")
+                .param("playdate", playdateId).param("pet", petId).param("owner", ownerId).query(Long::class.java).single() > 0
+            if (!exists) throw NotFoundException("Invite not found")
+            throw ConflictException("Invite already answered or playdate no longer open")
+        }
         if (response == InviteResponse.ACCEPTED) {
             engagement.recordPlaydate(playdateId, ownerId, petId)
             jdbc.sql("SELECT organizer_owner_id FROM playdates WHERE id = :id").param("id", playdateId).query(UUID::class.java).optional()
@@ -205,6 +211,19 @@ class MapService(
                     notifier.notify(organizer, NotificationType.PLAYDATE, "Playdate accepted", "$petName accepted your playdate invite.",
                         mapOf("playdateId" to playdateId.toString()))
                 }
+        }
+        return playdate(playdateId)
+    }
+
+    @Transactional
+    fun cancelPlaydate(ownerId: UUID, playdateId: UUID): PlaydateDto {
+        val updated = jdbc.sql("UPDATE playdates SET status = 'CANCELLED' WHERE id = :id AND organizer_owner_id = :owner AND status = 'OPEN'")
+            .param("id", playdateId).param("owner", ownerId).update()
+        if (updated == 0) {
+            val exists = jdbc.sql("SELECT count(*) FROM playdates WHERE id = :id AND organizer_owner_id = :owner")
+                .param("id", playdateId).param("owner", ownerId).query(Long::class.java).single() > 0
+            if (!exists) throw NotFoundException("Playdate not found")
+            throw ConflictException("Playdate is no longer open")
         }
         return playdate(playdateId)
     }
