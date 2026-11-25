@@ -69,6 +69,15 @@ app:
   push:
     expo:
       enabled: ${EXPO_PUSH_ENABLED:false}
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${RESEND_FROM_EMAIL:${EMAIL_FROM:Paw Motion AI <onboarding@resend.dev>}}
+    app-base-url: ${APP_BASE_URL:http://localhost:5173}
+    partner-portal-base-url: ${PARTNER_PORTAL_BASE_URL:http://localhost:5173/partner}
+    support-email: ${SUPPORT_EMAIL:support@i3pet.com.br}
+    resend:
+      api-key: ${RESEND_API_KEY:}
+      base-url: ${RESEND_BASE_URL:https://api.resend.com}
   notifications:
     reminder-interval-ms: ${NOTIFICATION_REMINDER_INTERVAL_MS:900000}
     reminder-initial-delay-ms: ${NOTIFICATION_REMINDER_INITIAL_DELAY_MS:60000}

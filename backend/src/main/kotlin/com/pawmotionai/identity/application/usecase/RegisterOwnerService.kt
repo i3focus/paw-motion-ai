@@ -9,6 +9,7 @@ import com.pawmotionai.identity.application.port.out.PasswordHasher
 import com.pawmotionai.identity.application.port.out.TokenIssuer
 import com.pawmotionai.identity.domain.exception.OwnerAlreadyExistsException
 import com.pawmotionai.identity.domain.model.Owner
+import com.pawmotionai.notification.SendWelcomeEmailUseCase
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -19,6 +20,7 @@ class RegisterOwnerService(
     private val ownerRepository: OwnerRepository,
     private val passwordHasher: PasswordHasher,
     private val tokenIssuer: TokenIssuer,
+    private val sendWelcomeEmail: SendWelcomeEmailUseCase,
 ) : RegisterOwnerUseCase {
 
     @Transactional
@@ -35,6 +37,7 @@ class RegisterOwnerService(
             command.displayName.trim(),
             Instant.now())
         val saved = ownerRepository.save(owner)
+        sendWelcomeEmail.sendTutorWelcome(saved.email, saved.displayName)
         val token = tokenIssuer.issue(saved)
         return AuthResponseDto(token.accessToken, token.tokenType, token.expiresInSeconds, OwnerResponseDto.from(saved))
     }

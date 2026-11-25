@@ -10,6 +10,7 @@ import com.pawmotionai.identity.application.port.out.TokenIssuer
 import com.pawmotionai.identity.domain.exception.OwnerAlreadyExistsException
 import com.pawmotionai.identity.domain.model.Owner
 import com.pawmotionai.ledger.application.port.`in`.EnsureWalletUseCase
+import com.pawmotionai.notification.SendWelcomeEmailUseCase
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,6 +23,7 @@ class RegisterPartnerService(
     private val passwordHasher: PasswordHasher,
     private val tokenIssuer: TokenIssuer,
     private val ensureWalletUseCase: EnsureWalletUseCase,
+    private val sendWelcomeEmail: SendWelcomeEmailUseCase,
     private val jdbcTemplate: JdbcTemplate,
 ) : RegisterPartnerUseCase {
 
@@ -36,13 +38,15 @@ class RegisterPartnerService(
             UUID.randomUUID(), normalizedEmail, passwordHasher.hash(command.password), command.displayName.trim(),
             Instant.now())
         val saved = ownerRepository.save(partner)
+        val businessName = command.businessName?.takeIf { it.isNotBlank() }?.trim() ?: saved.displayName
         jdbcTemplate.update(
             "INSERT INTO partner_profiles (partner_id, business_name, website, description, created_at, updated_at) VALUES (?, ?, ?, ?, now(), now())",
             saved.id,
-            command.businessName?.takeIf { it.isNotBlank() }?.trim() ?: saved.displayName,
+            businessName,
             command.website?.takeIf { it.isNotBlank() }?.trim(),
             command.description?.takeIf { it.isNotBlank() }?.trim())
         ensureWalletUseCase.ensureWallet(saved.id)
+        sendWelcomeEmail.sendPartnerWelcome(saved.email, saved.displayName, businessName)
         val token = tokenIssuer.issue(saved)
         return AuthResponseDto(token.accessToken, token.tokenType, token.expiresInSeconds, OwnerResponseDto.from(saved))
     }

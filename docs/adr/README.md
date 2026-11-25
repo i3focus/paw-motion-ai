@@ -30,3 +30,4 @@ ADRs are append-only. 0001–0018 record the initial baseline (hackathon spec ph
 | [0022](0022-campaign-lifecycle-v2-moderation.md) | Campaign v2 lifecycle with mandatory admin review |
 | [0023](0023-legacy-deprecation-removal.md) | Deprecated-alias → backfill → drop migration policy |
 | [0024](0024-idempotency-keys-financial-mutations.md) | `Idempotency-Key` on financial/non-idempotent creates |
+| [0025](0025-transactional-email-resend.md) | Transactional email via Resend (welcome emails for tutors and partners) |
