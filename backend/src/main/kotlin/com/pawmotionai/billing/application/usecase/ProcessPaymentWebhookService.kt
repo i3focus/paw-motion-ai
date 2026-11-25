@@ -12,7 +12,6 @@ import com.pawmotionai.billing.domain.exception.PaymentGatewayException
 import com.pawmotionai.billing.domain.exception.WebhookVerificationException
 import com.pawmotionai.billing.domain.model.PaymentTransaction
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.security.MessageDigest
 import java.time.Instant
 import java.util.HexFormat
@@ -27,7 +26,13 @@ class ProcessPaymentWebhookService(
     private val lifecycleService: PaymentLifecycleService,
 ) : ProcessPaymentWebhookUseCase {
 
-    @Transactional
+    /**
+     * Deliberately NOT transactional (N6/N15): the provider fetch happens outside any DB transaction and each
+     * lifecycle transition runs in its own transaction. A stale or out-of-order transition (InvalidPaymentStateException)
+     * therefore rolls back only that transition, never the dedup record, and the event is acknowledged without changes.
+     * If the process dies after a transition but before the dedup insert, the redelivery re-runs the transition, which is
+     * idempotent (confirm on CONFIRMED is a no-op, wallet-locked), so a credit is never duplicated or lost.
+     */
     override fun process(request: WebhookRequest) {
         val gateway = gateways.firstOrNull { it.provider().equals(request.provider, ignoreCase = true) }
             ?: throw WebhookVerificationException("Unknown payment provider")
@@ -36,6 +41,9 @@ class ProcessPaymentWebhookService(
             throw WebhookVerificationException("Webhook devMode does not match environment")
         }
         val providerEventId = event.providerEventId ?: throw WebhookVerificationException("Webhook event id is missing")
+        if (providerEventId.length > MAX_EVENT_ID_LENGTH) {
+            throw WebhookVerificationException("Webhook event id is too long")
+        }
         if (webhookEventRepository.exists(gateway.provider(), providerEventId)) {
             return
         }
@@ -70,6 +78,10 @@ class ProcessPaymentWebhookService(
         }
         webhookEventRepository.save(gateway.provider(), providerEventId, payloadHash(request.body),
             Instant.now())
+    }
+
+    private companion object {
+        const val MAX_EVENT_ID_LENGTH = 160
     }
 
     private fun requirePaidDetails(transaction: PaymentTransaction, details: CheckoutDetails) {
