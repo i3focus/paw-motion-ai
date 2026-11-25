@@ -46,7 +46,7 @@ Convenções: **modo** é a chave de rollback gradual (`enforce` aplica, `shadow
 | N13 `TRUSTED_PROXIES` | #37, #54 | Corrigido. Validação no deploy real pendente (11.3) | `TRUSTED_PROXIES` (compose `172.28.0.10/32`), `TRUSTED_PROXY_CIDRS` | Restaurar `TRUSTED_PROXIES` ou reverter o PR |
 | N14 JWT iss/aud/exp | #56 | Corrigido com janela de compatibilidade | `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_LEGACY_ISSUERS`, `JWT_LEGACY_COMPAT_UNTIL`, `JWT_TTL_SECONDS` | Manter `JWT_LEGACY_ISSUERS` e estender `JWT_LEGACY_COMPAT_UNTIL`; ou reverter o PR |
 
-Pendência global: a fase 5 da auditoria (revisão independente das 43 fichas) não foi executada.
+Pendência global: nenhuma. Fase 5 concluída; ver `audit-closure.md`.
 
 ## 3. Migrações Flyway (V20–V30)
 
