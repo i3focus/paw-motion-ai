@@ -9,12 +9,20 @@ import com.pawmotionai.billing.application.port.out.WebhookRequest
 import com.pawmotionai.billing.domain.exception.WebhookVerificationException
 import com.pawmotionai.configuration.BillingProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
+import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * Local-only provider (N5). Besides the property, it requires the `local` profile, so even a misconfigured
+ * `PAYMENT_PROVIDER=fake` outside local registers no fake gateway: `/api/webhooks/payments/fake` is then answered as an
+ * unknown provider and the secret is never evaluated.
+ */
 @Component
+@Profile("local")
 @ConditionalOnProperty(name = ["app.billing.provider"], havingValue = "fake")
 class FakePaymentGatewayAdapter(private val billingProperties: BillingProperties) : PaymentGatewayPort {
 
@@ -51,7 +59,7 @@ class FakePaymentGatewayAdapter(private val billingProperties: BillingProperties
             throw WebhookVerificationException("Fake webhook secret is not configured")
         }
         val providedSecret = header(request.headers, "x-fake-webhook-secret")
-        if (providedSecret == null || providedSecret != configuredSecret) {
+        if (providedSecret == null || !MessageDigest.isEqual(providedSecret.toByteArray(), configuredSecret.toByteArray())) {
             throw WebhookVerificationException("Invalid fake webhook secret")
         }
         val root: JsonNode = try {
