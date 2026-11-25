@@ -69,6 +69,11 @@ app:
     fanout-cooldown: ${LOST_PET_FANOUT_COOLDOWN:6h}
     max-alerts-per-day: ${LOST_PET_MAX_ALERTS_PER_DAY:10}
     max-active-alerts-per-owner: ${LOST_PET_MAX_ACTIVE_ALERTS_PER_OWNER:5}
+    # C23 (same mode): caps per alert and per (alert, reporter) -> 409; seenAt window and optional max distance (0 = off) -> 400
+    max-sightings-per-alert: ${LOST_PET_MAX_SIGHTINGS_PER_ALERT:20}
+    max-sightings-per-reporter: ${LOST_PET_MAX_SIGHTINGS_PER_REPORTER:3}
+    sighting-max-age: ${LOST_PET_SIGHTING_MAX_AGE:7d}
+    sighting-max-distance-meters: ${LOST_PET_SIGHTING_MAX_DISTANCE_METERS:0}
   pagination:
     max-page: ${PAGINATION_MAX_PAGE:10000}
   cors:

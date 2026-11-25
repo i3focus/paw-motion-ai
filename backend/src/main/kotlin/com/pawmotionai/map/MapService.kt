@@ -38,6 +38,10 @@ class MapService(
     @Value("\${app.lost-pet.fanout-cooldown:6h}") private val fanoutCooldown: Duration,
     @Value("\${app.lost-pet.max-alerts-per-day:10}") private val maxAlertsPerDay: Int,
     @Value("\${app.lost-pet.max-active-alerts-per-owner:5}") private val maxActiveAlertsPerOwner: Int,
+    @Value("\${app.lost-pet.max-sightings-per-alert:20}") private val maxSightingsPerAlert: Int,
+    @Value("\${app.lost-pet.max-sightings-per-reporter:3}") private val maxSightingsPerReporter: Int,
+    @Value("\${app.lost-pet.sighting-max-age:7d}") private val sightingMaxAge: Duration,
+    @Value("\${app.lost-pet.sighting-max-distance-meters:0}") private val sightingMaxDistanceMeters: Double,
 ) {
 
     private val log = LoggerFactory.getLogger(MapService::class.java)
@@ -164,16 +168,49 @@ class MapService(
         ).param("lat", lat).param("lng", lng).query { rs, _ -> alertRow(rs) }.list()
     }
 
+    /**
+     * C23: `seenAt` must be in [now - max-age, now + 5min] (400); optional max distance to the alert (400); caps per alert and
+     * per (alert, reporter) (409). The alert row is locked (FOR UPDATE) so the counts hold under concurrent reports.
+     * `shadow` only logs; `off` is the legacy behavior.
+     */
     @Transactional
     fun reportSighting(reporterId: UUID, alertId: UUID, request: SightingRequest) {
-        val inserted = jdbc.sql(
+        val now = Instant.now()
+        val seenAt = request.seenAt!!
+        val outOfWindow = seenAt.isAfter(now.plusSeconds(300)) || seenAt.isBefore(now.minus(sightingMaxAge))
+        if (outOfWindow) {
+            if (lostPetMode == "enforce") throw BadRequestException("seenAt must be within the last ${sightingMaxAge.toDays()} days and not in the future")
+            if (lostPetMode == "shadow") log.warn("sighting seenAt outside window would be refused alert={} reporter={}", alertId, reporterId)
+        }
+        val distance = jdbc.sql(
+            "SELECT ST_Distance(last_seen_location, $POINT) FROM lost_pet_alerts WHERE id = :alert AND status = 'ACTIVE' FOR UPDATE",
+        ).param("alert", alertId).param("lat", request.latitude).param("lng", request.longitude)
+            .query(Double::class.java).optional().orElseThrow { NotFoundException("Active alert not found") }
+        if (lostPetMode != "off") {
+            if (sightingMaxDistanceMeters > 0 && distance > sightingMaxDistanceMeters) {
+                if (lostPetMode == "enforce") throw BadRequestException("Sighting is too far from the alert")
+                log.warn("sighting too far would be refused alert={} reporter={} distance={}", alertId, reporterId, distance)
+            }
+            val perAlert = jdbc.sql("SELECT COUNT(*) FROM lost_pet_sightings WHERE alert_id = :alert").param("alert", alertId)
+                .query(Long::class.java).single()
+            val perReporter = jdbc.sql("SELECT COUNT(*) FROM lost_pet_sightings WHERE alert_id = :alert AND reporter_owner_id = :reporter")
+                .param("alert", alertId).param("reporter", reporterId).query(Long::class.java).single()
+            val overAlert = perAlert >= maxSightingsPerAlert
+            val overReporter = perReporter >= maxSightingsPerReporter
+            if (overAlert || overReporter) {
+                if (lostPetMode == "enforce") {
+                    throw ConflictException(if (overAlert) "Sighting limit reached for this alert" else "Sighting limit reached for this reporter")
+                }
+                log.warn("sighting cap would be exceeded alert={} reporter={} perAlert={} perReporter={}", alertId, reporterId, perAlert, perReporter)
+            }
+        }
+        jdbc.sql(
             """
             INSERT INTO lost_pet_sightings (id, alert_id, reporter_owner_id, location, seen_at, note, created_at)
-            SELECT :id, a.id, :reporter, $POINT, :seen, :note, now() FROM lost_pet_alerts a WHERE a.id = :alert AND a.status = 'ACTIVE'
+            VALUES (:id, :alert, :reporter, $POINT, :seen, :note, now())
             """,
         ).param("id", UUID.randomUUID()).param("reporter", reporterId).param("lat", request.latitude).param("lng", request.longitude)
-            .param("seen", Timestamp.from(request.seenAt)).param("note", request.note?.trim()?.ifEmpty { null }).param("alert", alertId).update()
-        if (inserted == 0) throw NotFoundException("Active alert not found")
+            .param("seen", Timestamp.from(seenAt)).param("note", request.note?.trim()?.ifEmpty { null }).param("alert", alertId).update()
     }
 
     @Transactional
