@@ -8,7 +8,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.OncePerRequestFilter
 import java.time.Duration
 import java.time.Instant
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Read bucket per `(subject, normalized route)` for GET requests (C16). Route = first two path segments (`/api/feed`),
@@ -21,7 +20,7 @@ class ReadRateLimitFilter(
     private val settings: ReadLimitSettings = ReadLimitSettings(),
     private val meterRegistry: MeterRegistry? = null,
 ) : OncePerRequestFilter() {
-    private val windows = ConcurrentHashMap<String, Window>()
+    private val windows = RateLimitStore(WINDOW.toMillis(), MAX_TRACKED_KEYS)
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean =
         request.method != "GET" || !RequestPaths.hasSegmentPrefix(RequestPaths.normalized(request), "/api")
@@ -42,23 +41,14 @@ class ReadRateLimitFilter(
                 return
             }
         }
-        if (windows.size > MAX_TRACKED_KEYS) {
-            windows.entries.removeIf { now - it.value.startedAtEpochMilli >= WINDOW.toMillis() }
-        }
         filterChain.doFilter(request, response)
     }
 
     private fun route(path: String): String = path.split("/").filter { it.isNotEmpty() }.take(2).joinToString("/", "/")
 
     private fun exceeds(key: String, now: Long, max: Int): Boolean {
-        val window = windows.compute(key) { _, existing ->
-            if (existing == null || now - existing.startedAtEpochMilli >= WINDOW.toMillis()) {
-                Window(now, 1)
-            } else {
-                Window(existing.startedAtEpochMilli, existing.count + 1)
-            }
-        }
-        return window != null && window.count > max
+        val count = windows.hit(key, now)
+        return count > max
     }
 
     private fun subject(ip: String): String {
@@ -67,8 +57,6 @@ class ReadRateLimitFilter(
         return if (authentication == null || !authentication.isAuthenticated || name.isNullOrBlank()
             || name == "anonymousUser") "ip:$ip" else name
     }
-
-    private data class Window(val startedAtEpochMilli: Long, val count: Int)
 
     private companion object {
         val COSTLY_ROUTES = setOf("/api/feed", "/api/places", "/api/leaderboard", "/api/discover")

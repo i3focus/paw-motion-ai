@@ -8,7 +8,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.OncePerRequestFilter
 import java.time.Duration
 import java.time.Instant
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Rate limit on mutating API routes (plan §6). Routes are classified by the normalized path (C25, C26).
@@ -23,7 +22,7 @@ class WriteRateLimitFilter(
     private val settings: RateLimitSettings = RateLimitSettings(),
     private val meterRegistry: MeterRegistry? = null,
 ) : OncePerRequestFilter() {
-    private val attempts = ConcurrentHashMap<String, Window>()
+    private val attempts = RateLimitStore(WINDOW.toMillis(), MAX_TRACKED_KEYS)
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         if (!RequestPaths.hasSegmentPrefix(RequestPaths.normalized(request), "/api")) {
@@ -51,9 +50,6 @@ class WriteRateLimitFilter(
                 return
             }
         }
-        if (attempts.size > MAX_TRACKED_KEYS) {
-            attempts.entries.removeIf { now - it.value.startedAtEpochMilli >= WINDOW.toMillis() }
-        }
         filterChain.doFilter(request, response)
     }
 
@@ -70,14 +66,8 @@ class WriteRateLimitFilter(
     }
 
     private fun exceeds(key: String, now: Long, max: Int): Boolean {
-        val window = attempts.compute(key) { _, existing ->
-            if (existing == null || now - existing.startedAtEpochMilli >= WINDOW.toMillis()) {
-                Window(now, 1)
-            } else {
-                Window(existing.startedAtEpochMilli, existing.count + 1)
-            }
-        }
-        return window != null && window.count > max
+        val count = attempts.hit(key, now)
+        return count > max
     }
 
     private fun isAiMessage(request: HttpServletRequest, path: String): Boolean =
@@ -89,8 +79,6 @@ class WriteRateLimitFilter(
         return if (authentication == null || !authentication.isAuthenticated || name.isNullOrBlank()
             || name == "anonymousUser") "ip:$ip" else name
     }
-
-    private data class Window(val startedAtEpochMilli: Long, val count: Int)
 
     private companion object {
         const val MAX_WRITES_PER_WINDOW = 120
