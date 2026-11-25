@@ -7,39 +7,14 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Lote 3 (C24, C9, C8, C18, C23): notifications and cardinality. Spec: security-audit-remediation, task 1. */
+/** Lote 3 (C8, C18, C23; C24 and C9 moved to regular tests): notifications and cardinality. Spec: security-audit-remediation, task 1. */
 @Exploratory
 class Lote3ExploratoryIT : ExploratoryApiTest() {
-
-    private fun playdateBody(petId: UUID, invitee: UUID) = mapOf(
-        "petId" to petId, "mode" to "NOW", "inviteePetIds" to listOf(invitee), "message" to "Let's play",
-    )
 
     private fun alertBody(petId: UUID) = mapOf(
         "petId" to petId, "description" to "Lost near the park", "latitude" to -23.5615, "longitude" to -46.6559,
         "lastSeenAt" to Instant.now().minusSeconds(600).toString(), "radiusMeters" to 3000,
     )
-
-    @Test
-    fun `C9 two identical invites to the same owner within the window notify once`() {
-        val ana = registerOwner("Ana")
-        val bia = registerOwner("Bia")
-        val thor = createPet(ana, "Thor")
-        val luna = createPet(bia, "Luna")
-        repeat(2) { call("POST", "/api/playdates", ana.token, playdateBody(thor, luna)) }
-        val rows = notificationCount(bia.ownerId, "Playdate invite")
-        assertEquals(1L, rows, "Counterexample C9: 2 identical invites -> $rows invite notifications to the same owner")
-    }
-
-    @Test
-    fun `C9 an invite to a pet of the same owner does not notify`() {
-        val ana = registerOwner("Ana")
-        val thor = createPet(ana, "Thor")
-        val rex = createPet(ana, "Rex")
-        expect(201, call("POST", "/api/playdates", ana.token, playdateBody(thor, rex)))
-        val rows = notificationCount(ana.ownerId, "Playdate invite")
-        assertEquals(0L, rows, "Counterexample C9: organizer notified of an invite to their own pet ($rows)")
-    }
 
     @Test
     fun `C8 two create-resolve cycles respect the fan-out cooldown`() {
