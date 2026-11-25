@@ -37,6 +37,9 @@ management:
         enabled: true
 
 app:
+  activity:
+    # how far back startedAt may be (ISO-8601 duration); decision 3.2
+    max-backdate: ${ACTIVITY_MAX_BACKDATE:P14D}
   media:
     root: ${MEDIA_ROOT:./data/media}
     # enforce: 409 above the per-owner quota (atomic reservation); shadow: only records the excess; off: no cap (rollback)
