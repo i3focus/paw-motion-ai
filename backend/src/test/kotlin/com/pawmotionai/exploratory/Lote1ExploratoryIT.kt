@@ -27,8 +27,11 @@ class Lote1ExploratoryIT : ExploratoryApiTest() {
         assertEquals(403, after.status, "Counterexample C15: role revoked in DB, old token still returns HTTP ${after.status}")
     }
 
-    /** C7: user C outside the visibility scope must get 404 on react, unreact, list and create comments. */
-    @Exploratory
+    /**
+     * C7: user C outside the visibility scope must get 404 on react, unreact, list and create comments.
+     * Contract caveat: the scope on these endpoints uses the stored owner location. An item that was visible in the
+     * feed only through the per-request `lat`/`lng` may answer 404 on comments.
+     */
     @Test
     fun `C7 feed item outside the viewer scope is 404 on react unreact comments and comment`() {
         val a = registerOwner("Ana")
