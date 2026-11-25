@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit
  * Lote 0 (C1, C2, C20): operational containment. Boot-level and script-level checks that do not need an HTTP server.
  * Spec: security-audit-remediation, tasks 1 (Lote 0).
  */
-@Exploratory
 class Lote0ExploratoryTest {
 
     private val repoRoot: Path = Path.of("..").toAbsolutePath().normalize()
@@ -39,6 +38,7 @@ class Lote0ExploratoryTest {
     }
 
     /** C20: seed-demo.sh must refuse to run without explicit local mode, before touching the network. */
+    @Exploratory
     @Test
     fun `C20 seed-demo script aborts on a remote target without explicit opt-in`() {
         val script = repoRoot.resolve("scripts/seed-demo.sh")
@@ -64,6 +64,7 @@ class Lote0ExploratoryTest {
     }
 
     /** C20: no published seed password and no database password fallback in the script. */
+    @Exploratory
     @Test
     fun `C20 seed-demo script has no published password or database fallback`() {
         val text = Files.readString(repoRoot.resolve("scripts/seed-demo.sh"))
