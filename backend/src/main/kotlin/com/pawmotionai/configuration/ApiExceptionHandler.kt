@@ -2,6 +2,7 @@ package com.pawmotionai.configuration
 
 import com.pawmotionai.shared.PageOutOfRangeException
 import com.pawmotionai.activity.domain.exception.ActivityNotFoundException
+import com.pawmotionai.activity.domain.exception.ActivityOutOfRangeException
 import com.pawmotionai.activity.domain.exception.InvalidActivityException
 import com.pawmotionai.billing.domain.exception.InvalidPaymentStateException
 import com.pawmotionai.billing.domain.exception.PaymentGatewayException
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -102,6 +104,14 @@ class ApiExceptionHandler {
     @ExceptionHandler(InvalidPetException::class, InvalidActivityException::class, IllegalArgumentException::class)
     fun handleInvalidDomain(exception: RuntimeException): ResponseEntity<ProblemDetail> =
         problem(HttpStatus.UNPROCESSABLE_ENTITY, "Invalid request", exception.message)
+
+    @ExceptionHandler(ActivityOutOfRangeException::class)
+    fun handleActivityOutOfRange(exception: ActivityOutOfRangeException): ResponseEntity<ProblemDetail> =
+        problem(HttpStatus.BAD_REQUEST, "Value out of range", exception.message)
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleUnreadableBody(exception: HttpMessageNotReadableException): ResponseEntity<ProblemDetail> =
+        problem(HttpStatus.BAD_REQUEST, "Malformed request body", "Request body is not valid JSON for this endpoint")
 
     @ExceptionHandler(PageOutOfRangeException::class)
     fun handlePageOutOfRange(exception: PageOutOfRangeException): ResponseEntity<ProblemDetail> =
