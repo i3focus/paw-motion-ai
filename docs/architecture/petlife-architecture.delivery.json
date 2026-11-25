@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "7fc17f8d-d1d2-4e55-ac81-9387dc447d74",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-overview.json",
+  "output": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.html",
+  "specification": {
+    "sha256": "794f46c9bf2aecc98c2ae142cfb46a422320b2a54b76e29bbf353c6252d621cf",
+    "bytes": 6806
+  },
+  "artifact": {
+    "sha256": "ffafe5af72566cf5fd744749f6c250bf87cc3c9aac108f9f4652d848dc94b719",
+    "bytes": 951175
+  }
+}

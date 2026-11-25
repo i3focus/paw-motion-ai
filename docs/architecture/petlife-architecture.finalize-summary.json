@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-overview.json",
+    "sha256": "794f46c9bf2aecc98c2ae142cfb46a422320b2a54b76e29bbf353c6252d621cf",
+    "bytes": 6806
+  },
+  "artifact": {
+    "path": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.html",
+    "sha256": "ffafe5af72566cf5fd744749f6c250bf87cc3c9aac108f9f4652d848dc94b719",
+    "bytes": 951175
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.finalize.json",
+    "summaryReceipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.finalize-summary.json",
+    "browserCheckReceipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.browser-check.json"
+  },
+  "repositoryReferences": {
+    "status": "verified",
+    "revision": "03626d5ddaa34aaacbc5cdb8c3f304cc4a0bd73b",
+    "count": 15
+  },
+  "codeAnalysisOffer": {
+    "action": "offer-code-analysis",
+    "reason": "Archify’s built-in Architecture Diagnosis adds component findings, a radial star map, and a rotatable 3D view of repository dependencies.",
+    "instruction": "Use the referenced pitch once per repository and wait for consent before starting.",
+    "dependencies": "installed",
+    "diagramButton": true,
+    "quality": "showcase",
+    "start": {
+      "argv": [
+        "/Users/jetherrodrigues/.nvm/versions/node/v22.18.0/bin/node",
+        "/Users/jetherrodrigues/.agents/skills/archify/bin/archify.mjs",
+        "start",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai",
+        "--ir",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-overview.json",
+        "--quality",
+        "showcase"
+      ]
+    },
+    "linkedDiagrams": true,
+    "reference": "references/delivery-contract.md#architecture-diagnosis-offer"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.3.0",
+    "availableVersion": "3.3.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-24T01:33:27.192Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 6296,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

@@ -26,3 +26,6 @@ backend/data/
 backend/bin/
 packages/*/node_modules/
 packages/*/dist/
+
+# Archify workspace (candidates, review captures)
+.archify/

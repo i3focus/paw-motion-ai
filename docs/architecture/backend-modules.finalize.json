@@ -1,0 +1,1596 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "startedAt": "2026-11-25T01:35:03.651Z",
+  "specification": {
+    "path": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-backend-modules.json",
+    "sha256": "0195689fdb88ac2ddb8ea22e021a9df9009246524f901b123ceed05c6dcce9a5",
+    "bytes": 11567
+  },
+  "artifact": {
+    "path": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.html",
+    "sha256": "4cc052f18216373ed573a31e5c52bdabd1da04134d7388c089d181ae5c05b0f4",
+    "bytes": 980879
+  },
+  "stages": {
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "/Users/jetherrodrigues/.nvm/versions/node/v22.18.0/bin/node",
+        "/Users/jetherrodrigues/.agents/skills/archify/bin/archify.mjs",
+        "deliver",
+        "architecture",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-backend-modules.json",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "0195689fdb88ac2ddb8ea22e021a9df9009246524f901b123ceed05c6dcce9a5",
+          "bytes": 11567
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 6049,
+      "command": [
+        "/Users/jetherrodrigues/.nvm/versions/node/v22.18.0/bin/node",
+        "/Users/jetherrodrigues/.agents/skills/archify/bin/archify.mjs",
+        "deliver",
+        "architecture",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-backend-modules.json",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "38eed0b4-f08a-4a2a-8df3-584672440e9e",
+        "ok": true,
+        "command": "deliver",
+        "type": "architecture",
+        "input": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-backend-modules.json",
+        "output": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.html",
+        "specification": {
+          "sha256": "0195689fdb88ac2ddb8ea22e021a9df9009246524f901b123ceed05c6dcce9a5",
+          "bytes": 11567
+        },
+        "artifact": {
+          "sha256": "4cc052f18216373ed573a31e5c52bdabd1da04134d7388c089d181ae5c05b0f4",
+          "bytes": 980879
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        },
+        "evidence": {
+          "verified": true,
+          "repository": "https://github.com/i3focus/paw-motion-ai",
+          "revision": "03626d5ddaa34aaacbc5cdb8c3f304cc4a0bd73b",
+          "references": 29
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 171,
+      "command": [
+        "/Users/jetherrodrigues/.nvm/versions/node/v22.18.0/bin/node",
+        "/Users/jetherrodrigues/.agents/skills/archify/bin/archify.mjs",
+        "check",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.html",
+        "artifact": {
+          "sha256": "4cc052f18216373ed573a31e5c52bdabd1da04134d7388c089d181ae5c05b0f4",
+          "bytes": 980879
+        },
+        "checks": [
+          {
+            "name": "single_svg",
+            "ok": true,
+            "details": [
+              "found 1 <svg> block(s)"
+            ]
+          },
+          {
+            "name": "finite_svg",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "orthogonal_arrows",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "label_route_clearance",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_crossings",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_corridors",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "container_border_runs",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "route_rhythm",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "legend_clearance",
+            "ok": true,
+            "details": []
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "showcase",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "metrics": {
+            "properCrossings": 0,
+            "resolvedCrossovers": 24,
+            "ambiguousCorridors": 0,
+            "arrowheadCollisions": 0,
+            "containerBorderRuns": 0,
+            "labelRouteClearanceIssues": 0,
+            "labelCanvasOverflowIssues": 0,
+            "minLabelRouteClearance": 12,
+            "desktopReadabilityIssues": 0,
+            "viewportHeightIssues": 0,
+            "minProjectedNodeTextPx": 6.000000638736263,
+            "maxBends": 4,
+            "routesOverSuggestedBends": 2,
+            "maxStretch": 1.217,
+            "routesOverSuggestedStretch": 0,
+            "minSegmentPx": 16,
+            "minInteriorSegmentPx": 54,
+            "shortSegmentCount": 0,
+            "shortEndpointSegmentCount": 0,
+            "shortInteriorSegmentCount": 0,
+            "microSegmentCount": 0
+          },
+          "suggestedLimits": {
+            "bendsPerRelationship": 2,
+            "stretch": 1.35,
+            "segmentPx": 16,
+            "microSegmentPx": 8
+          },
+          "routeReview": {
+            "crossings": [
+              {
+                "left": {
+                  "id": "rest-discovery",
+                  "from": "rest",
+                  "to": "discovery",
+                  "label": "",
+                  "collectionIndex": 4,
+                  "artifactIndex": 5
+                },
+                "right": {
+                  "id": "partner-billing",
+                  "from": "partner",
+                  "to": "billing",
+                  "label": "campaign budget debit",
+                  "collectionIndex": 13,
+                  "artifactIndex": 14
+                },
+                "point": [
+                  566.4,
+                  602
+                ]
+              },
+              {
+                "left": {
+                  "id": "rest-billing",
+                  "from": "rest",
+                  "to": "billing",
+                  "label": "wallets · checkout",
+                  "collectionIndex": 6,
+                  "artifactIndex": 7
+                },
+                "right": {
+                  "id": "identity-notification",
+                  "from": "identity",
+                  "to": "notification",
+                  "label": "SendWelcomeEmailUseCase",
+                  "collectionIndex": 10,
+                  "artifactIndex": 11
+                },
+                "point": [
+                  566.4,
+                  282
+                ]
+              },
+              {
+                "left": {
+                  "id": "rest-notification",
+                  "from": "rest",
+                  "to": "notification",
+                  "label": "",
+                  "collectionIndex": 7,
+                  "artifactIndex": 8
+                },
+                "right": {
+                  "id": "partner-billing",
+                  "from": "partner",
+                  "to": "billing",
+                  "label": "campaign budget debit",
+                  "collectionIndex": 13,
+                  "artifactIndex": 14
+                },
+                "point": [
+                  857,
+                  330
+                ]
+              },
+              {
+                "left": {
+                  "id": "rest-notification",
+                  "from": "rest",
+                  "to": "notification",
+                  "label": "",
+                  "collectionIndex": 7,
+                  "artifactIndex": 8
+                },
+                "right": {
+                  "id": "pets-persist",
+                  "from": "pets",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 19,
+                  "artifactIndex": 20
+                },
+                "point": [
+                  930,
+                  346
+                ]
+              },
+              {
+                "left": {
+                  "id": "identity-notification",
+                  "from": "identity",
+                  "to": "notification",
+                  "label": "SendWelcomeEmailUseCase",
+                  "collectionIndex": 10,
+                  "artifactIndex": 11
+                },
+                "right": {
+                  "id": "partner-billing",
+                  "from": "partner",
+                  "to": "billing",
+                  "label": "campaign budget debit",
+                  "collectionIndex": 13,
+                  "artifactIndex": 14
+                },
+                "point": [
+                  857,
+                  314
+                ]
+              },
+              {
+                "left": {
+                  "id": "identity-notification",
+                  "from": "identity",
+                  "to": "notification",
+                  "label": "SendWelcomeEmailUseCase",
+                  "collectionIndex": 10,
+                  "artifactIndex": 11
+                },
+                "right": {
+                  "id": "pets-persist",
+                  "from": "pets",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 19,
+                  "artifactIndex": 20
+                },
+                "point": [
+                  984.5,
+                  346
+                ]
+              },
+              {
+                "left": {
+                  "id": "billing-abacatepay",
+                  "from": "billing",
+                  "to": "abacatepay",
+                  "label": "create / get / delete checkout",
+                  "collectionIndex": 12,
+                  "artifactIndex": 13
+                },
+                "right": {
+                  "id": "identity-persist",
+                  "from": "identity",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 18,
+                  "artifactIndex": 19
+                },
+                "point": [
+                  1064,
+                  190
+                ]
+              },
+              {
+                "left": {
+                  "id": "partner-billing",
+                  "from": "partner",
+                  "to": "billing",
+                  "label": "campaign budget debit",
+                  "collectionIndex": 13,
+                  "artifactIndex": 14
+                },
+                "right": {
+                  "id": "pets-persist",
+                  "from": "pets",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 19,
+                  "artifactIndex": 20
+                },
+                "point": [
+                  857,
+                  346
+                ]
+              },
+              {
+                "left": {
+                  "id": "partner-billing",
+                  "from": "partner",
+                  "to": "billing",
+                  "label": "campaign budget debit",
+                  "collectionIndex": 13,
+                  "artifactIndex": 14
+                },
+                "right": {
+                  "id": "social-persist",
+                  "from": "social",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 20,
+                  "artifactIndex": 21
+                },
+                "point": [
+                  857,
+                  425
+                ]
+              },
+              {
+                "left": {
+                  "id": "assistant-discovery",
+                  "from": "assistant",
+                  "to": "discovery",
+                  "label": "PROPOSED actions · confirm-first",
+                  "collectionIndex": 14,
+                  "artifactIndex": 15
+                },
+                "right": {
+                  "id": "partner-persist",
+                  "from": "partner",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 21,
+                  "artifactIndex": 22
+                },
+                "point": [
+                  992.5,
+                  690
+                ]
+              },
+              {
+                "left": {
+                  "id": "assistant-discovery",
+                  "from": "assistant",
+                  "to": "discovery",
+                  "label": "PROPOSED actions · confirm-first",
+                  "collectionIndex": 14,
+                  "artifactIndex": 15
+                },
+                "right": {
+                  "id": "persist-postgres",
+                  "from": "persist",
+                  "to": "postgres",
+                  "label": "JDBC · context-owned tables",
+                  "collectionIndex": 25,
+                  "artifactIndex": 26
+                },
+                "point": [
+                  722.5,
+                  860
+                ]
+              },
+              {
+                "left": {
+                  "id": "notification-resend",
+                  "from": "notification",
+                  "to": "resend",
+                  "label": "POST /emails",
+                  "collectionIndex": 15,
+                  "artifactIndex": 16
+                },
+                "right": {
+                  "id": "social-persist",
+                  "from": "social",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 20,
+                  "artifactIndex": 21
+                },
+                "point": [
+                  977.5,
+                  425
+                ]
+              },
+              {
+                "left": {
+                  "id": "notification-resend",
+                  "from": "notification",
+                  "to": "resend",
+                  "label": "POST /emails",
+                  "collectionIndex": 15,
+                  "artifactIndex": 16
+                },
+                "right": {
+                  "id": "partner-persist",
+                  "from": "partner",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 21,
+                  "artifactIndex": 22
+                },
+                "point": [
+                  1145.5,
+                  690
+                ]
+              },
+              {
+                "left": {
+                  "id": "notification-resend",
+                  "from": "notification",
+                  "to": "resend",
+                  "label": "POST /emails",
+                  "collectionIndex": 15,
+                  "artifactIndex": 16
+                },
+                "right": {
+                  "id": "discovery-persist",
+                  "from": "discovery",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 24,
+                  "artifactIndex": 25
+                },
+                "point": [
+                  1145.5,
+                  548
+                ]
+              },
+              {
+                "left": {
+                  "id": "notification-resend",
+                  "from": "notification",
+                  "to": "resend",
+                  "label": "POST /emails",
+                  "collectionIndex": 15,
+                  "artifactIndex": 16
+                },
+                "right": {
+                  "id": "persist-postgres",
+                  "from": "persist",
+                  "to": "postgres",
+                  "label": "JDBC · context-owned tables",
+                  "collectionIndex": 25,
+                  "artifactIndex": 26
+                },
+                "point": [
+                  1145.5,
+                  703
+                ]
+              },
+              {
+                "left": {
+                  "id": "notification-expo",
+                  "from": "notification",
+                  "to": "expo",
+                  "label": "POST /push/send",
+                  "collectionIndex": 16,
+                  "artifactIndex": 17
+                },
+                "right": {
+                  "id": "social-persist",
+                  "from": "social",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 20,
+                  "artifactIndex": 21
+                },
+                "point": [
+                  1222,
+                  406
+                ]
+              },
+              {
+                "left": {
+                  "id": "notification-expo",
+                  "from": "notification",
+                  "to": "expo",
+                  "label": "POST /push/send",
+                  "collectionIndex": 16,
+                  "artifactIndex": 17
+                },
+                "right": {
+                  "id": "partner-persist",
+                  "from": "partner",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 21,
+                  "artifactIndex": 22
+                },
+                "point": [
+                  1344.5,
+                  689.922205101856
+                ]
+              },
+              {
+                "left": {
+                  "id": "notification-expo",
+                  "from": "notification",
+                  "to": "expo",
+                  "label": "POST /push/send",
+                  "collectionIndex": 16,
+                  "artifactIndex": 17
+                },
+                "right": {
+                  "id": "discovery-persist",
+                  "from": "discovery",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 24,
+                  "artifactIndex": 25
+                },
+                "point": [
+                  1307.05,
+                  406
+                ]
+              },
+              {
+                "left": {
+                  "id": "notification-expo",
+                  "from": "notification",
+                  "to": "expo",
+                  "label": "POST /push/send",
+                  "collectionIndex": 16,
+                  "artifactIndex": 17
+                },
+                "right": {
+                  "id": "persist-postgres",
+                  "from": "persist",
+                  "to": "postgres",
+                  "label": "JDBC · context-owned tables",
+                  "collectionIndex": 25,
+                  "artifactIndex": 26
+                },
+                "point": [
+                  1278,
+                  406
+                ]
+              },
+              {
+                "left": {
+                  "id": "media-disk",
+                  "from": "media",
+                  "to": "disk",
+                  "label": "store / load",
+                  "collectionIndex": 17,
+                  "artifactIndex": 18
+                },
+                "right": {
+                  "id": "persist-postgres",
+                  "from": "persist",
+                  "to": "postgres",
+                  "label": "JDBC · context-owned tables",
+                  "collectionIndex": 25,
+                  "artifactIndex": 26
+                },
+                "point": [
+                  722.5,
+                  992
+                ]
+              },
+              {
+                "left": {
+                  "id": "identity-persist",
+                  "from": "identity",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 18,
+                  "artifactIndex": 19
+                },
+                "right": {
+                  "id": "billing-persist",
+                  "from": "billing",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 22,
+                  "artifactIndex": 23
+                },
+                "point": [
+                  1104,
+                  190
+                ],
+                "sharedNode": "persist"
+              },
+              {
+                "left": {
+                  "id": "social-persist",
+                  "from": "social",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 20,
+                  "artifactIndex": 21
+                },
+                "right": {
+                  "id": "notification-persist",
+                  "from": "notification",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 23,
+                  "artifactIndex": 24
+                },
+                "point": [
+                  1222,
+                  392
+                ],
+                "sharedNode": "persist"
+              },
+              {
+                "left": {
+                  "id": "partner-persist",
+                  "from": "partner",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 21,
+                  "artifactIndex": 22
+                },
+                "right": {
+                  "id": "persist-postgres",
+                  "from": "persist",
+                  "to": "postgres",
+                  "label": "JDBC · context-owned tables",
+                  "collectionIndex": 25,
+                  "artifactIndex": 26
+                },
+                "point": [
+                  1278,
+                  690
+                ],
+                "sharedNode": "persist"
+              },
+              {
+                "left": {
+                  "id": "discovery-persist",
+                  "from": "discovery",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 24,
+                  "artifactIndex": 25
+                },
+                "right": {
+                  "id": "persist-postgres",
+                  "from": "persist",
+                  "to": "postgres",
+                  "label": "JDBC · context-owned tables",
+                  "collectionIndex": 25,
+                  "artifactIndex": 26
+                },
+                "point": [
+                  1278,
+                  548
+                ],
+                "sharedNode": "persist"
+              }
+            ],
+            "crowdedSides": [
+              {
+                "node": "rest",
+                "label": "REST adapters (adapter-in)",
+                "side": "right",
+                "relationships": 8,
+                "sidePx": 60,
+                "neededPx": 130
+              },
+              {
+                "node": "persist",
+                "label": "persistence adapters",
+                "side": "left",
+                "relationships": 6,
+                "sidePx": 60,
+                "neededPx": 102
+              }
+            ],
+            "detours": [
+              {
+                "relationship": {
+                  "id": "partner-billing",
+                  "from": "partner",
+                  "to": "billing",
+                  "label": "campaign budget debit",
+                  "collectionIndex": 13,
+                  "artifactIndex": 14
+                },
+                "bends": 4,
+                "stretch": 1
+              },
+              {
+                "relationship": {
+                  "id": "billing-persist",
+                  "from": "billing",
+                  "to": "persist",
+                  "label": "",
+                  "collectionIndex": 22,
+                  "artifactIndex": 23
+                },
+                "bends": 3,
+                "stretch": 1.217
+              }
+            ]
+          },
+          "leadingSpace": {
+            "measured": true,
+            "emptyTopPx": 48,
+            "emptyTopRatio": 0.038,
+            "occupiedTop": 48,
+            "viewBoxTop": 0,
+            "canvasHeight": 1268,
+            "typicalNodeHeight": 60,
+            "reviewSuggested": false
+          },
+          "desktopReadability": {
+            "budgetBasis": "legacy-930",
+            "readerContract": "declared-wide-v1",
+            "availableDiagramWidth": 930,
+            "actualBudgetPx": 930,
+            "limit": "legacy",
+            "requestedTargetPx": 7.5,
+            "requestedTargetMet": false,
+            "hardFloorPx": 6,
+            "hardFloorMet": true,
+            "minimumOwner": {
+              "kind": "boundary",
+              "id": null
+            },
+            "minimumSourceTextPx": 9.393549387096774,
+            "minimumProjectedTextPx": 6.000000638736263,
+            "semanticTextCount": 50
+          },
+          "issues": []
+        },
+        "provenance": "current",
+        "deliveryReceiptId": "38eed0b4-f08a-4a2a-8df3-584672440e9e"
+      }
+    },
+    "browser-check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 3983,
+      "command": [
+        "/Users/jetherrodrigues/.nvm/versions/node/v22.18.0/bin/node",
+        "/Users/jetherrodrigues/.agents/skills/archify/bin/archify.mjs",
+        "browser-check",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.html",
+        "--json",
+        "--require-provenance"
+      ],
+      "execution": "in-process",
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "browser-check",
+        "evidenceKind": "automated-browser",
+        "status": "pass",
+        "visualReview": "not-requested",
+        "provenance": "current",
+        "deliveryReceiptId": "38eed0b4-f08a-4a2a-8df3-584672440e9e",
+        "artifact": {
+          "path": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.html",
+          "sha256": "4cc052f18216373ed573a31e5c52bdabd1da04134d7388c089d181ae5c05b0f4",
+          "bytes": 980879
+        },
+        "state": {
+          "detail": "read",
+          "motion": "still"
+        },
+        "chrome": {
+          "status": "available",
+          "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        },
+        "diagnostics": [],
+        "containment": {
+          "status": "pass",
+          "policy": "fit-or-reader-declared-readable-vertical-scroll",
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "theme": "light",
+              "innerWidth": 1440,
+              "innerHeight": 900,
+              "scrollWidth": 1440,
+              "scrollHeight": 1206,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1193,
+              "diagramWidth": 1163,
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 103,
+                "diagramChromePx": 78,
+                "svgPx": 1013,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.50322660521535,
+              "minimumProjectedNonEdgeTextPx": 7.50322660521535,
+              "minimumProjectedEdgeTextPx": 7.987637362637363,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "theme": "light",
+              "innerWidth": 1600,
+              "innerHeight": 1000,
+              "scrollWidth": 1600,
+              "scrollHeight": 1272,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1193,
+              "diagramWidth": 1163,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 111,
+                "diagramChromePx": 84,
+                "svgPx": 1013,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.50322660521535,
+              "minimumProjectedNonEdgeTextPx": 7.50322660521535,
+              "minimumProjectedEdgeTextPx": 7.987637362637363,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "theme": "light",
+              "innerWidth": 1920,
+              "innerHeight": 1080,
+              "scrollWidth": 1920,
+              "scrollHeight": 1272,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1193,
+              "diagramWidth": 1163,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 111,
+                "diagramChromePx": 84,
+                "svgPx": 1013,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.50322660521535,
+              "minimumProjectedNonEdgeTextPx": 7.50322660521535,
+              "minimumProjectedEdgeTextPx": 7.987637362637363,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "theme": "light",
+              "innerWidth": 2048,
+              "innerHeight": 1320,
+              "scrollWidth": 2048,
+              "scrollHeight": 1320,
+              "overflowX": false,
+              "overflowY": false,
+              "verticalScrollAccepted": false,
+              "overflowDisposition": "contained",
+              "readerLayout": "adaptive",
+              "readerOverflow": null,
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1234,
+              "diagramWidth": 1184,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 119,
+                "diagramChromePx": 94,
+                "svgPx": 1031,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.638710490606168,
+              "minimumProjectedNonEdgeTextPx": 7.638710490606168,
+              "minimumProjectedEdgeTextPx": 8.131868131868131,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 44,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            }
+          ]
+        },
+        "themeStates": {
+          "status": "pass",
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 1440,
+              "height": 900,
+              "requestedTheme": "dark",
+              "resolvedTheme": "dark",
+              "ok": true
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "requestedTheme": "dark",
+              "resolvedTheme": "dark",
+              "ok": true
+            }
+          ]
+        },
+        "readability": {
+          "status": "pass",
+          "minimumProjectedNodeTextPx": 6,
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "theme": "light",
+              "innerWidth": 1440,
+              "innerHeight": 900,
+              "scrollWidth": 1440,
+              "scrollHeight": 1206,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1193,
+              "diagramWidth": 1163,
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 103,
+                "diagramChromePx": 78,
+                "svgPx": 1013,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.50322660521535,
+              "minimumProjectedNonEdgeTextPx": 7.50322660521535,
+              "minimumProjectedEdgeTextPx": 7.987637362637363,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "theme": "light",
+              "innerWidth": 1600,
+              "innerHeight": 1000,
+              "scrollWidth": 1600,
+              "scrollHeight": 1272,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1193,
+              "diagramWidth": 1163,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 111,
+                "diagramChromePx": 84,
+                "svgPx": 1013,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.50322660521535,
+              "minimumProjectedNonEdgeTextPx": 7.50322660521535,
+              "minimumProjectedEdgeTextPx": 7.987637362637363,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "theme": "light",
+              "innerWidth": 1920,
+              "innerHeight": 1080,
+              "scrollWidth": 1920,
+              "scrollHeight": 1272,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1193,
+              "diagramWidth": 1163,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 111,
+                "diagramChromePx": 84,
+                "svgPx": 1013,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.50322660521535,
+              "minimumProjectedNonEdgeTextPx": 7.50322660521535,
+              "minimumProjectedEdgeTextPx": 7.987637362637363,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "theme": "light",
+              "innerWidth": 2048,
+              "innerHeight": 1320,
+              "scrollWidth": 2048,
+              "scrollHeight": 1320,
+              "overflowX": false,
+              "overflowY": false,
+              "verticalScrollAccepted": false,
+              "overflowDisposition": "contained",
+              "readerLayout": "adaptive",
+              "readerOverflow": null,
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1234,
+              "diagramWidth": 1184,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 119,
+                "diagramChromePx": 94,
+                "svgPx": 1031,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.638710490606168,
+              "minimumProjectedNonEdgeTextPx": 7.638710490606168,
+              "minimumProjectedEdgeTextPx": 8.131868131868131,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 44,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            }
+          ]
+        },
+        "viewerChrome": {
+          "status": "pass",
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "theme": "light",
+              "innerWidth": 1440,
+              "innerHeight": 900,
+              "scrollWidth": 1440,
+              "scrollHeight": 1206,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1193,
+              "diagramWidth": 1163,
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 103,
+                "diagramChromePx": 78,
+                "svgPx": 1013,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.50322660521535,
+              "minimumProjectedNonEdgeTextPx": 7.50322660521535,
+              "minimumProjectedEdgeTextPx": 7.987637362637363,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "theme": "light",
+              "innerWidth": 1600,
+              "innerHeight": 1000,
+              "scrollWidth": 1600,
+              "scrollHeight": 1272,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1193,
+              "diagramWidth": 1163,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 111,
+                "diagramChromePx": 84,
+                "svgPx": 1013,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.50322660521535,
+              "minimumProjectedNonEdgeTextPx": 7.50322660521535,
+              "minimumProjectedEdgeTextPx": 7.987637362637363,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "theme": "light",
+              "innerWidth": 1920,
+              "innerHeight": 1080,
+              "scrollWidth": 1920,
+              "scrollHeight": 1272,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1193,
+              "diagramWidth": 1163,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 111,
+                "diagramChromePx": 84,
+                "svgPx": 1013,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.50322660521535,
+              "minimumProjectedNonEdgeTextPx": 7.50322660521535,
+              "minimumProjectedEdgeTextPx": 7.987637362637363,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "theme": "light",
+              "innerWidth": 2048,
+              "innerHeight": 1320,
+              "scrollWidth": 2048,
+              "scrollHeight": 1320,
+              "overflowX": false,
+              "overflowY": false,
+              "verticalScrollAccepted": false,
+              "overflowDisposition": "contained",
+              "readerLayout": "adaptive",
+              "readerOverflow": null,
+              "readerFit": "intrinsic-height",
+              "ok": true,
+              "readerWidth": 1234,
+              "diagramWidth": 1184,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 119,
+                "diagramChromePx": 94,
+                "svgPx": 1031,
+                "cardsPx": 0,
+                "viewBoxHeight": 1268
+              },
+              "viewBoxWidth": 1456,
+              "minimumProjectedNodeTextPx": 7.638710490606168,
+              "minimumProjectedNonEdgeTextPx": 7.638710490606168,
+              "minimumProjectedEdgeTextPx": 8.131868131868131,
+              "minimumProjectedNodeText": "com.pawmotionai — Spring Boot modular monolith",
+              "minimumProjectedNodeTextDetail": "boundary",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "boundary",
+                "id": null
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 44,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            }
+          ]
+        },
+        "captures": {
+          "status": "not-requested",
+          "screenshots": [],
+          "contactSheet": null
+        },
+        "sidecars": {
+          "receipt": "backend-modules.browser-check.json",
+          "files": []
+        }
+      }
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  },
+  "diagnostics": [],
+  "evidence": {
+    "receipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.finalize.json",
+    "summaryReceipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.finalize-summary.json",
+    "browserCheckReceipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "repositoryReferences": {
+    "status": "verified",
+    "revision": "03626d5ddaa34aaacbc5cdb8c3f304cc4a0bd73b",
+    "count": 29
+  },
+  "codeAnalysisOffer": {
+    "action": "offer-code-analysis",
+    "reason": "Archify’s built-in Architecture Diagnosis adds component findings, a radial star map, and a rotatable 3D view of repository dependencies.",
+    "instruction": "Use the referenced pitch once per repository and wait for consent before starting.",
+    "dependencies": "installed",
+    "diagramButton": true,
+    "quality": "showcase",
+    "start": {
+      "argv": [
+        "/Users/jetherrodrigues/.nvm/versions/node/v22.18.0/bin/node",
+        "/Users/jetherrodrigues/.agents/skills/archify/bin/archify.mjs",
+        "start",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai",
+        "--ir",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-backend-modules.json",
+        "--quality",
+        "showcase"
+      ]
+    },
+    "linkedDiagrams": true,
+    "reference": "references/delivery-contract.md#architecture-diagnosis-offer"
+  },
+  "finishedAt": "2026-11-25T01:35:14.320Z",
+  "durationMs": 10669,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.3.0",
+    "availableVersion": "3.3.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-24T01:33:27.192Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}
