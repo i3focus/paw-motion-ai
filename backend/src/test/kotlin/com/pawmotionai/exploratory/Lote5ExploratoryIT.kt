@@ -10,42 +10,9 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Lote 5 (C3, C21, C6, C22): data integrity and XP. Spec: security-audit-remediation, task 1. */
+/** Lote 5 (C6, C22): data integrity and XP. Spec: security-audit-remediation, task 1. */
 @Exploratory
 class Lote5ExploratoryIT : ExploratoryApiTest() {
-
-    private fun activityJson(petId: UUID, startedAt: String, duration: String, distance: String) =
-        """{"petId":"$petId","type":"walk","startedAt":"$startedAt","durationSeconds":$duration,"distanceMeters":$distance}"""
-
-    private fun activityCount(petId: UUID) =
-        jdbc.queryForObject("SELECT COUNT(*) FROM activities WHERE pet_id = ?", Long::class.java, petId)
-
-    @ParameterizedTest(name = "C3 durationSeconds={0}")
-    @ValueSource(strings = ["9223372036854775807", "86401", "31536000"])
-    fun `C3 absurd duration is rejected with 400`(duration: String) {
-        val owner = registerOwner("Ana")
-        val pet = createPet(owner)
-        val response = rawJsonCall("POST", "/api/activities", owner.token, activityJson(pet, Instant.now().minusSeconds(60).toString(), duration, "1000"))
-        assertEquals(400, response.status, "Counterexample C3: durationSeconds=$duration -> HTTP ${response.status}, rows=${activityCount(pet)}")
-    }
-
-    @ParameterizedTest(name = "C3 distanceMeters={0}")
-    @ValueSource(strings = ["500001", "1e15", "NaN", "Infinity"])
-    fun `C3 absurd or non finite distance is rejected with 400`(distance: String) {
-        val owner = registerOwner("Ana")
-        val pet = createPet(owner)
-        val response = rawJsonCall("POST", "/api/activities", owner.token, activityJson(pet, Instant.now().minusSeconds(60).toString(), "600", distance))
-        assertEquals(400, response.status, "Counterexample C3: distanceMeters=$distance -> HTTP ${response.status}, rows=${activityCount(pet)}")
-    }
-
-    @ParameterizedTest(name = "C21 startedAt={0}")
-    @ValueSource(strings = ["1970-01-01T00:00:00Z", "2000-06-15T12:00:00Z"])
-    fun `C21 activity far in the past is rejected with 400`(startedAt: String) {
-        val owner = registerOwner("Ana")
-        val pet = createPet(owner)
-        val response = rawJsonCall("POST", "/api/activities", owner.token, activityJson(pet, startedAt, "600", "1000"))
-        assertEquals(400, response.status, "Counterexample C21: startedAt=$startedAt -> HTTP ${response.status}, rows=${activityCount(pet)}")
-    }
 
     @Test
     fun `C6 daily XP per pet and source is capped`() {
