@@ -137,7 +137,7 @@ class EdgeLimitsTest {
     fun `client key resolves IPv4 and IPv6 through trusted proxies only`() {
         val resolver = ClientIpResolver("127.0.0.1,::1,10.0.0.0/8")
         assertEquals("203.0.113.8", resolver.clientKey(request("POST", "/x", "10.1.0.5").apply { addHeader("X-Forwarded-For", "203.0.113.8, 10.2.0.4") }))
-        assertEquals("2001:db8::1", resolver.clientKey(request("POST", "/x", "::1").apply { addHeader("X-Forwarded-For", "2001:db8::1") }))
+        assertEquals("2001:db8:0:0:0:0:0:1", resolver.clientKey(request("POST", "/x", "::1").apply { addHeader("X-Forwarded-For", "2001:db8::1") }))
         assertEquals("198.51.100.1", resolver.clientKey(request("POST", "/x", "198.51.100.1").apply { addHeader("X-Forwarded-For", "203.0.113.8") }))
     }
 

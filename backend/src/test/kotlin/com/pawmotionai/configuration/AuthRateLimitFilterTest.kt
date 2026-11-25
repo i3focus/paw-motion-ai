@@ -34,10 +34,10 @@ class AuthRateLimitFilterTest {
     }
 
     @Test
-    fun returnsLeftmostHopWhenEveryForwardedHopIsTrusted() {
+    fun returnsRemoteAddrWhenEveryForwardedHopIsTrusted() {
         val request = request("192.168.1.10", "10.1.0.2, 192.168.1.20", null)
 
-        assertEquals("10.1.0.2", filter.clientKey(request))
+        assertEquals("192.168.1.10", filter.clientKey(request))
     }
 
     @Test
