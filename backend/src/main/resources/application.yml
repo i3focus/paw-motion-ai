@@ -45,6 +45,10 @@ app:
       issuer: ${JWT_ISSUER:paw-motion-ai}
       secret: ${JWT_SECRET}
       ttl-seconds: ${JWT_TTL_SECONDS:3600}
+  rate-limit:
+    # shadow: mede e registra (ratelimit.shadow_violations) sem responder 429; enforce: bloqueia. Vale para os buckets novos.
+    mode: ${RATE_LIMIT_MODE:shadow}
+    webhook-per-minute: ${RATE_LIMIT_WEBHOOK_PER_MINUTE:600}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
   billing:
