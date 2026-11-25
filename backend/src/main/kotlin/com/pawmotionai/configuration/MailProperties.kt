@@ -18,5 +18,7 @@ class MailProperties {
     class Resend {
         var apiKey: String = ""
         var baseUrl: String = "https://api.resend.com"
+        var connectTimeoutMs: Long = 3000
+        var readTimeoutMs: Long = 8000
     }
 }
