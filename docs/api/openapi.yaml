@@ -4,7 +4,7 @@ info:
   description: "Owner, partner and admin APIs for PETLIFE."
   version: v1
 servers:
-- url: http://localhost:63464
+- url: http://localhost:61991
   description: Generated server url
 security:
 - bearer: []
@@ -1541,6 +1541,12 @@ paths:
         schema:
           type: string
           format: date-time
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
       responses:
         "200":
           description: OK
@@ -1861,6 +1867,9 @@ paths:
     get:
       tags:
       - Pet profile
+      description: "Stats count only activities shared to Paw City when the viewer\
+        \ is not the pet owner, so totals seen by third parties can be lower than\
+        \ the owner's."
       operationId: profile_1
       parameters:
       - name: petId
@@ -2001,6 +2010,8 @@ paths:
     get:
       tags:
       - Pet profile
+      description: Third parties see only activities shared to Paw City; the owner
+        sees all of them.
       operationId: adventures
       parameters:
       - name: petId
@@ -2704,32 +2715,6 @@ components:
     HttpHeaders:
       type: object
       properties:
-        accessControlAllowCredentials:
-          type: boolean
-        acceptLanguage:
-          type: array
-          items:
-            type: object
-            properties:
-              range:
-                type: string
-              weight:
-                type: number
-                format: double
-        accessControlMaxAge:
-          type: integer
-          format: int64
-        acceptCharset:
-          type: array
-          items:
-            type: string
-        contentDisposition:
-          $ref: "#/components/schemas/ContentDisposition"
-        contentLanguage:
-          type: string
-        ifUnmodifiedSince:
-          type: integer
-          format: int64
         acceptLanguageAsLocales:
           type: array
           items:
@@ -2754,8 +2739,6 @@ components:
             type: string
         accessControlRequestMethod:
           $ref: "#/components/schemas/HttpMethod"
-        cacheControl:
-          type: string
         range:
           type: array
           items:
@@ -2821,6 +2804,16 @@ components:
               type: boolean
             hostName:
               type: string
+        contentDisposition:
+          $ref: "#/components/schemas/ContentDisposition"
+        acceptCharset:
+          type: array
+          items:
+            type: string
+        cacheControl:
+          type: string
+        contentLanguage:
+          type: string
         etag:
           type: string
         basicAuth:
@@ -2861,6 +2854,24 @@ components:
           type: array
           items:
             type: string
+        accessControlAllowCredentials:
+          type: boolean
+        acceptLanguage:
+          type: array
+          items:
+            type: object
+            properties:
+              range:
+                type: string
+              weight:
+                type: number
+                format: double
+        accessControlMaxAge:
+          type: integer
+          format: int64
+        ifUnmodifiedSince:
+          type: integer
+          format: int64
         empty:
           type: boolean
         all:
@@ -2890,16 +2901,16 @@ components:
         qualityValue:
           type: number
           format: double
-        wildcardSubtype:
-          type: boolean
-        subtypeSuffix:
-          type: string
         charset:
           type: string
         concrete:
           type: boolean
         wildcardType:
           type: boolean
+        wildcardSubtype:
+          type: boolean
+        subtypeSuffix:
+          type: string
     CreateStoryRequest:
       type: object
       properties:
@@ -2986,7 +2997,7 @@ components:
             type: string
             format: uuid
           maxItems: 10
-          minItems: 1
+          minItems: 0
         taggedPetIds:
           type:
           - array
@@ -2997,7 +3008,6 @@ components:
           maxItems: 10
           minItems: 0
       required:
-      - mediaIds
       - petId
     PostCreatedDto:
       type: object
@@ -3186,17 +3196,23 @@ components:
           type: string
           minLength: 1
         breed:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 80
           minLength: 0
         birthDate:
-          type: string
+          type:
+          - string
+          - "null"
           format: date
         size:
           type: string
           minLength: 1
         activityPreference:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 120
           minLength: 0
       required:
@@ -3217,14 +3233,20 @@ components:
         species:
           type: string
         breed:
-          type: string
+          type:
+          - string
+          - "null"
         birthDate:
-          type: string
+          type:
+          - string
+          - "null"
           format: date
         size:
           type: string
         activityPreference:
-          type: string
+          type:
+          - string
+          - "null"
         status:
           type: string
         createdAt:
@@ -3323,7 +3345,9 @@ components:
           items:
             type: string
         analyzedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         creditsCharged:
           type: integer
@@ -3332,10 +3356,14 @@ components:
           type: integer
           format: int64
         expiresAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         remainingBalance:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int64
         createdAt:
           type: string
@@ -3344,7 +3372,9 @@ components:
           type: string
           format: date-time
         endReason:
-          type: string
+          type:
+          - string
+          - "null"
     CampaignV2Dto:
       type: object
       properties:
@@ -3508,9 +3538,13 @@ components:
           type: number
           minimum: 0.01
         method:
-          type: string
+          type:
+          - string
+          - "null"
         customerId:
-          type: string
+          type:
+          - string
+          - "null"
       required:
       - amount
     PaymentTransactionResponseDto:
@@ -3530,7 +3564,9 @@ components:
           type: integer
           format: int64
         method:
-          type: string
+          type:
+          - string
+          - "null"
         provider:
           type: string
         status:
@@ -3544,9 +3580,13 @@ components:
           - DISPUTED
           - REFUNDED
         providerCheckoutUrl:
-          type: string
+          type:
+          - string
+          - "null"
         failureReason:
-          type: string
+          type:
+          - string
+          - "null"
         createdAt:
           type: string
           format: date-time
@@ -3565,6 +3605,7 @@ components:
           type: string
           maxLength: 128
           minLength: 8
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).*$"
         displayName:
           type: string
           maxLength: 120
@@ -3574,11 +3615,15 @@ components:
           maxLength: 160
           minLength: 0
         website:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 300
           minLength: 0
         description:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 1000
           minLength: 0
       required:
@@ -3611,11 +3656,17 @@ components:
         role:
           type: string
         bio:
-          type: string
+          type:
+          - string
+          - "null"
         phone:
-          type: string
+          type:
+          - string
+          - "null"
         avatarUrl:
-          type: string
+          type:
+          - string
+          - "null"
     LoginRequest:
       type: object
       properties:
@@ -3789,10 +3840,14 @@ components:
       type: object
       properties:
         petId:
-          type: string
+          type:
+          - string
+          - "null"
           format: uuid
         periodDays:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int32
           maximum: 90
           minimum: 1
@@ -3806,14 +3861,18 @@ components:
           type: string
           format: uuid
         petId:
-          type: string
+          type:
+          - string
+          - "null"
           format: uuid
         text:
           type: string
         provider:
           type: string
         model:
-          type: string
+          type:
+          - string
+          - "null"
         fallbackUsed:
           type: boolean
         generatedAt:
@@ -4175,6 +4234,7 @@ components:
           type: string
           maxLength: 128
           minLength: 8
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).*$"
         displayName:
           type: string
           maxLength: 120
@@ -4358,7 +4418,9 @@ components:
           - ACTIVE
           - BLOCKED
         blockedReason:
-          type: string
+          type:
+          - string
+          - "null"
         accounts:
           type: array
           items:
@@ -4592,25 +4654,35 @@ components:
           format: int64
           minimum: 1
         distanceMeters:
-          type: number
+          type:
+          - number
+          - "null"
           format: double
           minimum: 0
         notes:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 500
           minLength: 0
         latitude:
-          type: number
+          type:
+          - number
+          - "null"
           format: double
           maximum: 90
           minimum: -90
         longitude:
-          type: number
+          type:
+          - number
+          - "null"
           format: double
           maximum: 180
           minimum: -180
         shareToPawCity:
-          type: boolean
+          type:
+          - boolean
+          - "null"
       required:
       - petId
       - startedAt
@@ -4636,18 +4708,26 @@ components:
           type: integer
           format: int64
         distanceMeters:
-          type: number
+          type:
+          - number
+          - "null"
           format: double
         notes:
-          type: string
+          type:
+          - string
+          - "null"
         createdAt:
           type: string
           format: date-time
         latitude:
-          type: number
+          type:
+          - number
+          - "null"
           format: double
         longitude:
-          type: number
+          type:
+          - number
+          - "null"
           format: double
     UpdatePartnerProfileRequest:
       type: object
@@ -4844,19 +4924,27 @@ components:
       type: object
       properties:
         displayName:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 120
           minLength: 0
         bio:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 500
           minLength: 0
         phone:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 40
           minLength: 0
         avatarUrl:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 500
           minLength: 0
     NotificationPreferencesDto:
@@ -5312,7 +5400,9 @@ components:
           type: string
           format: uuid
         accountCode:
-          type: string
+          type:
+          - string
+          - "null"
           enum:
           - MAIN
           - BONUS
@@ -5340,7 +5430,9 @@ components:
           type: string
           format: uuid
         description:
-          type: string
+          type:
+          - string
+          - "null"
         occurredAt:
           type: string
           format: date-time
