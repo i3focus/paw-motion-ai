@@ -1,6 +1,6 @@
 package com.pawmotionai.aiinsights.application.usecase
 
-import com.pawmotionai.activity.application.port.`in`.ListActivitiesUseCase
+import com.pawmotionai.activity.application.port.out.ActivityRepository
 import com.pawmotionai.aiinsights.application.dto.GenerateInsightCommand
 import com.pawmotionai.aiinsights.application.dto.InsightResponseDto
 import com.pawmotionai.aiinsights.application.port.`in`.GenerateInsightUseCase
@@ -11,6 +11,7 @@ import com.pawmotionai.aiinsights.application.port.out.InsightRepository
 import com.pawmotionai.aiinsights.domain.model.Insight
 import com.pawmotionai.aiinsights.domain.service.InsightValidator
 import com.pawmotionai.pet.application.port.`in`.GetPetUseCase
+import com.pawmotionai.shared.AiQuota
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -20,25 +21,26 @@ import java.util.UUID
 
 @Service
 class GenerateInsightService(
-    private val listActivitiesUseCase: ListActivitiesUseCase,
+    private val activityRepository: ActivityRepository,
     private val getPetUseCase: GetPetUseCase,
     private val insightProvider: AiInsightProviderPort,
     private val insightRepository: InsightRepository,
+    private val aiQuota: AiQuota,
 ) : GenerateInsightUseCase {
 
     @Transactional
     override fun generateInsight(command: GenerateInsightCommand): InsightResponseDto {
+        // Ownership first: a foreign or unknown pet is refused before quota use or any activity scan.
+        val petName = command.petId?.let { getPetUseCase.getPet(command.ownerId, it).name }
+        aiQuota.consume(command.ownerId)
         val periodDays = command.periodDays
         val from = Instant.now().minus(periodDays.toLong(), ChronoUnit.DAYS)
-        val activities = listActivitiesUseCase.listActivities(command.ownerId, command.petId, from, null)
-
-        val petName = command.petId?.let { getPetUseCase.getPet(command.ownerId, it).name }
-
-        val duration = activities.sumOf { it.durationSeconds }
-        val distance = activities.sumOf { it.distanceMeters ?: 0.0 }
+        val totals = activityRepository.findForInsights(command.ownerId, command.petId, from, MAX_ACTIVITY_ROWS)
+        val duration = totals.durationSeconds
+        val distance = totals.distanceMeters
 
         val prompt = InsightPrompt(
-            command.ownerId, command.petId, petName, periodDays, activities.size, duration, distance)
+            command.ownerId, command.petId, petName, periodDays, totals.count, duration, distance)
         var fallbackUsed = false
         val draft = try {
             insightProvider.generate(prompt).also { InsightValidator.validate(it.text) }
@@ -51,6 +53,10 @@ class GenerateInsightService(
             UUID.randomUUID(), command.ownerId, command.petId, draft.text, draft.provider, draft.model,
             fallbackUsed, Instant.now())
         return InsightResponseDto.from(insightRepository.save(insight))
+    }
+
+    private companion object {
+        const val MAX_ACTIVITY_ROWS = 5000
     }
 
     private fun fallbackDraft(prompt: InsightPrompt): InsightDraft {

@@ -1,0 +1,146 @@
+# Resultados de validação: remediação da auditoria de segurança
+Spec: `security-audit-remediation`. Cada seção registra a evidência de uma tarefa de validação (11.x).
+
+## 11.1 N1, N11, N16 e N2 (consultas e cardinalidade)
+
+### Método
+Não há staging. A validação rodou localmente em `postgis/postgis:17-3.5` (mesma imagem do `docker-compose.yml`), com `shared_buffers=256MB` e `work_mem=4MB` (padrão), aplicando as migrações V1 a V28 e depois V29.
+O harness é composto por dois scripts SQL versionados em `scripts/security/`:
+- `n1-n16-seed.sql`: volume sintético. 20k owners, 20k pets, 200k `xp_events` (60% na última semana, pior caso), 150k `feed_items` (70% nos últimos 14 dias), 150k comentários (50k em um item "quente"), 75k reações, 100k places, 100k check-ins, 20k comunidades com 160k membros e 40k eventos, 200k `activities` (100k em um único owner/pet abusivo, mais 100k distribuídas).
+- `n1-n16-queries.sql`: `EXPLAIN (ANALYZE, BUFFERS)` das consultas copiadas do código (`EngagementService.leaderboard`, `CommunityService.communities`, `JdbcFeedRepository.candidates`, `MapService.nearbyPlaces`, `ActivityPersistenceAdapter.findFiltered`, `badgeStats`/`streakDays`, `JdbcFeedRepository.comments`, `PetProfileService.adventures`).
+
+Execução: `docker run -d --name pawval -e POSTGRES_PASSWORD=x -e POSTGRES_DB=paw -p 55432:5432 postgis/postgis:17-3.5`, aplicar as migrações em ordem `sort -V`, `psql < n1-n16-seed.sql`, `psql < n1-n16-queries.sql`.
+Limitação: tempos de uma máquina de desenvolvimento (arm64 com emulação amd64), cache quente, sem concorrência. Valem como ordem de grandeza e para comparar antes/depois, não como SLO. Pool e tempo sob carga concorrente não foram medidos.
+
+### Contexto já presente na base (PR #51)
+Os lotes anteriores já entregam: bucket de leitura (`ReadRateLimitFilter`), teto de `page` (`app.pagination.max-page` = 10000, 400 acima disso, `PaginationConfiguration`), `size` ≤ 50, `GET /api/activities` com `LIMIT` (máx. 1000) e dashboard por agregados em SQL.
+
+### Medições (tempo de execução em ms)
+
+| Consulta | Antes | Depois | Achado |
+|---|---|---|---|
+| Leaderboard global (60% das linhas na janela) | 144, `Seq Scan` em `xp_events`, `external merge` em disco (2,4 MB) | 24 | Confirmado. Índice V29 elimina o sort em disco. |
+| Leaderboard global (5% na janela, perfil mais realista) | 39, `Seq Scan` | 14 | Custo da varredura passa a ser proporcional à janela, não à tabela. |
+| Leaderboard por bairro | 8 | 8 a 29 | Sem problema (índice `lower(neighborhood)` já existe). |
+| Discover de comunidades (`GET /api/communities`) | 888, 81 mil buffers | 44 a 70 | Confirmado: `COUNT(*)` correlacionado por linha, usado em `ORDER BY`, para 20k comunidades. Reescrito com agregação única. |
+| Discover com `ILIKE` | 14 | 42 a 70 | Sem problema (compatível com o discover acima). |
+| Feed, candidatos (janela de 14 dias, ~105k itens) | 1075 com dados enviesados, 205 com distribuição realista | 192 a 212 | Não confirmado como risco isolado. Varre a janela de 14 dias (ramo OR de visibilidade impede índice), mas só ~200 ms. Subconsultas por linha usam índice. Mitigado pelo bucket de leitura. |
+| Places, 5 km com `ILIKE` | 105 a 122 | 40 a 45 | Sem problema. |
+| Places, 50 km (pior caso, ~100k places no raio) | 900 a 1290 | 123 | Confirmado, mas a causa era JIT (~0,5 s de compilação por consulta, disparado pelo custo estimado de `ST_DWithin`), não a consulta. Corrigido com `jit=off` no Postgres do compose. |
+| Activities, listagem do owner com 100k linhas (`LIMIT 1000`) | 0,36 | 0,18 | Não confirmado: usa `idx_activities_owner_started_at`. |
+| Activities, `badgeStats` por pet (100k linhas) | 0,08 | 0,09 | Não confirmado: index scan. |
+| Activities, streak (400 dias) | 0,7 | 0,4 | Não confirmado. |
+| OFFSET moderado em comentários (45.000) | 32 | 32 | Aceitável. |
+| OFFSET profundo em comentários, `page=10000` (teto atual) | 25 | 26 | Não confirmado: o custo é limitado pelas linhas do item, não pelo offset. |
+| OFFSET profundo, `page=2147483647` (sem teto) | 24 | 27 | Idem. O teto de `page` já devolve 400 antes de chegar ao SQL. |
+| OFFSET profundo em activities de um pet (PetProfile) | 0,04 | 0,03 | Não confirmado. |
+
+### Veredito por item
+- **N1: confirmado e corrigido.** Seq scan e sort em disco no leaderboard (V29, `idx_xp_events_occurred_at (occurred_at DESC) INCLUDE (pet_id, points)`) e `COUNT` correlacionado no discover de comunidades (reescrita em `CommunityService.communities`, de 888 para 44 a 70 ms). O custo restante é proporcional ao resultado, e o bucket de leitura limita a taxa.
+- **N11: parcialmente confirmado e corrigido.** Places 50 km custava ~0,9 a 1,3 s, quase todo JIT; `jit=off` no `docker-compose.yml` leva a ~120 ms. O feed (~200 ms com ~105k itens na janela) fica como risco residual de baixo impacto, coberto pelo bucket de leitura. Recomendação: acompanhar `pg_stat_statements` em produção; se a janela de 14 dias crescer ordens de grandeza, reescrever a visibilidade como `UNION` de ramos indexáveis.
+- **N16: não confirmado (já mitigado).** Com o teto de `page` (400 acima de 10000) o OFFSET nunca passa de 500k, e nas consultas medidas o custo não depende do offset. Nenhuma mudança.
+- **N2: custo de leitura/escrita não confirmado; retenção sem limite permanece.** Todas as consultas sobre o owner com 100k atividades usam índice e respondem em < 1 ms. A listagem tem `LIMIT` de 1000 e o dashboard agrega em SQL. Não existe teto de linhas por owner nem política de retenção (`activities` cresce sem limite), o que é crescimento de disco e não custo de consulta. Isso depende de decisão de produto (tarefa 3.2 não definiu um limite de retenção de atividades). Registrar ticket para decidir retenção/cota de `activities`.
+
+### Mudanças aplicadas
+- `backend/src/main/resources/db/migration/V29__xp_events_occurred_at_index.sql` (aditiva, `IF NOT EXISTS`).
+- `backend/src/main/kotlin/com/pawmotionai/community/CommunityService.kt`: contagem de membros por agregação única em vez de subconsulta correlacionada. Mesma saída.
+- `docker-compose.yml`: `command: ["postgres", "-c", "jit=off"]` no serviço `postgres`. Quem usa outro Postgres precisa aplicar `jit=off` (ou `jit_above_cost` alto) por conta própria.
+- Testes direcionados executados uma vez: `CommunityApiIT`, `EngagementApiIT`, `MapApiIT`, `MapEngagementResourcesPreservationIT` (25 testes, 0 falhas).
+
+### Observação sobre o índice V29
+O índice adiciona custo de escrita em `xp_events` (ledger append-only). O ganho é proporcional ao crescimento da tabela. Em tabela pequena ou com mais de 60% das linhas na janela de 7 dias o ganho é pequeno (144 para 137 ms sem sort em disco). Em `CREATE INDEX` numa tabela grande de produção, preferir janela de baixo tráfego.
+## 11.2 N7, N8, N9, N12 e N2 (concorrência, produto e quotas)
+### Método
+Testes de integração em Postgres real (Testcontainers `postgis`), com sessões concorrentes via HTTP (`CountDownLatch` liberando 10 a 16 threads ao mesmo tempo). Cada teste foi escrito primeiro e rodou contra o código do PR #52 (antes) para confirmar a reprodução; depois da correção rodou de novo. Arquivo: `backend/src/test/kotlin/com/pawmotionai/exploratory/ConcurrencyQuotasIT.kt`. Suíte completa (`./gradlew test`) verde ao final.
+### Veredito por item
+| Item | Antes (reprodução) | Veredito | Correção |
+|---|---|---|---|
+| N7 capacidade de RSVP | 16 `GOING` concorrentes em evento de capacidade 3 gravaram 8 linhas (statuses 200 em 8 requisições) | **Confirmado e corrigido** | `CommunityService.rsvp` trava a linha do evento (`SELECT ... FOR UPDATE`) antes de contar `GOING`. Depois: exatamente 3 aceitos e 13 com 409, também na troca `INTERESTED` para `GOING` no último assento. |
+| N8 retirada de RSVP | `DELETE /api/events/{id}/rsvp` não existia (500 genérico); `status` nulo no `POST` dá 422, então a linha era irremovível | **Confirmado e corrigido** | Nova rota `DELETE /api/events/{eventId}/rsvp` (200 com o evento atualizado, idempotente, 404 para evento inexistente, 401 sem token). Só remove a linha do próprio chamador e libera o assento. |
+| N9 quotas de comunidades e eventos | 10 criações concorrentes de comunidade: 10 criadas; 16 eventos: 16 criados; 5 comunidades antigas não impediam a 6ª | **Confirmado e corrigido** | `OwnerQuotas` (novo): serializa por dono (`FOR NO KEY UPDATE` na linha de `owners`) e aplica tetos. Depois: 10 concorrentes geram exatamente 3 comunidades e 7 com 409; 16 eventos geram 10 e 6 com 409. |
+| N12 quota de IA | Já corrigido no PR 2c (upsert atômico `INSERT ... ON CONFLICT ... WHERE messages < limite`) | **Confirmado como corrigido, sem mudança** | `InsightsQuotaIT` (`N12 concurrent consumption never exceeds the free limit` com 32 threads e `N12 two sessions at the last slot grant exactly one`) segue verde. |
+| N2 crescimento de `activities` | 195 linhas semeadas mais 12 gravações concorrentes: todas aceitas (sem teto) | **Confirmado (crescimento ilimitado) e mitigado** | `OwnerQuotas.beforeRecordActivity`: teto de 200 por dono em 24h, serializado. Depois: exatamente 5 aceitas e 7 com 409. Retenção (expurgo) continua fora de escopo. |
+### Limites (configuráveis, `app.limits.*`)
+| Limite | Valor | Chave / variável |
+|---|---|---|
+| Comunidades por dono | 5 | `max-communities-per-owner` / `LIMITS_MAX_COMMUNITIES_PER_OWNER` |
+| Comunidades criadas em 24h | 3 | `max-communities-per-day` / `LIMITS_MAX_COMMUNITIES_PER_DAY` |
+| Eventos ativos por dono (`starts_at` futuro) | 20 | `max-active-events-per-owner` / `LIMITS_MAX_ACTIVE_EVENTS_PER_OWNER` |
+| Eventos criados em 24h | 10 | `max-events-per-day` / `LIMITS_MAX_EVENTS_PER_DAY` |
+| Atividades criadas em 24h | 200 | `max-activities-per-day` / `LIMITS_MAX_ACTIVITIES_PER_DAY` |
+O modo é o mesmo dos pets: `app.limits.mode` (`LIMITS_MODE`): `enforce` (padrão, 409), `shadow` (só registra) ou `off` (rollback). A janela diária é deslizante de 24h sobre `created_at`. Os valores são provisórios: o 3 e o 10 diários foram escolhidos abaixo do total para que o teto diário seja alcançável e testável. Reajustar com dados reais.
+### Decisões e pendências
+- **N8, gate de membership (decisão de produto pendente):** `POST /api/events/{id}/rsvp` continua sem exigir ser membro da comunidade, enquanto criar evento exige. O comportamento atual foi mantido e está coberto por teste (RSVP de não membro retorna 200). Se o produto decidir exigir membership, é uma checagem em `CommunityService.rsvp` e quebra clientes que fazem RSVP a partir do Discover sem entrar na comunidade.
+- **N9, moderação de conteúdo segue fora de escopo.** As quotas limitam volume por dono, não conteúdo. Não há revisão, denúncia nem remoção de comunidades ou eventos por admin. Isso exige ticket próprio.
+- Contas descartáveis ainda multiplicam as quotas (o teto é por dono, não por pessoa); o freio nesse caso é o limite de taxa e o cadastro.
+- O lock de linha em `owners` serializa por dono qualquer fluxo que use `OwnerQuotas` (criar comunidade, evento e atividade). Em um mesmo dono as três operações disputam o mesmo lock por poucos ms; sem impacto entre donos diferentes. Atividades mantêm o lock até o commit, que inclui o registro de XP.
+### Mudanças aplicadas
+- `backend/src/main/kotlin/com/pawmotionai/shared/OwnerQuotas.kt` (novo), usado por `CommunityService.create/createEvent` e `RecordActivityService`.
+- `CommunityService.rsvp` (lock do evento) e `CommunityController` (`DELETE /api/events/{eventId}/rsvp`).
+- `backend/src/main/resources/application.yml` (chaves `app.limits.*`).
+- `V30__owner_quota_indexes.sql` (aditiva, `IF NOT EXISTS`): índices `communities(created_by, created_at)`, `community_events(created_by, created_at)` e `activities(owner_id, created_at)`. Em tabela grande de produção, criar em janela de baixo tráfego.
+- `docs/api/openapi.yaml` e `packages/api-client/src/schema.d.ts` regenerados com `generate.sh` (nova rota).
+
+## 11.3 N13 e N4 (borda e actuator)
+
+### Método
+Topologia lida em `docs/deploy-hostinger.md` (não versionado): `Internet -> Caddy -> nginx do frontend (/api/) -> backend:8080`, só o Caddy publica portas. Sem staging disponível, a validação foi por código, `docker compose config` e testes: `backend/src/test/kotlin/com/pawmotionai/preservation/EdgeActuatorIT.kt` (HTTP real, Postgres via Testcontainers, contexto Spring padrão) para N4 e `backend/src/test/kotlin/com/pawmotionai/configuration/TrustedProxyTest.kt` (filtro e resolver, dois casos novos) para N13. Suíte completa (`./gradlew test`) verde ao final.
+
+### Veredito por item
+| Item | Situação encontrada | Veredito | Correção |
+|---|---|---|---|
+| N4 actuator | `/actuator/info` e `/actuator/metrics` na porta da aplicação, liberados a qualquer JWT autenticado, e dono se autoregistra de graça. O nginx só encaminha `/api/`, então a internet não os alcança no desenho documentado; o risco existe em LAN (`docs/run-all-projects.md`) ou se alguém criar regra de proxy | **Confirmado (defesa dependia só da topologia) e corrigido** | `SecurityConfiguration`: `/actuator/**` exige `ROLE_ADMIN`; `health` e `health/**` seguem públicos. `application.yml`: `show-details: never` e `show-components: never`. Teste: anônimo 401 e dono 403 em info, metrics, metrics/{nome} e env; admin 200; health 200 sem `components`/`details`. |
+| N13 `TRUSTED_PROXIES` | Padrão cobria loopback e todo RFC1918/link-local, tanto no `application.yml` quanto no compose; qualquer contêiner ou proxy da faixa escolhia a chave do limite via `X-Forwarded-For`. O guia Hostinger recomendava `172.16.0.0/12` | **Confirmado (configuração) e corrigido** | `ClientIpResolver` (PR 2d) já ignora hops forjados. Agora o padrão é estreito: `application.yml` só loopback; compose fixa a rede `172.28.0.0/24`, o frontend em `172.28.0.10` e `TRUSTED_PROXIES=172.28.0.10/32`. Em produção, `TRUSTED_PROXY_CIDRS=172.28.0.2/32` (Caddy). Testes: peer não confiável com 12 logins e XFF rotativo termina em 429; com o padrão novo, peer da faixa Docker (`172.18.0.5`) tem o XFF ignorado; com o padrão do compose só `172.28.0.10` repassa o IP do cliente. |
+| Backend fora do proxy | Compose de desenvolvimento publica `127.0.0.1:8080` (e `5432`) | **Aceito em dev; fechado em produção** | O override de produção usa `ports: !reset []` em backend, postgres e frontend (ver checklist). Só o Caddy publica. |
+
+### Pendências de observação no deploy real
+- Confirmar no VPS os itens da checklist (`docs/security/hostinger-deploy-checklist.md`): portas publicadas, `TRUSTED_PROXY_CIDRS`/`TRUSTED_PROXIES`, IP do cliente real nos logs, teste de XFF rotativo contra o domínio.
+- Se houver CDN ou outro proxy antes do Caddy, o Caddy precisa de `trusted_proxies` próprio; do contrário o IP do cliente será o do CDN.
+- Quem já tem `.env` com `TRUSTED_PROXIES=172.16.0.0/12` mantém o valor antigo: o compose só aplica o padrão novo quando a variável está vazia. Atualizar o `.env`.
+- Atenção à migração: o compose passa a fixar a sub-rede `172.28.0.0/24`. Se ela colidir com outra rede do VPS, troque a faixa nos três pontos descritos na checklist.
+
+### Mudanças aplicadas
+- `backend/src/main/kotlin/com/pawmotionai/configuration/SecurityConfiguration.kt`, `backend/src/main/resources/application.yml`, `docker-compose.yml`, `.env.example`.
+- Testes: `EdgeActuatorIT` (novo) e dois casos em `TrustedProxyTest`. Checklist: `docs/security/hostinger-deploy-checklist.md`.
+## 11.4 N5, N6 e N15 (pagamentos e I/O em transação)
+### Método
+Reprodução local com Postgres via Testcontainers e servidor HTTP fake local (`com.sun.net.httpserver`) para push e email; nenhum serviço real foi contatado. Testes: `backend/src/test/kotlin/com/pawmotionai/preservation/PaymentsIoHardeningIT.kt` (contexto Spring compartilhado com `BillingPreservationIT`), `billing/FakeGatewayProfileTest.kt`, `notification/ExternalIoTimeoutTest.kt` e `WelcomeEmailServiceTest` ajustado. Suíte completa (`./gradlew test`): 282 testes, 0 falhas.
+### Veredito por item
+| Item | Situação encontrada | Veredito | Correção |
+|---|---|---|---|
+| N5 webhook fake | O PR 0a já faz o `StartupSecurityValidator` recusar `provider != abacatepay` fora do perfil `local`, então a aplicação não sobe com o fake. Restavam: o bean fake dependia só da propriedade, e o segredo era comparado com `!=` (early-exit). | **Confirmado em parte (já mitigado pelo PR 0a; lacunas fechadas)** | `FakePaymentGatewayAdapter` agora exige `@Profile("local")` além da propriedade: fora de `local` não há gateway fake, a rota `/api/webhooks/payments/fake` responde 401 (provedor desconhecido) e o segredo nem é avaliado. Comparação do segredo em tempo constante (`MessageDigest.isEqual`). Teste com `ApplicationContextRunner`: bean ausente sem `local` e com perfil `prod`, presente em `local`. Em `local` o fake e o `fake-complete` seguem funcionando (preservação 3.1 verde). |
+| N6 redelivery stale | `process()` era `@Transactional` e engolia `InvalidPaymentStateException` lançada por beans transacionais aninhados: a transação ficava rollback-only, a linha de dedup se perdia e o commit falhava (500), gerando loop de redelivery com fetch externo a cada tentativa. | **Confirmado e corrigido** | `process()` deixou de ser transacional: verificação, dedup e fetch ao provedor ocorrem fora de transação e cada transição roda na própria transação (`PaymentLifecycleService`). Transição inválida (evento stale/fora de ordem) reverte só ela, o evento é gravado e respondido 200. Gravação do evento por `INSERT ... ON CONFLICT DO NOTHING` (redelivery concorrente não falha na PK). `provider_event_id` > 160 caracteres vira 401 em vez de 500. Sem duplicar crédito: `confirm` é idempotente sob lock da carteira; se o processo cair entre a transição e a gravação do evento, a redelivery reexecuta e não credita de novo. Testes: FAILED após CONFIRMED (200, evento gravado, saldo e status intactos), COMPLETED tardio após REFUNDED (sem crédito, status não regride), 6 entregas concorrentes do mesmo evento (um crédito, uma linha de evento), id de 161 caracteres. |
+| N15 I/O em transação | Push (Expo) e email (Resend) sem timeout, executados dentro da transação do request (fan-out de até 200 destinatários; email de boas-vindas dentro do cadastro). Padrão: flags desligadas (`EXPO_PUSH_ENABLED=false`, `MAIL_ENABLED=false`) usam stubs de log. | **Confirmado (condicionado às flags) e corrigido** | Novo `PostCommitDispatcher`: o envio só é enfileirado após o commit (rollback descarta) e roda em pool pequeno e limitado (2 threads, fila 1000, descarta com log se cheia), fora do request e da transação. Timeouts explícitos: Expo `connect-timeout-ms=3000` e `request-timeout-ms=8000`; Resend `connect-timeout-ms=3000` e `read-timeout-ms=8000`. Retries limitados: Expo até `max-attempts=2` (padrão; teto 3) só para falha de transporte, 429 e 5xx, nunca 4xx; email de boas-vindas até 2 tentativas. URL do Expo configurável (`app.push.expo.url`) para teste com servidor fake. Testes: provedor lento cortado no timeout com tentativas limitadas, 503 seguido de sucesso, 4xx sem retry, Resend lento falha no read timeout, tarefa pós-commit só roda após commit e não roda em rollback. |
+### Observações
+- Nenhuma migração nova e nenhum dado financeiro alterado. Nenhuma reconciliação financeira automática foi adicionada (`ReconcilePendingPaymentsService` permanece como estava).
+- Efeito colateral aceito: notificações e emails de boas-vindas são best effort. Com a fila cheia ou queda do processo logo após o commit, o envio se perde (a linha em `notifications` fica sem `sent_at`). Um outbox durável não foi implementado; seria o próximo passo se a entrega precisar ser garantida.
+- O fake em `local` ainda confia no payload (mapa `checkoutStates` em memória): aceitável porque só existe em `local`.
+### Mudanças aplicadas
+- `billing/adapter/out/payment/FakePaymentGatewayAdapter.kt`, `billing/application/usecase/ProcessPaymentWebhookService.kt`, `billing/adapter/out/persistence/BillingPersistence.kt`.
+- `notification/Notifier.kt` (`ExpoPushGateway`, `Notifier`), `notification/MailSender.kt`, `notification/WelcomeEmail.kt`, `notification/PostCommitDispatcher.kt` (novo), `configuration/MailProperties.kt`.
+
+## 11.5 N3, N10 e N14 (URLs, mobile e JWT)
+### Método
+Leitura do código e reprodução local por testes: `shared/UrlValidationTest`, `community/CommunityApiIT` (400 em escrita via API real com Testcontainers), `configuration/JwtValidationTest` (emissão por `JwtTokenIssuer` + validação pelo mesmo conjunto de validadores), `mobile/src/__tests__/secureToken.test.ts` e `validation.test.ts`, `frontend/src/lib/validation.test.ts`. Nenhum serviço real foi contatado.
+### Veredito por item
+| Item | Situação encontrada | Veredito | Correção |
+|---|---|---|---|
+| N3 URLs persistidas | Só `cta_url` tinha checagem de esquema; `partner_profiles.website/cover_url` (cadastro anônimo e PATCH), `owners.avatar_url` e `communities.cover_url` aceitavam qualquer esquema. Consumidores do repositório já neutralizavam, exceto o `href` cru de `website` em `MapPage.tsx`. | **Confirmado e corrigido** | `UrlValidation` (esquema `http`/`https` e host não vazio, via `java.net.URI`) aplicado na escrita de `website`, `coverUrl`, `avatarUrl`, `ctaUrl` (update e submit) e `coverUrl` de comunidade: 400 com mensagem do campo; vazio/nulo continua significando "limpar". Frontend: `safeHref` agora exige host e `MapPage` passou a usar `safeHref`. Mobile: `safeHttpUrl` antes de `Linking.openURL`. `pets.avatar_url` não tem caminho de escrita no backend. |
+| N10 token mobile | Token JWT em AsyncStorage em texto puro; `allowBackup` seria `true` por padrão no Android (iOS já excluído do backup pelo async-storage 2.2.0). | **Confirmado (Android) e corrigido** | Token em `expo-secure-store` (Keychain/Keystore, `WHEN_UNLOCKED_THIS_DEVICE_ONLY`). Migração transparente na primeira leitura: copia o token legado para o secure store e remove o texto puro; se a cópia falhar, mantém a sessão e tenta de novo. Fallback para AsyncStorage só onde o secure store não existe (web). `android.allowBackup=false` em `mobile/app.json` e plugin `expo-secure-store`. `OWNER_KEY` (perfil público) segue no AsyncStorage, agora fora do backup. |
+| N14 JWT | Decoder só validava assinatura, tipo e `exp` opcional: `iss`/`aud` estranhos e token sem `exp` eram aceitos. O default `paw-motion-ai` não era rejeitado (hipótese de "fail-closed" do relatório não procede em Spring Security 7.1.2). | **Confirmado e corrigido** | Tokens novos levam `iss` (URL, default `https://api.pawmotion.ai`) e `aud` (`paw-motion-ai-api`). `JwtValidation` exige `exp`, `iss` igual ao configurado e `aud` contendo o público esperado. Janela de compatibilidade: token sem `aud` e com `iss` igual ao atual ou a `JWT_LEGACY_ISSUERS` (default `paw-motion-ai`) é aceito até `JWT_LEGACY_COMPAT_UNTIL` (ISO-8601); sem valor, até boot + `JWT_TTL_SECONDS` (3600 s), tempo em que todo token antigo já expirou. Depois disso `aud` é obrigatória. Token com `aud` errada ou `iss` desconhecido é sempre rejeitado. Default de `JWT_ISSUER` em `application.yml`, `docker-compose.yml`, `.env.example` e deploy trocado por URL. |
+### Consulta de inventário (dados herdados, N3)
+Dados antigos não foram reescritos; só são neutralizados no consumo. Para inventariar (somente leitura):
+```sql
+SELECT 'partner_campaigns.cta_url' AS campo, id::text, cta_url AS valor FROM partner_campaigns WHERE cta_url IS NOT NULL AND cta_url !~* '^https?://[^/\s]+'
+UNION ALL SELECT 'partner_profiles.website', partner_id::text, website FROM partner_profiles WHERE website IS NOT NULL AND website !~* '^https?://[^/\s]+'
+UNION ALL SELECT 'partner_profiles.cover_url', partner_id::text, cover_url FROM partner_profiles WHERE cover_url IS NOT NULL AND cover_url !~* '^https?://[^/\s]+'
+UNION ALL SELECT 'owners.avatar_url', id::text, avatar_url FROM owners WHERE avatar_url IS NOT NULL AND avatar_url !~* '^https?://[^/\s]+'
+UNION ALL SELECT 'communities.cover_url', id::text, cover_url FROM communities WHERE cover_url IS NOT NULL AND cover_url !~* '^https?://[^/\s]+';
+```
+### Observações
+- A janela de compatibilidade é por processo: reiniciar o backend reabre-a por mais um TTL. Para encerrá-la de vez, defina `JWT_LEGACY_COMPAT_UNTIL` com uma data passada ou `JWT_LEGACY_ISSUERS` vazio e remova após o primeiro TTL do deploy.
+- Clientes mobile antigos (AsyncStorage) migram sozinhos; sem mudança de contrato OpenAPI (nenhum campo novo), então não houve regeneração.
+- Pendente no deploy: confirmar que `JWT_SECRET` é exclusivo por ambiente (o binding de `iss`/`aud` mitiga, mas não substitui). Backup/restore real do Android não foi exercitado em dispositivo.
+### Mudanças aplicadas
+- Backend: `shared/UrlValidation.kt` (novo), `ads/AdsService.kt`, `community/CommunityService.kt`, `identity/application/usecase/RegisterPartnerService.kt` e `UpdateProfileService.kt`, `configuration/JwtValidation.kt` (novo), `SecurityConfiguration.kt`, `JwtTokenIssuer.kt`, `application.yml`.
+- Frontend: `lib/validation.ts`, `pages/app/MapPage.tsx`. Mobile: `api/client.ts`, `validation.ts`, `petlife-ui.tsx`, `app.json`, `package.json`.

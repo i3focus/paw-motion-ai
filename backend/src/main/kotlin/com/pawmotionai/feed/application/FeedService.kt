@@ -70,27 +70,27 @@ class FeedService(private val repository: JdbcFeedRepository, private val notifi
 
     @Transactional
     fun react(viewerId: UUID, itemId: UUID, type: ReactionType): ReactionSummaryDto {
-        requireItem(itemId)
+        requireVisibleItem(viewerId, itemId)
         repository.upsertReaction(itemId, viewerId, type)
         return repository.reactionSummaries(listOf(itemId), viewerId).getValue(itemId)
     }
 
     @Transactional
     fun unreact(viewerId: UUID, itemId: UUID): ReactionSummaryDto {
-        requireItem(itemId)
+        requireVisibleItem(viewerId, itemId)
         repository.deleteReaction(itemId, viewerId)
         return repository.reactionSummaries(listOf(itemId), viewerId).getValue(itemId)
     }
 
     @Transactional(readOnly = true)
-    fun comments(itemId: UUID, page: PageRequest): PageResponse<CommentDto> {
-        requireItem(itemId)
+    fun comments(viewerId: UUID, itemId: UUID, page: PageRequest): PageResponse<CommentDto> {
+        requireVisibleItem(viewerId, itemId)
         return PageResponse.of(repository.comments(itemId, page), page.page, page.size)
     }
 
     @Transactional
     fun addComment(viewerId: UUID, itemId: UUID, body: String): CommentDto {
-        requireItem(itemId)
+        requireVisibleItem(viewerId, itemId)
         val trimmed = body.trim()
         if (trimmed.isEmpty()) throw BadRequestException("Comment cannot be blank")
         val comment = repository.addComment(itemId, viewerId, trimmed)
@@ -104,6 +104,7 @@ class FeedService(private val repository: JdbcFeedRepository, private val notifi
     @Transactional
     fun recordAdEvent(viewerId: UUID, campaignId: UUID, type: AdEventType, placement: AdPlacement) {
         if (!repository.campaignServable(campaignId)) throw NotFoundException("Campaign not found")
+        if (!repository.placementAllowed(campaignId, placement)) throw BadRequestException("Placement not enabled for this campaign")
         val recorded = repository.recordAdEvent(campaignId, type, placement, viewerHash(viewerId))
         log.info("ad event campaign={} type={} placement={} recorded={}", campaignId, type, placement, recorded)
     }
@@ -129,8 +130,8 @@ class FeedService(private val repository: JdbcFeedRepository, private val notifi
         }
     }
 
-    private fun requireItem(itemId: UUID) {
-        if (!repository.feedItemExists(itemId)) throw NotFoundException("Feed item not found")
+    private fun requireVisibleItem(viewerId: UUID, itemId: UUID) {
+        if (!repository.visibleItem(repository.viewer(viewerId, null, null), itemId)) throw NotFoundException("Feed item not found")
     }
 
     private fun <T> rotate(list: List<T>, by: Int): List<T> =

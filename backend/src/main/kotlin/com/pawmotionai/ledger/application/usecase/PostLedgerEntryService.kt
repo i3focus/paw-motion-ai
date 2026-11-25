@@ -12,6 +12,7 @@ import com.pawmotionai.ledger.domain.model.LedgerAccountStatus
 import com.pawmotionai.ledger.domain.model.LedgerEntry
 import com.pawmotionai.ledger.domain.model.LedgerEntryDirection
 import com.pawmotionai.ledger.domain.model.LedgerReferenceType
+import io.micrometer.core.instrument.MeterRegistry
 import jakarta.persistence.OptimisticLockException
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.stereotype.Service
@@ -24,18 +25,23 @@ import java.util.UUID
 class PostLedgerEntryService(
     private val repository: LedgerRepository,
     transactionManager: PlatformTransactionManager,
+    private val meterRegistry: MeterRegistry,
 ) : PostLedgerEntryUseCase {
 
     private val transactionTemplate = TransactionTemplate(transactionManager)
 
     override fun credit(command: CreditPosting): List<LedgerEntry> {
         validateCredit(command)
-        return executeWithRetry { creditInTransaction(command) }
+        val entries = executeWithRetry { creditInTransaction(command) }
+        meterRegistry.counter("ledger.credits", "direction", "credit", "reference", command.referenceType.name).increment(command.amount.toDouble())
+        return entries
     }
 
     override fun debit(command: DebitPosting): List<LedgerEntry> {
         validateDebit(command)
-        return executeWithRetry { debitInTransaction(command) }
+        val entries = executeWithRetry { debitInTransaction(command) }
+        meterRegistry.counter("ledger.credits", "direction", "debit", "reference", command.referenceType.name).increment(entries.sumOf { it.amount }.toDouble())
+        return entries
     }
 
     override fun availableBalance(partnerId: UUID): Long =

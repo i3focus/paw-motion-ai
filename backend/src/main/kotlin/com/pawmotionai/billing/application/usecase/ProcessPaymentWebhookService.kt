@@ -11,8 +11,8 @@ import com.pawmotionai.billing.domain.exception.InvalidPaymentStateException
 import com.pawmotionai.billing.domain.exception.PaymentGatewayException
 import com.pawmotionai.billing.domain.exception.WebhookVerificationException
 import com.pawmotionai.billing.domain.model.PaymentTransaction
+import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.security.MessageDigest
 import java.time.Instant
 import java.util.HexFormat
@@ -25,9 +25,16 @@ class ProcessPaymentWebhookService(
     private val webhookEventRepository: PaymentWebhookEventRepository,
     private val transactionRepository: PaymentTransactionRepository,
     private val lifecycleService: PaymentLifecycleService,
+    private val meterRegistry: MeterRegistry,
 ) : ProcessPaymentWebhookUseCase {
 
-    @Transactional
+    /**
+     * Deliberately NOT transactional (N6/N15): the provider fetch happens outside any DB transaction and each
+     * lifecycle transition runs in its own transaction. A stale or out-of-order transition (InvalidPaymentStateException)
+     * therefore rolls back only that transition, never the dedup record, and the event is acknowledged without changes.
+     * If the process dies after a transition but before the dedup insert, the redelivery re-runs the transition, which is
+     * idempotent (confirm on CONFIRMED is a no-op, wallet-locked), so a credit is never duplicated or lost.
+     */
     override fun process(request: WebhookRequest) {
         val gateway = gateways.firstOrNull { it.provider().equals(request.provider, ignoreCase = true) }
             ?: throw WebhookVerificationException("Unknown payment provider")
@@ -36,13 +43,18 @@ class ProcessPaymentWebhookService(
             throw WebhookVerificationException("Webhook devMode does not match environment")
         }
         val providerEventId = event.providerEventId ?: throw WebhookVerificationException("Webhook event id is missing")
+        if (providerEventId.length > MAX_EVENT_ID_LENGTH) {
+            throw WebhookVerificationException("Webhook event id is too long")
+        }
         if (webhookEventRepository.exists(gateway.provider(), providerEventId)) {
+            count(gateway.provider(), "duplicate")
             return
         }
         val transaction = findTransaction(gateway.provider(), event)
         if (transaction == null) {
             webhookEventRepository.save(gateway.provider(), providerEventId, payloadHash(request.body),
                 Instant.now())
+            count(gateway.provider(), "unmatched")
             return
         }
         val details = gateway.fetchCheckoutByExternalId(transaction.id.toString())
@@ -67,9 +79,21 @@ class ProcessPaymentWebhookService(
             }
         } catch (ignored: InvalidPaymentStateException) {
             // Out-of-order or duplicate provider events are acknowledged without changes.
+            count(gateway.provider(), "stale")
+            webhookEventRepository.save(gateway.provider(), providerEventId, payloadHash(request.body), Instant.now())
+            return
         }
+        count(gateway.provider(), "processed")
         webhookEventRepository.save(gateway.provider(), providerEventId, payloadHash(request.body),
             Instant.now())
+    }
+
+    private fun count(provider: String, result: String) {
+        meterRegistry.counter("payment.webhook.events", "provider", provider.lowercase(), "result", result).increment()
+    }
+
+    private companion object {
+        const val MAX_EVENT_ID_LENGTH = 160
     }
 
     private fun requirePaidDetails(transaction: PaymentTransaction, details: CheckoutDetails) {

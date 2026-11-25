@@ -58,6 +58,13 @@ class JdbcFeedRepository(private val jdbc: JdbcClient) {
         const val CANDIDATE_LIMIT = 500
         private const val VIEWER_POINT =
             "ST_SetSRID(ST_MakePoint(CAST(:lng AS float8), CAST(:lat AS float8)), 4326)::geography"
+
+        /** Single source of truth for who may see a feed item (aliases: f = feed_items, o = author owner). */
+        private const val VISIBILITY_PREDICATE = """(f.author_owner_id = :viewer
+               OR EXISTS (SELECT 1 FROM pet_follows pf WHERE pf.follower_owner_id = :viewer AND pf.pet_id = f.author_pet_id)
+               OR (:hasLocation AND f.location IS NOT NULL AND ST_DWithin(f.location, $VIEWER_POINT, :radius))
+               OR (CAST(:neighborhood AS text) IS NOT NULL AND lower(o.neighborhood) = lower(CAST(:neighborhood AS text)))
+               OR (NOT :hasLocation AND CAST(:neighborhood AS text) IS NULL))"""
     }
 
     fun viewer(ownerId: UUID, lat: Double?, lng: Double?): Viewer {
@@ -99,11 +106,7 @@ class JdbcFeedRepository(private val jdbc: JdbcClient) {
         JOIN owners o ON o.id = f.author_owner_id AND o.status = 'ACTIVE'
         LEFT JOIN pets p ON p.id = f.author_pet_id
         WHERE f.deleted_at IS NULL AND f.published_at >= :since
-          AND (f.author_owner_id = :viewer
-               OR EXISTS (SELECT 1 FROM pet_follows pf WHERE pf.follower_owner_id = :viewer AND pf.pet_id = f.author_pet_id)
-               OR (:hasLocation AND f.location IS NOT NULL AND ST_DWithin(f.location, $VIEWER_POINT, :radius))
-               OR (CAST(:neighborhood AS text) IS NOT NULL AND lower(o.neighborhood) = lower(CAST(:neighborhood AS text)))
-               OR (NOT :hasLocation AND CAST(:neighborhood AS text) IS NULL))
+          AND $VISIBILITY_PREDICATE
         ORDER BY f.published_at DESC
         LIMIT :limit
         """,
@@ -171,9 +174,22 @@ class JdbcFeedRepository(private val jdbc: JdbcClient) {
         }
     }
 
-    fun feedItemExists(itemId: UUID): Boolean =
-        jdbc.sql("SELECT COUNT(*) FROM feed_items WHERE id = :id AND deleted_at IS NULL").param("id", itemId)
-            .query(Long::class.java).single() > 0
+    /** True when [itemId] is live and inside the same visibility scope used by [candidates]. */
+    fun visibleItem(viewer: Viewer, itemId: UUID): Boolean = jdbc.sql(
+        """
+        SELECT COUNT(*) FROM feed_items f
+        JOIN owners o ON o.id = f.author_owner_id AND o.status = 'ACTIVE'
+        WHERE f.id = :item AND f.deleted_at IS NULL AND $VISIBILITY_PREDICATE
+        """,
+    )
+        .param("item", itemId)
+        .param("viewer", viewer.ownerId)
+        .param("hasLocation", viewer.hasLocation)
+        .param("lat", viewer.lat)
+        .param("lng", viewer.lng)
+        .param("radius", NEARBY_RADIUS_M)
+        .param("neighborhood", viewer.neighborhood)
+        .query(Long::class.java).single() > 0
 
     fun upsertReaction(itemId: UUID, ownerId: UUID, type: ReactionType) {
         jdbc.sql(
@@ -266,18 +282,29 @@ class JdbcFeedRepository(private val jdbc: JdbcClient) {
         jdbc.sql("SELECT COUNT(*) FROM partner_campaigns WHERE id = :id AND status = 'ACTIVE' AND starts_at <= now() AND ends_at > now()")
             .param("id", campaignId).query(Long::class.java).single() > 0
 
-    /** Records an ad event; impressions from the same viewer and placement are counted once per 30 minutes. */
-    fun recordAdEvent(campaignId: UUID, type: AdEventType, placement: AdPlacement, viewerHash: String): Boolean = jdbc.sql(
-        """
-        INSERT INTO campaign_events (id, campaign_id, type, placement, viewer_hash, occurred_at)
-        SELECT :id, :campaign, :type, :placement, :viewer, now()
-        WHERE :type <> 'IMPRESSION' OR NOT EXISTS (
-            SELECT 1 FROM campaign_events e
-            WHERE e.campaign_id = :campaign AND e.type = 'IMPRESSION' AND e.placement = :placement
-              AND e.viewer_hash = :viewer AND e.occurred_at > now() - interval '30 minutes')
-        """,
-    ).param("id", UUID.randomUUID()).param("campaign", campaignId).param("type", type.name)
-        .param("placement", placement.name).param("viewer", viewerHash).update() > 0
+    fun placementAllowed(campaignId: UUID, placement: AdPlacement): Boolean =
+        jdbc.sql("SELECT COUNT(*) FROM partner_campaigns WHERE id = :id AND :placement = ANY(formats)")
+            .param("id", campaignId).param("placement", placement.name).query(Long::class.java).single() > 0
+
+    /**
+     * Records an ad event. IMPRESSION and CLICK from the same viewer, campaign and placement are counted once per
+     * 30 minutes; a transaction-scoped advisory lock serializes concurrent duplicates so only one row is inserted.
+     */
+    fun recordAdEvent(campaignId: UUID, type: AdEventType, placement: AdPlacement, viewerHash: String): Boolean {
+        jdbc.sql("SELECT pg_advisory_xact_lock(hashtext(:key))::text")
+            .param("key", "$campaignId|$viewerHash|${type.name}|${placement.name}").query(String::class.java).single()
+        return jdbc.sql(
+            """
+            INSERT INTO campaign_events (id, campaign_id, type, placement, viewer_hash, occurred_at)
+            SELECT :id, :campaign, :type, :placement, :viewer, now()
+            WHERE NOT EXISTS (
+                SELECT 1 FROM campaign_events e
+                WHERE e.campaign_id = :campaign AND e.type = :type AND e.placement = :placement
+                  AND e.viewer_hash = :viewer AND e.occurred_at > now() - interval '30 minutes')
+            """,
+        ).param("id", UUID.randomUUID()).param("campaign", campaignId).param("type", type.name)
+            .param("placement", placement.name).param("viewer", viewerHash).update() > 0
+    }
 
     private fun comment(rs: ResultSet) = CommentDto(
         rs.uuid("id"), rs.uuid("feed_item_id"), rs.uuid("owner_id"), rs.getString("display_name"),

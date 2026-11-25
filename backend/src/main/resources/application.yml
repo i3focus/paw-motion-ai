@@ -18,6 +18,8 @@ spring:
     locations: classpath:db/migration
 
 springdoc:
+  # Ordena chaves do JSON/YAML gerado: a reflexao sobre tipos do Spring (HttpHeaders) varia entre JVMs.
+  writer-with-order-by-keys: true
   api-docs:
     enabled: ${API_DOCS_ENABLED:true}
   swagger-ui:
@@ -33,18 +35,91 @@ management:
         include: health,info,metrics
   endpoint:
     health:
+      # N4: o health publico nunca traz detalhes (componentes, banco, disco)
+      show-details: never
+      show-components: never
       probes:
         enabled: true
 
 app:
+  activity:
+    # how far back startedAt may be (ISO-8601 duration); decision 3.2
+    max-backdate: ${ACTIVITY_MAX_BACKDATE:P14D}
+  xp:
+    # enforce: caps XP per (pet, source type, UTC day), no XP for same-owner playdates, challenge reward once per owner;
+    # shadow: only logs the excess; off: legacy behavior (rollback)
+    mode: ${XP_MODE:enforce}
+    daily-cap:
+      default: ${XP_DAILY_CAP:150}
+      # per-type override, e.g. ACTIVITY: 150 (keys: ACTIVITY, POST, CHECK_IN, PLAYDATE, CHALLENGE)
   media:
     root: ${MEDIA_ROOT:./data/media}
+    # enforce: 409 above the per-owner quota (atomic reservation); shadow: only records the excess; off: no cap (rollback)
+    mode: ${MEDIA_MODE:enforce}
+    max-bytes-per-owner: ${MEDIA_MAX_BYTES_PER_OWNER:5368709120}
+    # provisional (decision 3.2: only the byte cap was decided)
+    max-objects-per-owner: ${MEDIA_MAX_OBJECTS_PER_OWNER:50}
+    deletion:
+      # deletes files after the commit that removed their row (outbox); false = legacy behavior (files kept)
+      enabled: ${MEDIA_DELETION_ENABLED:true}
+    orphan-sweep:
+      # dry-run only: reports orphan files / rows without file via metric media.orphans and log; never deletes
+      enabled: ${MEDIA_ORPHAN_SWEEP_ENABLED:false}
+  insights:
+    retention:
+      # TTL off by default (rollback = false). When true, deletes insights older than `days` in bounded batches (daily cron)
+      enabled: ${INSIGHTS_RETENTION_ENABLED:false}
+      days: ${INSIGHTS_RETENTION_DAYS:365}
+      batch-size: ${INSIGHTS_RETENTION_BATCH_SIZE:1000}
   security:
-    trusted-proxies: "${TRUSTED_PROXIES:127.0.0.1,::1,0:0:0:0:0:0:0:1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16}"
+    # N13: so loopback por padrao (bootRun local). Em Docker/Hostinger use o IP fixo do nginx do frontend (docker-compose.yml).
+    trusted-proxies: "${TRUSTED_PROXIES:127.0.0.1,::1}"
     jwt:
-      issuer: ${JWT_ISSUER:paw-motion-ai}
+      # N14: iss em formato URL; aud validada. legacy-* = janela para tokens emitidos antes (sem aud, iss antigo).
+      issuer: ${JWT_ISSUER:https://api.pawmotion.ai}
+      audience: ${JWT_AUDIENCE:paw-motion-ai-api}
+      legacy-issuers: ${JWT_LEGACY_ISSUERS:paw-motion-ai}
+      # ISO-8601 (ex.: 2026-01-01T00:00:00Z). Vazio = boot + ttl-seconds (tokens antigos expiram nesse intervalo).
+      legacy-compat-until: ${JWT_LEGACY_COMPAT_UNTIL:}
       secret: ${JWT_SECRET}
       ttl-seconds: ${JWT_TTL_SECONDS:3600}
+  rate-limit:
+    # shadow: mede e registra (ratelimit.shadow_violations) sem responder 429; enforce: bloqueia. Vale para os buckets novos.
+    mode: ${RATE_LIMIT_MODE:shadow}
+    webhook-per-minute: ${RATE_LIMIT_WEBHOOK_PER_MINUTE:600}
+    read:
+      # enforce por padrão (limites generosos); shadow = só mede (rollback)
+      mode: ${RATE_LIMIT_READ_MODE:enforce}
+      per-minute: ${RATE_LIMIT_READ_PER_MINUTE:600}
+      costly-per-minute: ${RATE_LIMIT_READ_COSTLY_PER_MINUTE:240}
+  playdate:
+    # enforce: deduplica convites e aplica o teto diario (409); shadow: so registra o excesso; off: comportamento legado (rollback)
+    invite-mode: ${PLAYDATE_INVITE_MODE:enforce}
+    invite-dedup-window: ${PLAYDATE_INVITE_DEDUP_WINDOW:24h}
+    max-invite-notifications-per-day: ${PLAYDATE_MAX_INVITE_NOTIFICATIONS_PER_DAY:50}
+  limits:
+    # enforce: 409 acima do teto de pets ativos por dono; shadow: so registra; off: sem teto (rollback)
+    mode: ${LIMITS_MODE:enforce}
+    max-pets-per-owner: ${LIMITS_MAX_PETS_PER_OWNER:10}
+    # N9/N2: quotas por dono (mesmo modo acima); comunidades, eventos ativos (starts_at futuro) e tetos diarios (janela de 24h)
+    max-communities-per-owner: ${LIMITS_MAX_COMMUNITIES_PER_OWNER:5}
+    max-communities-per-day: ${LIMITS_MAX_COMMUNITIES_PER_DAY:3}
+    max-active-events-per-owner: ${LIMITS_MAX_ACTIVE_EVENTS_PER_OWNER:20}
+    max-events-per-day: ${LIMITS_MAX_EVENTS_PER_DAY:10}
+    max-activities-per-day: ${LIMITS_MAX_ACTIVITIES_PER_DAY:200}
+  lost-pet:
+    # enforce: cooldown de fan-out, teto diario e de alertas ativos (409); shadow: so registra; off: comportamento legado (rollback)
+    mode: ${LOST_PET_MODE:enforce}
+    fanout-cooldown: ${LOST_PET_FANOUT_COOLDOWN:6h}
+    max-alerts-per-day: ${LOST_PET_MAX_ALERTS_PER_DAY:10}
+    max-active-alerts-per-owner: ${LOST_PET_MAX_ACTIVE_ALERTS_PER_OWNER:5}
+    # C23 (same mode): caps per alert and per (alert, reporter) -> 409; seenAt window and optional max distance (0 = off) -> 400
+    max-sightings-per-alert: ${LOST_PET_MAX_SIGHTINGS_PER_ALERT:20}
+    max-sightings-per-reporter: ${LOST_PET_MAX_SIGHTINGS_PER_REPORTER:3}
+    sighting-max-age: ${LOST_PET_SIGHTING_MAX_AGE:7d}
+    sighting-max-distance-meters: ${LOST_PET_SIGHTING_MAX_DISTANCE_METERS:0}
+  pagination:
+    max-page: ${PAGINATION_MAX_PAGE:10000}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
   billing:
@@ -52,7 +127,7 @@ app:
     credits-per-currency-unit: ${BILLING_CREDITS_PER_CURRENCY_UNIT:1}
     min-purchase-amount: ${BILLING_MIN_PURCHASE_AMOUNT:10.00}
     max-purchase-amount: ${BILLING_MAX_PURCHASE_AMOUNT:10000.00}
-    provider: ${PAYMENT_PROVIDER:fake}
+    provider: ${PAYMENT_PROVIDER:}
     pending-ttl: ${BILLING_PENDING_TTL:24h}
     partner-portal-base-url: ${PARTNER_PORTAL_BASE_URL:http://localhost:5173/partner}
     fake-webhook-secret: ${FAKE_WEBHOOK_SECRET:}
@@ -66,6 +141,8 @@ app:
     duration-days: ${CAMPAIGN_DURATION_DAYS:30}
   admin:
     emails: ${ADMIN_EMAILS:}
+    bootstrap-enabled: ${ADMIN_BOOTSTRAP_ENABLED:false}
+    reconcile: ${ADMIN_RECONCILE:false}
   push:
     expo:
       enabled: ${EXPO_PUSH_ENABLED:false}

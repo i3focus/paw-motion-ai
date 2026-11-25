@@ -14,11 +14,13 @@ import com.pawmotionai.shared.PageRequest
 import com.pawmotionai.shared.PageResponse
 import com.pawmotionai.shared.PetAccess
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.sql.ResultSet
 import java.sql.Timestamp
+import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 
@@ -29,6 +31,17 @@ class MapService(
     private val media: MediaService,
     private val engagement: EngagementService,
     private val notifier: Notifier,
+    @Value("\${app.playdate.invite-mode:enforce}") private val inviteMode: String,
+    @Value("\${app.playdate.invite-dedup-window:24h}") private val inviteDedupWindow: Duration,
+    @Value("\${app.playdate.max-invite-notifications-per-day:50}") private val maxInviteNotificationsPerDay: Int,
+    @Value("\${app.lost-pet.mode:enforce}") private val lostPetMode: String,
+    @Value("\${app.lost-pet.fanout-cooldown:6h}") private val fanoutCooldown: Duration,
+    @Value("\${app.lost-pet.max-alerts-per-day:10}") private val maxAlertsPerDay: Int,
+    @Value("\${app.lost-pet.max-active-alerts-per-owner:5}") private val maxActiveAlertsPerOwner: Int,
+    @Value("\${app.lost-pet.max-sightings-per-alert:20}") private val maxSightingsPerAlert: Int,
+    @Value("\${app.lost-pet.max-sightings-per-reporter:3}") private val maxSightingsPerReporter: Int,
+    @Value("\${app.lost-pet.sighting-max-age:7d}") private val sightingMaxAge: Duration,
+    @Value("\${app.lost-pet.sighting-max-distance-meters:0}") private val sightingMaxDistanceMeters: Double,
 ) {
 
     private val log = LoggerFactory.getLogger(MapService::class.java)
@@ -98,22 +111,53 @@ class MapService(
         val active = jdbc.sql("SELECT COUNT(*) FROM lost_pet_alerts WHERE pet_id = :pet AND status = 'ACTIVE'").param("pet", request.petId)
             .query(Long::class.java).single()
         if (active > 0) throw ConflictException("This pet already has an active alert")
+        val fanout = checkAlertLimits(ownerId, request.petId)
         val id = UUID.randomUUID()
         jdbc.sql(
             """
             INSERT INTO lost_pet_alerts (id, pet_id, owner_id, photo_media_id, description, contact_phone, last_seen_location,
-                                         last_seen_at, radius_m, status, created_at)
-            VALUES (:id, :pet, :owner, :photo, :description, :phone, $POINT, :seen, :radius, 'ACTIVE', now())
+                                         last_seen_at, radius_m, status, created_at, fanout_sent_at)
+            VALUES (:id, :pet, :owner, :photo, :description, :phone, $POINT, :seen, :radius, 'ACTIVE', now(), CASE WHEN :fanout THEN now() END)
             """,
         ).param("id", id).param("pet", request.petId).param("owner", ownerId).param("photo", request.photoMediaId)
             .param("description", request.description!!.trim()).param("phone", request.contactPhone?.trim()?.ifEmpty { null })
             .param("lat", request.latitude).param("lng", request.longitude).param("seen", Timestamp.from(request.lastSeenAt))
-            .param("radius", request.radiusMeters ?: 3000).update()
-        val petName = jdbc.sql("SELECT name FROM pets WHERE id = :id").param("id", request.petId).query(String::class.java).single()
-        notifier.notifyNearby(ownerId, request.latitude!!, request.longitude!!, request.radiusMeters ?: 3000, NotificationType.LOST_PET,
-            "Lost pet near you: $petName", request.description!!.trim().take(120), mapOf("alertId" to id.toString()))
+            .param("radius", request.radiusMeters ?: 3000).param("fanout", fanout).update()
+        if (fanout) {
+            val petName = jdbc.sql("SELECT name FROM pets WHERE id = :id").param("id", request.petId).query(String::class.java).single()
+            notifier.notifyNearby(ownerId, request.latitude!!, request.longitude!!, request.radiusMeters ?: 3000, NotificationType.LOST_PET,
+                "Lost pet near you: $petName", request.description!!.trim().take(120), mapOf("alertId" to id.toString()))
+        } else {
+            log.info("lost pet fan-out skipped (cooldown) alert={} pet={}", id, request.petId)
+        }
         log.info("lost pet alert created alert={} pet={}", id, request.petId)
         return alert(id, null, null)
+    }
+
+    /**
+     * C8/C18: serializes alert creation per owner (row lock) so the caps hold under concurrency, enforces the daily and
+     * active-alert caps (409) and returns whether this alert may fan out (no fan-out for the same pet inside the cooldown).
+     * `shadow` only logs the excess and keeps the legacy fan-out; `off` is the legacy behavior.
+     */
+    private fun checkAlertLimits(ownerId: UUID, petId: UUID): Boolean {
+        if (lostPetMode == "off") return true
+        jdbc.sql("SELECT id FROM owners WHERE id = :id FOR UPDATE").param("id", ownerId).query(UUID::class.java).optional()
+        val active = jdbc.sql("SELECT COUNT(*) FROM lost_pet_alerts WHERE owner_id = :owner AND status = 'ACTIVE'")
+            .param("owner", ownerId).query(Long::class.java).single()
+        val today = jdbc.sql("SELECT COUNT(*) FROM lost_pet_alerts WHERE owner_id = :owner AND created_at > now() - interval '1 day'")
+            .param("owner", ownerId).query(Long::class.java).single()
+        val overActive = active >= maxActiveAlertsPerOwner
+        val overDaily = today >= maxAlertsPerDay
+        if (overActive || overDaily) {
+            if (lostPetMode == "enforce") {
+                throw ConflictException(if (overActive) "Active lost pet alert limit reached" else "Daily lost pet alert limit reached")
+            }
+            log.warn("lost pet alert cap would be exceeded owner={} active={} today={}", ownerId, active, today)
+        }
+        val recentFanout = jdbc.sql("SELECT COUNT(*) FROM lost_pet_alerts WHERE pet_id = :pet AND fanout_sent_at > :since")
+            .param("pet", petId).param("since", Timestamp.from(Instant.now().minus(fanoutCooldown))).query(Long::class.java).single() > 0
+        if (recentFanout && lostPetMode != "enforce") log.warn("lost pet fan-out would be skipped (cooldown) pet={}", petId)
+        return !(recentFanout && lostPetMode == "enforce")
     }
 
     @Transactional(readOnly = true)
@@ -124,16 +168,49 @@ class MapService(
         ).param("lat", lat).param("lng", lng).query { rs, _ -> alertRow(rs) }.list()
     }
 
+    /**
+     * C23: `seenAt` must be in [now - max-age, now + 5min] (400); optional max distance to the alert (400); caps per alert and
+     * per (alert, reporter) (409). The alert row is locked (FOR UPDATE) so the counts hold under concurrent reports.
+     * `shadow` only logs; `off` is the legacy behavior.
+     */
     @Transactional
     fun reportSighting(reporterId: UUID, alertId: UUID, request: SightingRequest) {
-        val inserted = jdbc.sql(
+        val now = Instant.now()
+        val seenAt = request.seenAt!!
+        val outOfWindow = seenAt.isAfter(now.plusSeconds(300)) || seenAt.isBefore(now.minus(sightingMaxAge))
+        if (outOfWindow) {
+            if (lostPetMode == "enforce") throw BadRequestException("seenAt must be within the last ${sightingMaxAge.toDays()} days and not in the future")
+            if (lostPetMode == "shadow") log.warn("sighting seenAt outside window would be refused alert={} reporter={}", alertId, reporterId)
+        }
+        val distance = jdbc.sql(
+            "SELECT ST_Distance(last_seen_location, $POINT) FROM lost_pet_alerts WHERE id = :alert AND status = 'ACTIVE' FOR UPDATE",
+        ).param("alert", alertId).param("lat", request.latitude).param("lng", request.longitude)
+            .query(Double::class.java).optional().orElseThrow { NotFoundException("Active alert not found") }
+        if (lostPetMode != "off") {
+            if (sightingMaxDistanceMeters > 0 && distance > sightingMaxDistanceMeters) {
+                if (lostPetMode == "enforce") throw BadRequestException("Sighting is too far from the alert")
+                log.warn("sighting too far would be refused alert={} reporter={} distance={}", alertId, reporterId, distance)
+            }
+            val perAlert = jdbc.sql("SELECT COUNT(*) FROM lost_pet_sightings WHERE alert_id = :alert").param("alert", alertId)
+                .query(Long::class.java).single()
+            val perReporter = jdbc.sql("SELECT COUNT(*) FROM lost_pet_sightings WHERE alert_id = :alert AND reporter_owner_id = :reporter")
+                .param("alert", alertId).param("reporter", reporterId).query(Long::class.java).single()
+            val overAlert = perAlert >= maxSightingsPerAlert
+            val overReporter = perReporter >= maxSightingsPerReporter
+            if (overAlert || overReporter) {
+                if (lostPetMode == "enforce") {
+                    throw ConflictException(if (overAlert) "Sighting limit reached for this alert" else "Sighting limit reached for this reporter")
+                }
+                log.warn("sighting cap would be exceeded alert={} reporter={} perAlert={} perReporter={}", alertId, reporterId, perAlert, perReporter)
+            }
+        }
+        jdbc.sql(
             """
             INSERT INTO lost_pet_sightings (id, alert_id, reporter_owner_id, location, seen_at, note, created_at)
-            SELECT :id, a.id, :reporter, $POINT, :seen, :note, now() FROM lost_pet_alerts a WHERE a.id = :alert AND a.status = 'ACTIVE'
+            VALUES (:id, :alert, :reporter, $POINT, :seen, :note, now())
             """,
         ).param("id", UUID.randomUUID()).param("reporter", reporterId).param("lat", request.latitude).param("lng", request.longitude)
-            .param("seen", Timestamp.from(request.seenAt)).param("note", request.note?.trim()?.ifEmpty { null }).param("alert", alertId).update()
-        if (inserted == 0) throw NotFoundException("Active alert not found")
+            .param("seen", Timestamp.from(seenAt)).param("note", request.note?.trim()?.ifEmpty { null }).param("alert", alertId).update()
     }
 
     @Transactional
@@ -158,6 +235,7 @@ class MapService(
         }
         val invitees = request.inviteePetIds.orEmpty().distinct().filter { it != petId }
         petAccess.requireActivePets(invitees)
+        val notifyInvitee = inviteNotifyDecisions(ownerId, invitees)
         val id = UUID.randomUUID()
         jdbc.sql(
             """
@@ -171,20 +249,61 @@ class MapService(
             .param("mode", request.mode.name).param("starts", Timestamp.from(startsAt)).param("message", request.message?.trim()?.ifEmpty { null })
             .update()
         invitees.forEach { invitee ->
+            val inviteeOwner = jdbc.sql("SELECT owner_id FROM pets WHERE id = :pet").param("pet", invitee).query(UUID::class.java).optional().orElse(null)
+                ?: return@forEach
+            val notify = notifyInvitee[invitee] == true
             jdbc.sql(
                 """
-                INSERT INTO playdate_invites (id, playdate_id, invitee_pet_id, invitee_owner_id, status, created_at)
-                SELECT :id, :playdate, p.id, p.owner_id, 'PENDING', now() FROM pets p WHERE p.id = :pet
+                INSERT INTO playdate_invites (id, playdate_id, invitee_pet_id, invitee_owner_id, status, notified, created_at)
+                VALUES (:id, :playdate, :pet, :owner, 'PENDING', :notified, now())
                 """,
-            ).param("id", UUID.randomUUID()).param("playdate", id).param("pet", invitee).update()
-            jdbc.sql("SELECT owner_id FROM pets WHERE id = :pet").param("pet", invitee).query(UUID::class.java).optional()
-                .ifPresent { inviteeOwner ->
-                    notifier.notify(inviteeOwner, NotificationType.PLAYDATE, "Playdate invite",
-                        request.message?.take(120) ?: "You were invited to a playdate.", mapOf("playdateId" to id.toString()))
-                }
+            ).param("id", UUID.randomUUID()).param("playdate", id).param("pet", invitee).param("owner", inviteeOwner).param("notified", notify).update()
+            if (notify) {
+                notifier.notify(inviteeOwner, NotificationType.PLAYDATE, "Playdate invite",
+                    request.message?.take(120) ?: "You were invited to a playdate.", mapOf("playdateId" to id.toString()))
+            }
         }
         engagement.recordPlaydate(id, ownerId, petId)
         return playdate(id)
+    }
+
+    /**
+     * C9: decides which invitee pets generate a notification. Skips the organizer's own pets, owners already notified by
+     * this organizer inside [inviteDedupWindow], and repeated owners in the same request. Enforces the daily cap (409).
+     * Serialized per organizer so concurrent requests cannot overshoot the cap. `off` keeps the legacy behavior.
+     */
+    private fun inviteNotifyDecisions(organizerId: UUID, invitees: List<UUID>): Map<UUID, Boolean> {
+        if (inviteMode == "off" || invitees.isEmpty()) return invitees.associateWith { true }
+        jdbc.sql("SELECT id FROM owners WHERE id = :id FOR UPDATE").param("id", organizerId).query(UUID::class.java).optional()
+        val owners = invitees.associateWith { pet ->
+            jdbc.sql("SELECT owner_id FROM pets WHERE id = :pet").param("pet", pet).query(UUID::class.java).optional().orElse(null)
+        }
+        val recent = jdbc.sql(
+            """
+            SELECT DISTINCT i.invitee_owner_id FROM playdate_invites i JOIN playdates d ON d.id = i.playdate_id
+            WHERE d.organizer_owner_id = :organizer AND i.notified AND i.created_at > :since
+            """,
+        ).param("organizer", organizerId).param("since", Timestamp.from(Instant.now().minus(inviteDedupWindow)))
+            .query(UUID::class.java).list().toSet()
+        val seen = HashSet<UUID>()
+        val decisions = invitees.associateWith { pet ->
+            val owner = owners[pet]
+            owner != null && owner != organizerId && owner !in recent && seen.add(owner)
+        }
+        val toNotify = decisions.count { it.value }
+        if (toNotify > 0) {
+            val today = jdbc.sql(
+                """
+                SELECT COUNT(*) FROM playdate_invites i JOIN playdates d ON d.id = i.playdate_id
+                WHERE d.organizer_owner_id = :organizer AND i.notified AND i.created_at > now() - interval '1 day'
+                """,
+            ).param("organizer", organizerId).query(Long::class.java).single()
+            if (today + toNotify > maxInviteNotificationsPerDay) {
+                if (inviteMode == "enforce") throw ConflictException("Daily playdate invite limit reached")
+                log.warn("playdate invite cap would be exceeded organizer={} today={} adding={}", organizerId, today, toNotify)
+            }
+        }
+        return if (inviteMode == "enforce") decisions else invitees.associateWith { true }
     }
 
     @Transactional
@@ -193,10 +312,16 @@ class MapService(
             """
             UPDATE playdate_invites SET status = :status, responded_at = now()
             WHERE playdate_id = :playdate AND invitee_pet_id = :pet AND invitee_owner_id = :owner
+              AND status = 'PENDING'
               AND EXISTS (SELECT 1 FROM playdates d WHERE d.id = :playdate AND d.status = 'OPEN')
             """,
         ).param("status", response.name).param("playdate", playdateId).param("pet", petId).param("owner", ownerId).update()
-        if (updated == 0) throw NotFoundException("Invite not found")
+        if (updated == 0) {
+            val exists = jdbc.sql("SELECT count(*) FROM playdate_invites WHERE playdate_id = :playdate AND invitee_pet_id = :pet AND invitee_owner_id = :owner")
+                .param("playdate", playdateId).param("pet", petId).param("owner", ownerId).query(Long::class.java).single() > 0
+            if (!exists) throw NotFoundException("Invite not found")
+            throw ConflictException("Invite already answered or playdate no longer open")
+        }
         if (response == InviteResponse.ACCEPTED) {
             engagement.recordPlaydate(playdateId, ownerId, petId)
             jdbc.sql("SELECT organizer_owner_id FROM playdates WHERE id = :id").param("id", playdateId).query(UUID::class.java).optional()
@@ -205,6 +330,19 @@ class MapService(
                     notifier.notify(organizer, NotificationType.PLAYDATE, "Playdate accepted", "$petName accepted your playdate invite.",
                         mapOf("playdateId" to playdateId.toString()))
                 }
+        }
+        return playdate(playdateId)
+    }
+
+    @Transactional
+    fun cancelPlaydate(ownerId: UUID, playdateId: UUID): PlaydateDto {
+        val updated = jdbc.sql("UPDATE playdates SET status = 'CANCELLED' WHERE id = :id AND organizer_owner_id = :owner AND status = 'OPEN'")
+            .param("id", playdateId).param("owner", ownerId).update()
+        if (updated == 0) {
+            val exists = jdbc.sql("SELECT count(*) FROM playdates WHERE id = :id AND organizer_owner_id = :owner")
+                .param("id", playdateId).param("owner", ownerId).query(Long::class.java).single() > 0
+            if (!exists) throw NotFoundException("Playdate not found")
+            throw ConflictException("Playdate is no longer open")
         }
         return playdate(playdateId)
     }

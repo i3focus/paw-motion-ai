@@ -97,3 +97,14 @@ export function isNonNegativeNumber(value: string): boolean {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0;
 }
+
+/** N3: devolve a URL apenas se for http(s) com host; qualquer outro esquema vira null (nao navegar). */
+export function safeHttpUrl(value: string | null | undefined): string | null {
+  const trimmed = (value ?? '').trim();
+  if (!/^https?:\/\/[^/\s?#]/i.test(trimmed)) return null;
+  try {
+    return new URL(trimmed).hostname ? trimmed : null;
+  } catch {
+    return null;
+  }
+}

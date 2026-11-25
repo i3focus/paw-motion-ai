@@ -47,10 +47,11 @@ class FeedController(private val service: FeedService) {
 
     @GetMapping("/feed/{itemId}/comments")
     fun comments(
+        @AuthenticationPrincipal jwt: Jwt,
         @PathVariable itemId: UUID,
         @RequestParam(required = false) page: Int?,
         @RequestParam(required = false) size: Int?,
-    ): PageResponse<CommentDto> = service.comments(itemId, PageRequest.of(page, size))
+    ): PageResponse<CommentDto> = service.comments(jwt.ownerId, itemId, PageRequest.of(page, size))
 
     @PostMapping("/feed/{itemId}/comments")
     @ResponseStatus(HttpStatus.CREATED)

@@ -13,6 +13,9 @@ import com.pawmotionai.pet.domain.exception.PetNotFoundException
 import com.pawmotionai.pet.domain.model.Pet
 import com.pawmotionai.pet.domain.model.PetSize
 import com.pawmotionai.pet.domain.model.PetSpecies
+import com.pawmotionai.shared.ConflictException
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -32,10 +35,17 @@ internal object PetParser {
 }
 
 @Service
-class CreatePetService(private val petRepository: PetRepository) : CreatePetUseCase {
+class CreatePetService(
+    private val petRepository: PetRepository,
+    @Value("\${app.limits.mode:enforce}") private val limitsMode: String,
+    @Value("\${app.limits.max-pets-per-owner:10}") private val maxPetsPerOwner: Int,
+) : CreatePetUseCase {
+
+    private val log = LoggerFactory.getLogger(CreatePetService::class.java)
 
     @Transactional
     override fun createPet(command: CreatePetCommand): PetResponseDto {
+        enforcePetLimit(command.ownerId)
         val pet = Pet.create(
             UUID.randomUUID(),
             command.ownerId,
@@ -47,6 +57,15 @@ class CreatePetService(private val petRepository: PetRepository) : CreatePetUseC
             PetParser.trimToNull(command.activityPreference),
             Instant.now())
         return PetResponseDto.from(petRepository.save(pet))
+    }
+
+    /** C18: serialized per owner (row lock) so concurrent creations cannot pass the cap. `off` skips; `shadow` only logs. */
+    private fun enforcePetLimit(ownerId: UUID) {
+        if (limitsMode == "off") return
+        petRepository.lockOwner(ownerId)
+        if (petRepository.countActiveByOwnerId(ownerId) < maxPetsPerOwner) return
+        if (limitsMode == "enforce") throw ConflictException("Pet limit reached ($maxPetsPerOwner per owner)")
+        log.warn("pet cap would be exceeded owner={} cap={}", ownerId, maxPetsPerOwner)
     }
 }
 

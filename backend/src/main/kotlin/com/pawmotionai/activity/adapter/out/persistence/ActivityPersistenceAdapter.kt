@@ -6,7 +6,10 @@ import com.pawmotionai.engagement.EngagementService
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.Timestamp
+import com.pawmotionai.activity.application.port.out.WeeklyTotals
+import com.pawmotionai.activity.domain.model.ActivityType
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 @Repository
@@ -48,6 +51,54 @@ class ActivityPersistenceAdapter(
 
     override fun findByOwnerIdOrderByStartedAtDesc(ownerId: UUID): List<Activity> =
         repository.findByOwnerIdOrderByStartedAtDesc(ownerId).map(::toDomain)
+
+    override fun findFiltered(ownerId: UUID, petId: UUID?, from: Instant?, to: Instant?, limit: Int): List<Activity> {
+        val sql = StringBuilder("""
+            SELECT id, owner_id, pet_id, type, started_at, duration_seconds, distance_meters, notes, created_at,
+                   latitude, longitude, share_to_paw_city
+            FROM activities WHERE owner_id = ?""")
+        val args = mutableListOf<Any>(ownerId)
+        if (petId != null) { sql.append(" AND pet_id = ?"); args.add(petId) }
+        if (from != null) { sql.append(" AND started_at >= ?"); args.add(Timestamp.from(from)) }
+        if (to != null) { sql.append(" AND started_at <= ?"); args.add(Timestamp.from(to)) }
+        sql.append(" ORDER BY started_at DESC LIMIT ?")
+        args.add(limit)
+        return jdbcTemplate.query(sql.toString(), { rs, _ ->
+            Activity.reconstitute(
+                rs.getObject("id", UUID::class.java), rs.getObject("owner_id", UUID::class.java),
+                rs.getObject("pet_id", UUID::class.java), ActivityType.valueOf(rs.getString("type")),
+                rs.getTimestamp("started_at").toInstant(), rs.getLong("duration_seconds"),
+                rs.getObject("distance_meters") as Double?, rs.getString("notes"),
+                rs.getTimestamp("created_at").toInstant(),
+                rs.getObject("latitude") as Double?, rs.getObject("longitude") as Double?,
+                rs.getBoolean("share_to_paw_city"))
+        }, *args.toTypedArray())
+    }
+
+    override fun findForInsights(ownerId: UUID, petId: UUID?, from: Instant, limit: Int): WeeklyTotals {
+        val sql = StringBuilder("""
+            SELECT COUNT(*), COALESCE(SUM(distance_meters), 0), COALESCE(SUM(duration_seconds), 0) FROM (
+                SELECT distance_meters, duration_seconds FROM activities
+                WHERE owner_id = ? AND started_at >= ?""")
+        val args = mutableListOf<Any>(ownerId, Timestamp.from(from))
+        if (petId != null) { sql.append(" AND pet_id = ?"); args.add(petId) }
+        sql.append(" ORDER BY started_at DESC LIMIT ?) recent")
+        args.add(limit)
+        return jdbcTemplate.queryForObject(sql.toString(),
+            { rs, _ -> WeeklyTotals(rs.getInt(1), rs.getDouble(2), rs.getLong(3)) }, *args.toTypedArray())!!
+    }
+
+    override fun weeklyTotals(ownerId: UUID, since: Instant): WeeklyTotals =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*), COALESCE(SUM(distance_meters), 0), COALESCE(SUM(duration_seconds), 0) " +
+                "FROM activities WHERE owner_id = ? AND started_at >= ?",
+            { rs, _ -> WeeklyTotals(rs.getInt(1), rs.getDouble(2), rs.getLong(3)) },
+            ownerId, Timestamp.from(since))!!
+
+    override fun activeDays(ownerId: UUID): Set<LocalDate> =
+        jdbcTemplate.query(
+            "SELECT DISTINCT (started_at AT TIME ZONE 'UTC')::date FROM activities WHERE owner_id = ?",
+            { rs, _ -> rs.getObject(1, LocalDate::class.java) }, ownerId).toSet()
 
     private fun toDomain(entity: ActivityJpaEntity): Activity =
         Activity.reconstitute(

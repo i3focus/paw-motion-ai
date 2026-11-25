@@ -7,6 +7,8 @@ import com.pawmotionai.shared.ConflictException
 import com.pawmotionai.shared.NotFoundException
 import com.pawmotionai.shared.PetAccess
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -26,7 +28,13 @@ import kotlin.math.sqrt
  * the owner.
  */
 @Service
-class EngagementService(private val jdbc: JdbcClient, private val petAccess: PetAccess, private val notifier: Notifier) {
+class EngagementService(
+    private val jdbc: JdbcClient,
+    private val petAccess: PetAccess,
+    private val notifier: Notifier,
+    private val env: Environment,
+    @Value("\${app.xp.mode:enforce}") private val xpMode: String,
+) {
 
     private val log = LoggerFactory.getLogger(EngagementService::class.java)
 
@@ -34,6 +42,7 @@ class EngagementService(private val jdbc: JdbcClient, private val petAccess: Pet
         const val XP_POST = 15
         const val XP_CHECK_IN = 10
         const val XP_PLAYDATE = 20
+        const val DEFAULT_DAILY_CAP = 150
 
         fun xpForActivity(distanceMeters: Double?): Int =
             10 + minOf(50, ((distanceMeters ?: 0.0) / 1000.0).toInt() * 5)
@@ -74,13 +83,58 @@ class EngagementService(private val jdbc: JdbcClient, private val petAccess: Pet
         evaluateBadges(petId)
     }
 
+    /**
+     * C6: XP only when the playdate has a participant of another owner (a self-invite earns nothing).
+     * Applies to the organizer (at creation, invites already inserted) and to an accepting invitee.
+     */
     @Transactional(propagation = Propagation.REQUIRED)
     fun recordPlaydate(playdateId: UUID, ownerId: UUID, petId: UUID) {
+        if (xpMode == "enforce" && !hasOtherOwnerParticipant(playdateId, ownerId)) return
         awardXp(petId, ownerId, "PLAYDATE", "playdate:$playdateId:$petId", XP_PLAYDATE, Instant.now())
         evaluateBadges(petId)
     }
 
-    private fun awardXp(petId: UUID, ownerId: UUID, sourceType: String, sourceKey: String, points: Int, occurredAt: Instant) {
+    private fun hasOtherOwnerParticipant(playdateId: UUID, ownerId: UUID): Boolean = jdbc.sql(
+        """
+        SELECT EXISTS (SELECT 1 FROM playdates WHERE id = :pd AND organizer_owner_id <> :owner)
+            OR EXISTS (SELECT 1 FROM playdate_invites WHERE playdate_id = :pd AND invitee_owner_id <> :owner)
+        """,
+    ).param("pd", playdateId).param("owner", ownerId).query(Boolean::class.java).single()
+
+    /** Per-type override, else the default (150). CHALLENGE rewards are admin-defined and uncapped unless overridden. */
+    fun dailyCap(sourceType: String): Int =
+        env.getProperty("app.xp.daily-cap.$sourceType", Int::class.java)
+            ?: if (sourceType == "CHALLENGE") Int.MAX_VALUE
+            else env.getProperty("app.xp.daily-cap.default", Int::class.java) ?: DEFAULT_DAILY_CAP
+
+    /**
+     * Inserts the XP event. C6: the per-(pet, source type, UTC day) total never exceeds the cap; the check runs under a
+     * transaction-scoped advisory lock so concurrent awards serialize. A partial award is granted up to the cap.
+     * `shadow` logs the excess and awards in full; `off` keeps the legacy behavior.
+     */
+    private fun awardXp(petId: UUID, ownerId: UUID, sourceType: String, sourceKey: String, requested: Int, occurredAt: Instant) {
+        var points = requested
+        if (xpMode != "off") {
+            jdbc.sql("SELECT pg_advisory_xact_lock(hashtext(CAST(:pet AS text) || :type))")
+                .param("pet", petId).param("type", sourceType).query().listOfRows()
+            val used = jdbc.sql(
+                """
+                SELECT COALESCE(SUM(points), 0) FROM xp_events
+                WHERE pet_id = :pet AND source_type = :type
+                  AND (occurred_at AT TIME ZONE 'UTC')::date = (CAST(:at AS timestamptz) AT TIME ZONE 'UTC')::date
+                """,
+            ).param("pet", petId).param("type", sourceType).param("at", Timestamp.from(occurredAt)).query(Long::class.java).single()
+            val room = (dailyCap(sourceType) - used).coerceAtLeast(0)
+            if (requested > room) {
+                if (xpMode == "enforce") {
+                    log.info("xp capped pet={} source={} requested={} granted={}", petId, sourceType, requested, room)
+                    if (room == 0L) return
+                    points = room.toInt()
+                } else {
+                    log.warn("xp daily cap would be exceeded pet={} source={} requested={} room={}", petId, sourceType, requested, room)
+                }
+            }
+        }
         val inserted = jdbc.sql(
             """
             INSERT INTO xp_events (id, pet_id, owner_id, source_type, source_key, points, occurred_at)
@@ -262,11 +316,21 @@ class EngagementService(private val jdbc: JdbcClient, private val petAccess: Pet
             if (challengeProgress(ch.metric, petId, ch.startsOn, ch.endsOn) >= ch.targetValue) {
                 jdbc.sql("UPDATE challenge_participants SET completed_at = now() WHERE challenge_id = :c AND pet_id = :pet AND completed_at IS NULL")
                     .param("c", ch.id).param("pet", petId).update()
+                if (rewardAlreadyPaidToOwner(ch.id, ch.ownerId)) return@forEach
                 awardXp(petId, ch.ownerId, "CHALLENGE", "challenge:${ch.id}:$petId", ch.xpReward, Instant.now())
                 notifier.notify(ch.ownerId, NotificationType.CHALLENGE, "Challenge complete", "Your pet finished “${ch.title}” and earned ${ch.xpReward} XP!",
                     mapOf("challengeId" to ch.id.toString(), "petId" to petId.toString()))
             }
         }
+    }
+
+    /** C6: a challenge pays once per owner (not per pet); serialized per (owner, challenge). */
+    private fun rewardAlreadyPaidToOwner(challengeId: UUID, ownerId: UUID): Boolean {
+        if (xpMode != "enforce") return false
+        jdbc.sql("SELECT pg_advisory_xact_lock(hashtext(CAST(:owner AS text) || CAST(:c AS text)))")
+            .param("owner", ownerId).param("c", challengeId).query().listOfRows()
+        return jdbc.sql("SELECT EXISTS (SELECT 1 FROM xp_events WHERE owner_id = :owner AND source_type = 'CHALLENGE' AND source_key LIKE :key)")
+            .param("owner", ownerId).param("key", "challenge:$challengeId:%").query(Boolean::class.java).single()
     }
 
     private data class OngoingChallenge(val id: UUID, val metric: ChallengeMetric, val targetValue: Long, val xpReward: Int, val title: String, val startsOn: LocalDate, val endsOn: LocalDate, val ownerId: UUID)

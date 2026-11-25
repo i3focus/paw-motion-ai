@@ -65,7 +65,8 @@ class ActivityController(
                        @RequestParam(required = false) petId: UUID?,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) from: Instant?,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) to: Instant?,
-    ): List<ActivityResponseDto> = listActivitiesUseCase.listActivities(jwt.ownerId, petId, from, to)
+                       @RequestParam(required = false) limit: Int?,
+    ): List<ActivityResponseDto> = listActivitiesUseCase.listActivities(jwt.ownerId, petId, from, to, limit)
 
     @GetMapping("/dashboard/summary")
     fun dashboardSummary(@AuthenticationPrincipal jwt: Jwt): DashboardSummaryDto =

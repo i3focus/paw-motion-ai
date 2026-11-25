@@ -13,6 +13,10 @@ import jakarta.persistence.IdClass
 import jakarta.persistence.Table
 import jakarta.persistence.Version
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.stereotype.Repository
 import java.io.Serializable
 import java.math.BigDecimal
@@ -117,6 +121,13 @@ class PaymentWebhookEventJpaEntity(
 interface PaymentWebhookEventJpaRepository : JpaRepository<PaymentWebhookEventJpaEntity, PaymentWebhookEventId> {
 
     fun existsByProviderAndProviderEventId(provider: String, providerEventId: String): Boolean
+
+    @Modifying
+    @Query(value = "INSERT INTO payment_webhook_events (provider, provider_event_id, payload_hash, received_at) " +
+        "VALUES (:provider, :eventId, :hash, :receivedAt) ON CONFLICT (provider, provider_event_id) DO NOTHING",
+        nativeQuery = true)
+    fun insertIfAbsent(@Param("provider") provider: String, @Param("eventId") eventId: String,
+                       @Param("hash") hash: String, @Param("receivedAt") receivedAt: Instant): Int
 }
 
 @Repository
@@ -163,8 +174,10 @@ class BillingPersistenceAdapter(
     override fun exists(provider: String, providerEventId: String): Boolean =
         webhookEventRepository.existsByProviderAndProviderEventId(provider, providerEventId)
 
+    @Transactional
     override fun save(provider: String, providerEventId: String, payloadHash: String, receivedAt: Instant) {
-        webhookEventRepository.save(PaymentWebhookEventJpaEntity(provider, providerEventId, payloadHash, receivedAt))
+        // Idempotent by (provider, event id): concurrent redeliveries of one event never fail on the primary key.
+        webhookEventRepository.insertIfAbsent(provider, providerEventId, payloadHash, receivedAt)
     }
 
     private fun toDomain(entity: PaymentTransactionJpaEntity): PaymentTransaction =

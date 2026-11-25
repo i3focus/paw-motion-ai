@@ -11,7 +11,7 @@ interface GetDashboardSummaryUseCase {
 }
 
 interface ListActivitiesUseCase {
-    fun listActivities(ownerId: UUID, petId: UUID?, from: Instant?, to: Instant?): List<ActivityResponseDto>
+    fun listActivities(ownerId: UUID, petId: UUID?, from: Instant?, to: Instant?, limit: Int? = null): List<ActivityResponseDto>
 }
 
 interface RecordActivityUseCase {

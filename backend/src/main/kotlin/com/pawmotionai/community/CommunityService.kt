@@ -5,24 +5,32 @@ import com.pawmotionai.shared.BadRequestException
 import com.pawmotionai.shared.ConflictException
 import com.pawmotionai.shared.ForbiddenException
 import com.pawmotionai.shared.MediaUrls
+import com.pawmotionai.shared.UrlValidation
 import com.pawmotionai.shared.NotFoundException
 import com.pawmotionai.shared.PageRequest
+import com.pawmotionai.shared.OwnerQuotas
 import com.pawmotionai.shared.PageResponse
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.sql.ResultSet
+import java.security.SecureRandom
 import java.sql.Timestamp
 import java.util.UUID
 
 /** Communities by breed, neighborhood and cause, with member-created events and RSVPs. */
 @Service
-class CommunityService(private val jdbc: JdbcClient) {
+class CommunityService(private val jdbc: JdbcClient, private val quotas: OwnerQuotas) {
 
     private val log = LoggerFactory.getLogger(CommunityService::class.java)
 
+    private val secureRandom = SecureRandom()
+
     companion object {
+        private const val MAX_SLUG_SUFFIX_ATTEMPTS = 3
+        private const val SUFFIX_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
         private const val POINT = "ST_SetSRID(ST_MakePoint(CAST(:lng AS float8), CAST(:lat AS float8)), 4326)::geography"
 
         private const val EVENT_SELECT = """
@@ -40,10 +48,12 @@ class CommunityService(private val jdbc: JdbcClient) {
     fun communities(viewerId: UUID, kind: CommunityKind?, query: String?, page: PageRequest): PageResponse<CommunityDto> {
         val rows = jdbc.sql(
             """
-            SELECT c.*, (SELECT COUNT(*) FROM community_members m WHERE m.community_id = c.id) AS members,
+            SELECT c.*, COALESCE(mc.members, 0) AS members,
                    (SELECT COUNT(*) FROM community_events e WHERE e.community_id = c.id AND e.starts_at > now()) AS upcoming,
                    m.role AS my_role
-            FROM communities c LEFT JOIN community_members m ON m.community_id = c.id AND m.owner_id = :viewer
+            FROM communities c
+            LEFT JOIN (SELECT community_id, COUNT(*) AS members FROM community_members GROUP BY community_id) mc ON mc.community_id = c.id
+            LEFT JOIN community_members m ON m.community_id = c.id AND m.owner_id = :viewer
             WHERE (CAST(:kind AS text) IS NULL OR c.kind = :kind)
               AND (CAST(:q AS text) IS NULL OR c.name ILIKE '%' || CAST(:q AS text) || '%' OR c.description ILIKE '%' || CAST(:q AS text) || '%')
             ORDER BY members DESC, c.name LIMIT :limit OFFSET :offset
@@ -56,17 +66,28 @@ class CommunityService(private val jdbc: JdbcClient) {
     @Transactional
     fun create(viewerId: UUID, request: CreateCommunityRequest): CommunityDto {
         if ((request.latitude == null) != (request.longitude == null)) throw BadRequestException("latitude and longitude must be provided together")
+        val coverUrl = UrlValidation.requireHttpUrlOrNull("coverUrl", request.coverUrl)
+        quotas.beforeCreateCommunity(viewerId)
         val id = UUID.randomUUID()
-        val slug = uniqueSlug(request.name!!)
-        jdbc.sql(
+        val name = request.name!!.trim()
+        val insert = jdbc.sql(
             """
             INSERT INTO communities (id, slug, name, kind, description, cover_url, location, created_by, created_at)
             VALUES (:id, :slug, :name, :kind, :description, :cover,
                     CASE WHEN CAST(:lat AS float8) IS NULL THEN NULL ELSE $POINT END, :creator, now())
+            ON CONFLICT (slug) DO NOTHING
             """,
-        ).param("id", id).param("slug", slug).param("name", request.name.trim()).param("kind", request.kind!!.name)
-            .param("description", request.description?.trim()?.ifEmpty { null }).param("cover", request.coverUrl?.trim()?.ifEmpty { null })
-            .param("lat", request.latitude).param("lng", request.longitude).param("creator", viewerId).update()
+        ).param("id", id).param("name", name).param("kind", request.kind!!.name)
+            .param("description", request.description?.trim()?.ifEmpty { null }).param("cover", coverUrl)
+            .param("lat", request.latitude).param("lng", request.longitude).param("creator", viewerId)
+        // ON CONFLICT keeps the transaction usable after a slug collision (a raised unique violation would abort it in Postgres).
+        // DuplicateKeyException can still come from another unique constraint and is reported as 409.
+        val inserted = try {
+            slugCandidates(name).any { slug -> insert.param("slug", slug).update() == 1 }
+        } catch (e: DuplicateKeyException) {
+            throw ConflictException("Could not create the community, please try again")
+        }
+        if (!inserted) throw ConflictException("Could not allocate a unique slug for this community, please try again")
         jdbc.sql("INSERT INTO community_members (community_id, owner_id, role, joined_at) VALUES (:c, :owner, 'MODERATOR', now())")
             .param("c", id).param("owner", viewerId).update()
         log.info("community created community={} by={}", id, viewerId)
@@ -124,6 +145,7 @@ class CommunityService(private val jdbc: JdbcClient) {
         if ((request.latitude == null) != (request.longitude == null)) throw BadRequestException("latitude and longitude must be provided together")
         if (request.startsAt!!.isBefore(java.time.Instant.now().minusSeconds(300))) throw BadRequestException("startsAt must be in the future")
         if (request.endsAt != null && request.endsAt.isBefore(request.startsAt)) throw BadRequestException("endsAt must be after startsAt")
+        quotas.beforeCreateEvent(viewerId)
         val id = UUID.randomUUID()
         jdbc.sql(
             """
@@ -145,11 +167,14 @@ class CommunityService(private val jdbc: JdbcClient) {
 
     @Transactional
     fun rsvp(viewerId: UUID, eventId: UUID, status: RsvpStatus?): CommunityEventDto {
+        // status == null withdraws the caller's RSVP (N8); idempotent when there is none.
         val event = eventOrThrow(eventId)
         if (status == null) {
             jdbc.sql("DELETE FROM event_rsvps WHERE event_id = :event AND owner_id = :owner").param("event", eventId).param("owner", viewerId).update()
         } else {
             if (status == RsvpStatus.GOING && event.capacity != null) {
+                // N7: the event row lock serializes concurrent GOING requests, so the count below cannot be stale.
+                jdbc.sql("SELECT id FROM community_events WHERE id = :event FOR UPDATE").param("event", eventId).query(UUID::class.java).optional()
                 val going = jdbc.sql("SELECT COUNT(*) FROM event_rsvps WHERE event_id = :event AND status = 'GOING'")
                     .param("event", eventId).query(Long::class.java).single()
                 val already = jdbc.sql("SELECT COUNT(*) FROM event_rsvps WHERE event_id = :event AND owner_id = :owner AND status = 'GOING'")
@@ -225,15 +250,14 @@ class CommunityService(private val jdbc: JdbcClient) {
         jdbc.sql("$EVENT_SELECT WHERE e.id = :id").param("id", eventId).param("viewer", UUID(0, 0))
             .query { rs, _ -> event(rs) }.optional().orElseThrow { NotFoundException("Event not found") }
 
-    private fun uniqueSlug(name: String): String {
+    /** The plain slug first, then at most [MAX_SLUG_SUFFIX_ATTEMPTS] random short suffixes. Lazy: no query per candidate. */
+    private fun slugCandidates(name: String): Sequence<String> {
         val base = name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-').ifEmpty { "community" }.take(60)
-        var slug = base
-        var suffix = 2
-        while (jdbc.sql("SELECT COUNT(*) FROM communities WHERE slug = :slug").param("slug", slug).query(Long::class.java).single() > 0) {
-            slug = "$base-${suffix++}"
-        }
-        return slug
+        return sequenceOf(base) + generateSequence { "$base-${randomSuffix()}" }.take(MAX_SLUG_SUFFIX_ATTEMPTS)
     }
+
+    private fun randomSuffix(): String =
+        (1..4).map { SUFFIX_ALPHABET[secureRandom.nextInt(SUFFIX_ALPHABET.length)] }.joinToString("")
 
     private fun community(rs: ResultSet) = CommunityDto(
         rs.getObject("id", UUID::class.java), rs.getString("slug"), rs.getString("name"), CommunityKind.valueOf(rs.getString("kind")),

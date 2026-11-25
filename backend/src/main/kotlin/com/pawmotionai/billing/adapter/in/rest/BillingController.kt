@@ -10,6 +10,7 @@ import com.pawmotionai.billing.application.port.`in`.ListPurchasesUseCase
 import com.pawmotionai.billing.application.usecase.PaymentLifecycleService
 import com.pawmotionai.billing.domain.model.PaymentStatus
 import com.pawmotionai.configuration.BillingProperties
+import com.pawmotionai.shared.NotFoundException
 import com.pawmotionai.shared.SecurityRoles
 import jakarta.validation.Valid
 import jakarta.validation.constraints.DecimalMin
@@ -71,8 +72,8 @@ class BillingController(
     @PostMapping("/purchases/{transactionId}/fake-complete")
     fun completeFakePurchase(@AuthenticationPrincipal jwt: Jwt,
                              @PathVariable transactionId: UUID): PaymentTransactionResponseDto {
-        if (!billingProperties.provider.equals("fake", ignoreCase = true)) {
-            throw IllegalStateException("Fake checkout is only available when PAYMENT_PROVIDER=fake")
+        if (!billingProperties.fakeCompleteEnabled || !billingProperties.provider.equals("fake", ignoreCase = true)) {
+            throw NotFoundException("Not found")
         }
         val partnerId = UUID.fromString(jwt.subject)
         val purchase = getPurchaseUseCase.getByPartner(partnerId, transactionId)

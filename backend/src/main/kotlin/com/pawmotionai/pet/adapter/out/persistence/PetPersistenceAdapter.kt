@@ -24,6 +24,12 @@ class PetPersistenceAdapter(private val repository: PetJpaRepository) : PetRepos
         return toDomain(repository.save(entity))
     }
 
+    override fun lockOwner(ownerId: UUID) {
+        repository.lockOwner(ownerId)
+    }
+
+    override fun countActiveByOwnerId(ownerId: UUID): Long = repository.countActiveByOwnerId(ownerId)
+
     override fun findById(id: UUID): Pet? = repository.findById(id).map(::toDomain).orElse(null)
 
     override fun findByOwnerIdOrderByCreatedAtDesc(ownerId: UUID): List<Pet> =

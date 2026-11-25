@@ -19,7 +19,10 @@ class WelcomeEmailServiceTest {
 
     private val failingSender = EmailSenderPort { throw EmailSendException("provider down") }
 
-    private fun service(sender: EmailSenderPort) = WelcomeEmailService(WelcomeEmailTemplates(MailProperties()), sender)
+    private val inlineDispatcher = object : PostCommitDispatcher() {
+        override fun afterCommit(task: Runnable) = task.run()
+    }
+    private fun service(sender: EmailSenderPort) = WelcomeEmailService(WelcomeEmailTemplates(MailProperties()), sender, inlineDispatcher)
 
     @Test
     fun sendsRenderedTutorEmailToTheRegisteredAddress() {
