@@ -59,7 +59,7 @@ class SecurityConfiguration {
     }
 
     @Bean
-    fun jwtDecoder(@Value("\${app.security.jwt.secret}") secret: String): JwtDecoder {
+    fun jwtDecoder(@Value("\${app.security.jwt.secret}") secret: String, startupSecurityValidator: StartupSecurityValidator): JwtDecoder {
         val key = SecretKeySpec(secret.toByteArray(StandardCharsets.UTF_8), "HmacSHA256")
         return NimbusJwtDecoder.withSecretKey(key).build()
     }
