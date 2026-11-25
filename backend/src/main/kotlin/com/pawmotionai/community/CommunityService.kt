@@ -9,10 +9,12 @@ import com.pawmotionai.shared.NotFoundException
 import com.pawmotionai.shared.PageRequest
 import com.pawmotionai.shared.PageResponse
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.sql.ResultSet
+import java.security.SecureRandom
 import java.sql.Timestamp
 import java.util.UUID
 
@@ -22,7 +24,11 @@ class CommunityService(private val jdbc: JdbcClient) {
 
     private val log = LoggerFactory.getLogger(CommunityService::class.java)
 
+    private val secureRandom = SecureRandom()
+
     companion object {
+        private const val MAX_SLUG_SUFFIX_ATTEMPTS = 3
+        private const val SUFFIX_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
         private const val POINT = "ST_SetSRID(ST_MakePoint(CAST(:lng AS float8), CAST(:lat AS float8)), 4326)::geography"
 
         private const val EVENT_SELECT = """
@@ -57,16 +63,25 @@ class CommunityService(private val jdbc: JdbcClient) {
     fun create(viewerId: UUID, request: CreateCommunityRequest): CommunityDto {
         if ((request.latitude == null) != (request.longitude == null)) throw BadRequestException("latitude and longitude must be provided together")
         val id = UUID.randomUUID()
-        val slug = uniqueSlug(request.name!!)
-        jdbc.sql(
+        val name = request.name!!.trim()
+        val insert = jdbc.sql(
             """
             INSERT INTO communities (id, slug, name, kind, description, cover_url, location, created_by, created_at)
             VALUES (:id, :slug, :name, :kind, :description, :cover,
                     CASE WHEN CAST(:lat AS float8) IS NULL THEN NULL ELSE $POINT END, :creator, now())
+            ON CONFLICT (slug) DO NOTHING
             """,
-        ).param("id", id).param("slug", slug).param("name", request.name.trim()).param("kind", request.kind!!.name)
+        ).param("id", id).param("name", name).param("kind", request.kind!!.name)
             .param("description", request.description?.trim()?.ifEmpty { null }).param("cover", request.coverUrl?.trim()?.ifEmpty { null })
-            .param("lat", request.latitude).param("lng", request.longitude).param("creator", viewerId).update()
+            .param("lat", request.latitude).param("lng", request.longitude).param("creator", viewerId)
+        // ON CONFLICT keeps the transaction usable after a slug collision (a raised unique violation would abort it in Postgres).
+        // DuplicateKeyException can still come from another unique constraint and is reported as 409.
+        val inserted = try {
+            slugCandidates(name).any { slug -> insert.param("slug", slug).update() == 1 }
+        } catch (e: DuplicateKeyException) {
+            throw ConflictException("Could not create the community, please try again")
+        }
+        if (!inserted) throw ConflictException("Could not allocate a unique slug for this community, please try again")
         jdbc.sql("INSERT INTO community_members (community_id, owner_id, role, joined_at) VALUES (:c, :owner, 'MODERATOR', now())")
             .param("c", id).param("owner", viewerId).update()
         log.info("community created community={} by={}", id, viewerId)
@@ -225,15 +240,14 @@ class CommunityService(private val jdbc: JdbcClient) {
         jdbc.sql("$EVENT_SELECT WHERE e.id = :id").param("id", eventId).param("viewer", UUID(0, 0))
             .query { rs, _ -> event(rs) }.optional().orElseThrow { NotFoundException("Event not found") }
 
-    private fun uniqueSlug(name: String): String {
+    /** The plain slug first, then at most [MAX_SLUG_SUFFIX_ATTEMPTS] random short suffixes. Lazy: no query per candidate. */
+    private fun slugCandidates(name: String): Sequence<String> {
         val base = name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-').ifEmpty { "community" }.take(60)
-        var slug = base
-        var suffix = 2
-        while (jdbc.sql("SELECT COUNT(*) FROM communities WHERE slug = :slug").param("slug", slug).query(Long::class.java).single() > 0) {
-            slug = "$base-${suffix++}"
-        }
-        return slug
+        return sequenceOf(base) + generateSequence { "$base-${randomSuffix()}" }.take(MAX_SLUG_SUFFIX_ATTEMPTS)
     }
+
+    private fun randomSuffix(): String =
+        (1..4).map { SUFFIX_ALPHABET[secureRandom.nextInt(SUFFIX_ALPHABET.length)] }.joinToString("")
 
     private fun community(rs: ResultSet) = CommunityDto(
         rs.getObject("id", UUID::class.java), rs.getString("slug"), rs.getString("name"), CommunityKind.valueOf(rs.getString("kind")),
