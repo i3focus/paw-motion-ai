@@ -50,3 +50,9 @@ Cada convite aceita uma única resposta, sem troca posterior.
 - **Objetos de mídia por dono**: o limite de 50 continua provisório (só bytes foram decididos).
 - **N1-N16**: não são achados confirmados. Seguem como trilhas de validação e só viram correção após confirmação.
 - **N13 (PR 2d, validação pendente)**: aplicado como fix defensivo sem staging. Pendente (tarefa 11.3): confirmar o caminho até `backend:8080`, a cadeia `X-Forwarded-For` real e fixar `TRUSTED_PROXIES` só com os proxies reais (o default ainda lista ranges privados amplos e não foi alterado). Se o proxy real estiver fora de `TRUSTED_PROXIES`, todos os clientes compartilham a chave do proxy. Rollback: restaurar `TRUSTED_PROXIES` ou reverter o PR.
+
+## PR 4b (C10): mídia
+- Quota por dono: 5 GB (`MEDIA_MAX_BYTES_PER_OWNER`) e 50 objetos provisórios (`MEDIA_MAX_OBJECTS_PER_OWNER`), modo `MEDIA_MODE=enforce|shadow|off` (padrão `enforce`, 409 acima da quota).
+- Exclusão de arquivo: gatilho no banco enfileira em `media_deletions` na mesma transação que remove a linha; `MediaDeletionOutbox` apaga o arquivo depois do commit (`MEDIA_DELETION_ENABLED=false` volta ao comportamento legado).
+- Varredura de órfãos: só dry-run (`MEDIA_ORPHAN_SWEEP_ENABLED`, padrão `false`), métrica `media.orphans{kind=file|row}`; nunca apaga.
+- Volume: o compose agora monta `media-data` em `/app/data/media`, separado de `postgres-data`. Deploy em que os arquivos estão na camada do container (sem volume): antes do `up`, copiar `docker cp pawmotion-backend:/app/data/media/. <destino>` e restaurar no volume (`docker run --rm -v paw-motion-ai_media-data:/dst -v <destino>:/src alpine cp -a /src/. /dst/`). Nada é apagado. Quem já usa `media-data` (docs/deploy-hostinger.md) não precisa migrar.
