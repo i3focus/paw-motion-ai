@@ -36,10 +36,14 @@ class SecurityConfiguration {
                             @Value("\${app.security.trusted-proxies}") trustedProxies: String,
                             @Value("\${app.rate-limit.mode:shadow}") rateLimitMode: String,
                             @Value("\${app.rate-limit.webhook-per-minute:600}") webhookPerMinute: Int,
+                            @Value("\${app.rate-limit.read.mode:enforce}") readMode: String,
+                            @Value("\${app.rate-limit.read.per-minute:600}") readPerMinute: Int,
+                            @Value("\${app.rate-limit.read.costly-per-minute:240}") readCostlyPerMinute: Int,
                             meterRegistry: ObjectProvider<MeterRegistry>): SecurityFilterChain {
         val clientIpResolver = ClientIpResolver(trustedProxies)
         val registry = meterRegistry.getIfAvailable()
         val settings = RateLimitSettings(RateLimitSettings.Mode.parse(rateLimitMode), webhookPerMinute)
+        val readSettings = ReadLimitSettings(RateLimitSettings.Mode.parse(readMode), readPerMinute, readCostlyPerMinute)
         return http
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource) }
@@ -52,6 +56,7 @@ class SecurityConfiguration {
             }
             .addFilterBefore(AuthRateLimitFilter(clientIpResolver, registry), BearerTokenAuthenticationFilter::class.java)
             .addFilterAfter(WriteRateLimitFilter(clientIpResolver, settings, registry), BearerTokenAuthenticationFilter::class.java)
+            .addFilterAfter(ReadRateLimitFilter(clientIpResolver, readSettings, registry), BearerTokenAuthenticationFilter::class.java)
             .addFilterAfter(ActiveAccountFilter(ownerRepository), BearerTokenAuthenticationFilter::class.java)
             .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()) } }
             .build()
