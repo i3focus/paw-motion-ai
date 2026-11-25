@@ -29,7 +29,7 @@ Os limites numéricos usados como limiar estão em `ProvisionalLimits` e seguem 
 
 | Lote | Arquivo (`backend/src/test/kotlin/com/pawmotionai/exploratory/`) | Achados |
 |---|---|---|
-| 0 | `Lote0ExploratoryTest.kt` | C1, C2, C20 |
+| 0 | `Lote0ExploratoryTest.kt` (C20 e `.env.example`, PRs 0b/0c), `Lote0StartupValidatorTest.kt` e `Lote0FakeCompleteExploratoryIT` (C1, C2 corrigidos no PR 0a, sem a tag `@Exploratory`, rodam no `./gradlew test`) | C1, C2, C20 |
 | 1 | `Lote1ExploratoryIT.kt` | C15, C7, C19, C4 |
 | 2 | `Lote2ExploratoryTest.kt`, `Lote2ExploratoryIT.kt` | C25, C26, C14, C16, C17, N13 |
 | 3 | `Lote3ExploratoryIT.kt` | C24, C9, C8, C18, C23 |

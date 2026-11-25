@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { completeFakePurchase } from '../api/client';
+import { ApiError, completeFakePurchase } from '../api/client';
 import { Button, Card, ErrorMessage } from '../components/ui';
 
 type Status = 'loading' | 'success' | 'error';
@@ -19,6 +19,10 @@ export function PartnerFakeCheckoutPage() {
       .then(() => setStatus('success'))
       .catch((caught) => {
         setStatus('error');
+        if (caught instanceof ApiError && caught.status === 404) {
+          setMessage('Fake checkout is not available in this environment.');
+          return;
+        }
         setMessage(caught instanceof Error ? caught.message : 'Unable to complete fake payment');
       });
   }, [transactionId]);
