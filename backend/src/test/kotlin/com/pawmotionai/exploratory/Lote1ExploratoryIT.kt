@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 /** Lote 1 (C15, C7, C19, C4): authorization and moderation. Spec: security-audit-remediation, task 1. */
-@Exploratory
 class Lote1ExploratoryIT : ExploratoryApiTest() {
 
     /** C15: a JWT claiming ADMIN for an account whose database role is OWNER must not open /api/admin/.... */
@@ -29,6 +28,7 @@ class Lote1ExploratoryIT : ExploratoryApiTest() {
     }
 
     /** C7: user C outside the visibility scope must get 404 on react, unreact, list and create comments. */
+    @Exploratory
     @Test
     fun `C7 feed item outside the viewer scope is 404 on react unreact comments and comment`() {
         val a = registerOwner("Ana")
@@ -54,6 +54,7 @@ class Lote1ExploratoryIT : ExploratoryApiTest() {
     }
 
     /** C19: a third party must not see notes or counts of activities that were not shared. */
+    @Exploratory
     @Test
     fun `C19 adventures and profile of another owner hide non-shared activities`() {
         val a = registerOwner("Ana")
@@ -71,6 +72,7 @@ class Lote1ExploratoryIT : ExploratoryApiTest() {
     }
 
     /** C4: approve, pause, edit ctaUrl, resume must not leave the campaign ACTIVE without a new review. */
+    @Exploratory
     @Test
     fun `C4 campaign edited while paused is not ACTIVE after resume`() {
         val partner = registerOwner("Spa", role = "PARTNER")
