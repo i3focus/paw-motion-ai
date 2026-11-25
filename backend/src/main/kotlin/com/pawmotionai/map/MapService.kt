@@ -14,11 +14,13 @@ import com.pawmotionai.shared.PageRequest
 import com.pawmotionai.shared.PageResponse
 import com.pawmotionai.shared.PetAccess
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.sql.ResultSet
 import java.sql.Timestamp
+import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 
@@ -29,6 +31,9 @@ class MapService(
     private val media: MediaService,
     private val engagement: EngagementService,
     private val notifier: Notifier,
+    @Value("\${app.playdate.invite-mode:enforce}") private val inviteMode: String,
+    @Value("\${app.playdate.invite-dedup-window:24h}") private val inviteDedupWindow: Duration,
+    @Value("\${app.playdate.max-invite-notifications-per-day:50}") private val maxInviteNotificationsPerDay: Int,
 ) {
 
     private val log = LoggerFactory.getLogger(MapService::class.java)
@@ -158,6 +163,7 @@ class MapService(
         }
         val invitees = request.inviteePetIds.orEmpty().distinct().filter { it != petId }
         petAccess.requireActivePets(invitees)
+        val notifyInvitee = inviteNotifyDecisions(ownerId, invitees)
         val id = UUID.randomUUID()
         jdbc.sql(
             """
@@ -171,20 +177,61 @@ class MapService(
             .param("mode", request.mode.name).param("starts", Timestamp.from(startsAt)).param("message", request.message?.trim()?.ifEmpty { null })
             .update()
         invitees.forEach { invitee ->
+            val inviteeOwner = jdbc.sql("SELECT owner_id FROM pets WHERE id = :pet").param("pet", invitee).query(UUID::class.java).optional().orElse(null)
+                ?: return@forEach
+            val notify = notifyInvitee[invitee] == true
             jdbc.sql(
                 """
-                INSERT INTO playdate_invites (id, playdate_id, invitee_pet_id, invitee_owner_id, status, created_at)
-                SELECT :id, :playdate, p.id, p.owner_id, 'PENDING', now() FROM pets p WHERE p.id = :pet
+                INSERT INTO playdate_invites (id, playdate_id, invitee_pet_id, invitee_owner_id, status, notified, created_at)
+                VALUES (:id, :playdate, :pet, :owner, 'PENDING', :notified, now())
                 """,
-            ).param("id", UUID.randomUUID()).param("playdate", id).param("pet", invitee).update()
-            jdbc.sql("SELECT owner_id FROM pets WHERE id = :pet").param("pet", invitee).query(UUID::class.java).optional()
-                .ifPresent { inviteeOwner ->
-                    notifier.notify(inviteeOwner, NotificationType.PLAYDATE, "Playdate invite",
-                        request.message?.take(120) ?: "You were invited to a playdate.", mapOf("playdateId" to id.toString()))
-                }
+            ).param("id", UUID.randomUUID()).param("playdate", id).param("pet", invitee).param("owner", inviteeOwner).param("notified", notify).update()
+            if (notify) {
+                notifier.notify(inviteeOwner, NotificationType.PLAYDATE, "Playdate invite",
+                    request.message?.take(120) ?: "You were invited to a playdate.", mapOf("playdateId" to id.toString()))
+            }
         }
         engagement.recordPlaydate(id, ownerId, petId)
         return playdate(id)
+    }
+
+    /**
+     * C9: decides which invitee pets generate a notification. Skips the organizer's own pets, owners already notified by
+     * this organizer inside [inviteDedupWindow], and repeated owners in the same request. Enforces the daily cap (409).
+     * Serialized per organizer so concurrent requests cannot overshoot the cap. `off` keeps the legacy behavior.
+     */
+    private fun inviteNotifyDecisions(organizerId: UUID, invitees: List<UUID>): Map<UUID, Boolean> {
+        if (inviteMode == "off" || invitees.isEmpty()) return invitees.associateWith { true }
+        jdbc.sql("SELECT id FROM owners WHERE id = :id FOR UPDATE").param("id", organizerId).query(UUID::class.java).optional()
+        val owners = invitees.associateWith { pet ->
+            jdbc.sql("SELECT owner_id FROM pets WHERE id = :pet").param("pet", pet).query(UUID::class.java).optional().orElse(null)
+        }
+        val recent = jdbc.sql(
+            """
+            SELECT DISTINCT i.invitee_owner_id FROM playdate_invites i JOIN playdates d ON d.id = i.playdate_id
+            WHERE d.organizer_owner_id = :organizer AND i.notified AND i.created_at > :since
+            """,
+        ).param("organizer", organizerId).param("since", Timestamp.from(Instant.now().minus(inviteDedupWindow)))
+            .query(UUID::class.java).list().toSet()
+        val seen = HashSet<UUID>()
+        val decisions = invitees.associateWith { pet ->
+            val owner = owners[pet]
+            owner != null && owner != organizerId && owner !in recent && seen.add(owner)
+        }
+        val toNotify = decisions.count { it.value }
+        if (toNotify > 0) {
+            val today = jdbc.sql(
+                """
+                SELECT COUNT(*) FROM playdate_invites i JOIN playdates d ON d.id = i.playdate_id
+                WHERE d.organizer_owner_id = :organizer AND i.notified AND i.created_at > now() - interval '1 day'
+                """,
+            ).param("organizer", organizerId).query(Long::class.java).single()
+            if (today + toNotify > maxInviteNotificationsPerDay) {
+                if (inviteMode == "enforce") throw ConflictException("Daily playdate invite limit reached")
+                log.warn("playdate invite cap would be exceeded organizer={} today={} adding={}", organizerId, today, toNotify)
+            }
+        }
+        return if (inviteMode == "enforce") decisions else invitees.associateWith { true }
     }
 
     @Transactional
