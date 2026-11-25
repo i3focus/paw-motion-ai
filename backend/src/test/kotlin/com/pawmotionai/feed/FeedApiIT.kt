@@ -29,6 +29,9 @@ class FeedApiIT : ApiIntegrationTest() {
     @Test
     fun `feed pages interleave sponsored cards and typed reactions round-trip`() {
         val ana = registerOwner("Ana")
+        // The feed is global for viewers without location, and the suite shares one database: scope both owners to a
+        // unique neighborhood so items from other test classes cannot outrank the ones seeded here.
+        val neighborhood = "feed-it-${UUID.randomUUID()}"
         val petId = createPet(ana)
         repeat(12) { shareActivity(ana, petId, it.toLong() + 1) }
         val partner = registerOwner("Spa", role = "PARTNER")
@@ -37,6 +40,7 @@ class FeedApiIT : ApiIntegrationTest() {
         activeCampaign(partner, "Cats only", species = "{CAT}")
 
         val viewer = registerOwner("Bia")
+        jdbc.update("UPDATE owners SET neighborhood = ? WHERE id IN (?, ?)", neighborhood, ana.ownerId, viewer.ownerId)
         val page = expect(200, call("GET", "/api/feed?size=10", viewer.token))
         val types = page["items"].elements().map { it["type"].asString() }
 
