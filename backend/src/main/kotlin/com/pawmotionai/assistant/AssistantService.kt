@@ -9,13 +9,13 @@ import com.pawmotionai.health.HealthService
 import com.pawmotionai.map.CreatePlaydateRequest
 import com.pawmotionai.map.MapService
 import com.pawmotionai.map.PlaydateMode
+import com.pawmotionai.shared.AiQuota
 import com.pawmotionai.shared.ConflictException
 import com.pawmotionai.shared.ForbiddenException
 import com.pawmotionai.shared.NotFoundException
 import com.pawmotionai.shared.PageRequest
 import com.pawmotionai.shared.PageResponse
 import com.pawmotionai.shared.PetAccess
-import com.pawmotionai.shared.QuotaExceededException
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Service
@@ -38,11 +38,12 @@ class AssistantService(
     private val bookings: BookingService,
     private val health: HealthService,
     private val map: MapService,
+    private val aiQuota: AiQuota,
 ) {
     private val log = LoggerFactory.getLogger(AssistantService::class.java)
 
     companion object {
-        const val FREE_MONTHLY_MESSAGES = 10
+        const val FREE_MONTHLY_MESSAGES = AiQuota.FREE_MONTHLY_MESSAGES
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +87,7 @@ class AssistantService(
     @Transactional
     fun send(ownerId: UUID, conversationId: UUID, content: String): SendMessageResponse {
         val petId = requireConversation(ownerId, conversationId)
-        consumeQuota(ownerId)
+        aiQuota.consume(ownerId)
         val text = content.trim()
         val userMessageId = insertMessage(conversationId, "USER", text, null, null)
         data class Pet(val name: String, val species: String)
@@ -169,16 +170,6 @@ class AssistantService(
     ).param("owner", ownerId).param("species", species).query { rs, _ ->
         ServiceOffer(rs.getObject(1, UUID::class.java), rs.getString(2), rs.getString(3), rs.getLong(4), rs.getBoolean(5), rs.getObject(6, UUID::class.java))
     }.list()
-
-    private fun consumeQuota(ownerId: UUID) {
-        val usage = usage(ownerId)
-        if (usage.limit != null && usage.used >= usage.limit) {
-            throw QuotaExceededException("Free plan includes ${usage.limit} assistant messages per month. Upgrade to Premium for unlimited messages.")
-        }
-        jdbc.sql(
-            "INSERT INTO ai_usage (owner_id, period, messages) VALUES (:owner, :period, 1) ON CONFLICT (owner_id, period) DO UPDATE SET messages = ai_usage.messages + 1",
-        ).param("owner", ownerId).param("period", YearMonth.now(ZoneOffset.UTC).toString()).update()
-    }
 
     private fun recordImpression(campaignId: UUID, ownerId: UUID) {
         val viewer = MessageDigest.getInstance("SHA-256").digest(ownerId.toString().toByteArray()).joinToString("") { "%02x".format(it) }
