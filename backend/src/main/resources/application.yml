@@ -66,6 +66,8 @@ app:
     duration-days: ${CAMPAIGN_DURATION_DAYS:30}
   admin:
     emails: ${ADMIN_EMAILS:}
+    bootstrap-enabled: ${ADMIN_BOOTSTRAP_ENABLED:false}
+    reconcile: ${ADMIN_RECONCILE:false}
   push:
     expo:
       enabled: ${EXPO_PUSH_ENABLED:false}
