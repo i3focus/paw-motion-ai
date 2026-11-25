@@ -98,10 +98,11 @@ CORS_ALLOWED_ORIGINS=https://app.example.com
 PARTNER_PORTAL_BASE_URL=https://app.example.com/partner
 APP_BASE_URL=https://app.example.com
 
-# --- Proxy trust: requests reach the backend only via the frontend nginx on the
-#     compose network (172.18.0.0/16 default) and Caddy in front of it. ---
-TRUSTED_PROXY_CIDRS=172.16.0.0/12
-TRUSTED_PROXIES=172.16.0.0/12
+# --- Proxy trust: use fixed /32 IPs, never wide ranges (see
+#     docs/security/hostinger-deploy-checklist.md). nginx trusts only Caddy;
+#     backend trusts only the frontend nginx. ---
+TRUSTED_PROXY_CIDRS=172.28.0.2/32
+TRUSTED_PROXIES=172.28.0.10/32
 
 # --- Payments: REAL provider for production ---
 PAYMENT_PROVIDER=abacatepay
