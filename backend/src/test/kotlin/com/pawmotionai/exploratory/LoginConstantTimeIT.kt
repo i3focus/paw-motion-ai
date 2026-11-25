@@ -8,12 +8,15 @@ import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.mockingDetails
 import org.mockito.Mockito.verify
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.util.UUID
 import kotlin.test.assertEquals
 
-/** Lote 6 (C27): authentication timing oracle. Spec: security-audit-remediation, task 1. */
-@Exploratory
-class Lote6ExploratoryIT : ExploratoryApiTest() {
+/** PR 6b (C27): every rejected login compares a password hash (dummy when needed). Validates: Requirements 2.25, 3.11. */
+class LoginConstantTimeIT : ExploratoryApiTest() {
 
     @MockitoSpyBean
     private lateinit var passwordHasher: PasswordHasher
@@ -27,9 +30,24 @@ class Lote6ExploratoryIT : ExploratoryApiTest() {
         return email
     }
 
+    private val loginHttp: HttpClient = HttpClient.newHttpClient()
+    private var nextClient = 0
+
+    /** Each attempt comes from a distinct client IP (loopback is a trusted proxy), so the 10/min auth limiter does not mask the result. */
+    private fun login(path: String, email: String): Response {
+        val body = mapper.writeValueAsString(mapOf("email" to email, "password" to "Wrong-password-1!"))
+        val request = HttpRequest.newBuilder(URI.create("http://localhost:${environment.getProperty("local.server.port")}$path"))
+            .header("Content-Type", "application/json")
+            .header("X-Forwarded-For", "203.0.113.${(++nextClient % 250) + 1}")
+            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .build()
+        val response = loginHttp.send(request, HttpResponse.BodyHandlers.ofString())
+        return Response(response.statusCode(), response.body())
+    }
+
     private fun hashChecks(path: String, email: String): Pair<Int, Int> {
         clearInvocations(passwordHasher)
-        val response = call("POST", path, null, mapOf("email" to email, "password" to "Wrong-password-1!"))
+        val response = login(path, email)
         val checks = mockingDetails(passwordHasher).invocations.count { it.method.name == "matches" }
         return response.status to checks
     }
@@ -66,7 +84,7 @@ class Lote6ExploratoryIT : ExploratoryApiTest() {
         call("POST", "/api/auth/register", null, mapOf("email" to registered, "password" to "Correct-horse-1!", "displayName" to "Timing"))
         fun median(email: String): Long = (1..3).map {
             val started = System.nanoTime()
-            call("POST", "/api/auth/login", null, mapOf("email" to email, "password" to "Wrong-password-1!"))
+            login("/api/auth/login", email)
             (System.nanoTime() - started) / 1_000_000
         }.sorted()[1]
         println("C27 timing diagnostic: absent=${median("absent-${UUID.randomUUID()}@example.com")}ms wrongPassword=${median(registered)}ms")
