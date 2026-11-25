@@ -14,7 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder
 
 /**
- * Lote 2 (C17, N13; C16, C25, C26 and C14 moved to configuration/EdgeLimitsTest): edge limits, exercised directly against the filters (follows the model of
+ * Lote 2 (N13; C16, C17, C25, C26 and C14 moved to configuration tests/ReadLimitsTest/EdgeLimitsTest/InsightsQuotaIT): edge limits, exercised directly against the filters (follows the model of
  * AuthRateLimitFilterTest). The filters receive the RAW request URI, like a servlet container delivers it.
  */
 @Exploratory
@@ -36,16 +36,6 @@ class Lote2ExploratoryTest {
 
     private fun authenticateAs(name: String) {
         SecurityContextHolder.getContext().authentication = UsernamePasswordAuthenticationToken(name, null, emptyList())
-    }
-
-    // ---------------- C16 / C17 ----------------
-
-    @Test
-    fun `C17 insights share the 30 per minute AI bucket`() {
-        val filter = WriteRateLimitFilter()
-        authenticateAs("owner-c17")
-        val statuses = (1..40).map { send(filter, "POST", "/api/insights") }
-        assertEquals(429, statuses.last(), "Counterexample C17: 40 POST /api/insights in one minute -> statuses ${statuses.groupingBy { it }.eachCount()}")
     }
 
     // ---------------- N13 ----------------
