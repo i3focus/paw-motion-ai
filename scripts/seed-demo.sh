@@ -13,12 +13,19 @@
 # Note: the backend rate-limits auth endpoints to 10 requests/minute per IP —
 # the script waits out 429s, so a fresh 100-owner run takes ~10-15 minutes.
 #
+# Safety guards (run before any network call):
+#   SEED_ALLOW_LOCAL=1   required, explicit opt-in to seed at all.
+#   SEED_ALLOW_REMOTE=1  required when API_BASE_URL host is not localhost/127.0.0.1/::1.
+#   SEED_PASSWORD        password for the seeded accounts. When unset, a random one is
+#                        generated and saved in a 0600 file outside the repository
+#                        (SEED_PASSWORD_FILE, default ~/.local/state/paw-motion/seed-password).
+#   POSTGRES_PASSWORD    required, no fallback.
+#
 # Tunables: OWNER_COUNT (default 100), API_BASE_URL, DB_CONTAINER,
 #           POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD.
 set -euo pipefail
 
 API="${API_BASE_URL:-http://localhost:8080}"
-PASSWORD='PetLife123!'
 DB_CONTAINER="${DB_CONTAINER:-pawmotion-postgres}"
 DB_NAME="${POSTGRES_DB:-pawmotion}"
 DB_USER="${POSTGRES_USER:-pawmotion}"
@@ -30,6 +37,33 @@ say() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m[warn]\033[0m %s\n' "$*" >&2; }
 die() { printf '\033[1;31m[error]\033[0m %s\n' "$*" >&2; exit 1; }
 
+# ---------------------------------------------------------------- safety guards (before any network call)
+[ "${SEED_ALLOW_LOCAL:-}" = "1" ] || die "SEED_ALLOW_LOCAL=1 is required to run the seed (explicit local mode)"
+API_HOST="${API#*://}"; API_HOST="${API_HOST%%/*}"; API_HOST="${API_HOST##*@}"
+case "$API_HOST" in
+  \[*\]*) API_HOST="${API_HOST%%\]*}"; API_HOST="${API_HOST#\[}" ;;
+  *) API_HOST="${API_HOST%%:*}" ;;
+esac
+case "$API_HOST" in
+  localhost|127.0.0.1|::1) ;;
+  *) [ "${SEED_ALLOW_REMOTE:-}" = "1" ] || die "API_BASE_URL host '$API_HOST' is not local; set SEED_ALLOW_REMOTE=1 to seed a remote target" ;;
+esac
+[ -n "${POSTGRES_PASSWORD:-}" ] || die "POSTGRES_PASSWORD is required (no default)"
+if [ -n "${SEED_PASSWORD:-}" ]; then
+  PASSWORD="$SEED_PASSWORD"
+else
+  SEED_PASSWORD_FILE="${SEED_PASSWORD_FILE:-${XDG_STATE_HOME:-$HOME/.local/state}/paw-motion/seed-password}"
+  if [ -s "$SEED_PASSWORD_FILE" ]; then
+    PASSWORD=$(cat "$SEED_PASSWORD_FILE")
+  else
+    command -v openssl >/dev/null || die "openssl is required to generate SEED_PASSWORD (or export SEED_PASSWORD)"
+    mkdir -p "$(dirname "$SEED_PASSWORD_FILE")"
+    (umask 077; printf 'Sd1!%s' "$(openssl rand -hex 12)" > "$SEED_PASSWORD_FILE")
+    chmod 600 "$SEED_PASSWORD_FILE"
+    PASSWORD=$(cat "$SEED_PASSWORD_FILE")
+    echo "Generated seed password saved to $SEED_PASSWORD_FILE (0600)"
+  fi
+fi
 command -v curl >/dev/null || die "curl is required"
 command -v jq >/dev/null || die "jq is required"
 command -v awk >/dev/null || die "awk is required"
@@ -370,14 +404,14 @@ WHERE id = '$SPA_CAMPAIGN' AND status = 'ACTIVE';
 fi
 if docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -c "$SQL" >/dev/null 2>&1; then
   echo "SQL tail applied"
-elif command -v psql >/dev/null && PGPASSWORD="${POSTGRES_PASSWORD:-devpw-local-only-9f3a}" psql -h 127.0.0.1 -U "$DB_USER" -d "$DB_NAME" -c "$SQL" >/dev/null 2>&1; then
+elif command -v psql >/dev/null && PGPASSWORD="$POSTGRES_PASSWORD" psql -h 127.0.0.1 -U "$DB_USER" -d "$DB_NAME" -c "$SQL" >/dev/null 2>&1; then
   echo "SQL tail applied"
 else
   warn "could not reach Postgres — run manually:
 $SQL"
 fi
 
-say "Done! $OWNER_COUNT owners + 12 partner businesses seeded (password: $PASSWORD)"
+say "Done! $OWNER_COUNT owners + 12 partner businesses seeded (password: SEED_PASSWORD env or ${SEED_PASSWORD_FILE:-\$SEED_PASSWORD})"
 cat <<EOF
   Named owners: ana@petlife.demo (Thor + Mel, lost-pet alert), bruno@petlife.demo (Bidu), carla@petlife.demo (Fred)
   Generated:    owner004@petlife.demo … owner$(printf '%03d' "$OWNER_COUNT")@petlife.demo (1 pet each, posts + activities)
