@@ -59,6 +59,16 @@ app:
     invite-mode: ${PLAYDATE_INVITE_MODE:enforce}
     invite-dedup-window: ${PLAYDATE_INVITE_DEDUP_WINDOW:24h}
     max-invite-notifications-per-day: ${PLAYDATE_MAX_INVITE_NOTIFICATIONS_PER_DAY:50}
+  limits:
+    # enforce: 409 acima do teto de pets ativos por dono; shadow: so registra; off: sem teto (rollback)
+    mode: ${LIMITS_MODE:enforce}
+    max-pets-per-owner: ${LIMITS_MAX_PETS_PER_OWNER:10}
+  lost-pet:
+    # enforce: cooldown de fan-out, teto diario e de alertas ativos (409); shadow: so registra; off: comportamento legado (rollback)
+    mode: ${LOST_PET_MODE:enforce}
+    fanout-cooldown: ${LOST_PET_FANOUT_COOLDOWN:6h}
+    max-alerts-per-day: ${LOST_PET_MAX_ALERTS_PER_DAY:10}
+    max-active-alerts-per-owner: ${LOST_PET_MAX_ACTIVE_ALERTS_PER_OWNER:5}
   pagination:
     max-page: ${PAGINATION_MAX_PAGE:10000}
   cors:
