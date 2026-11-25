@@ -58,6 +58,13 @@ class JdbcFeedRepository(private val jdbc: JdbcClient) {
         const val CANDIDATE_LIMIT = 500
         private const val VIEWER_POINT =
             "ST_SetSRID(ST_MakePoint(CAST(:lng AS float8), CAST(:lat AS float8)), 4326)::geography"
+
+        /** Single source of truth for who may see a feed item (aliases: f = feed_items, o = author owner). */
+        private const val VISIBILITY_PREDICATE = """(f.author_owner_id = :viewer
+               OR EXISTS (SELECT 1 FROM pet_follows pf WHERE pf.follower_owner_id = :viewer AND pf.pet_id = f.author_pet_id)
+               OR (:hasLocation AND f.location IS NOT NULL AND ST_DWithin(f.location, $VIEWER_POINT, :radius))
+               OR (CAST(:neighborhood AS text) IS NOT NULL AND lower(o.neighborhood) = lower(CAST(:neighborhood AS text)))
+               OR (NOT :hasLocation AND CAST(:neighborhood AS text) IS NULL))"""
     }
 
     fun viewer(ownerId: UUID, lat: Double?, lng: Double?): Viewer {
@@ -99,11 +106,7 @@ class JdbcFeedRepository(private val jdbc: JdbcClient) {
         JOIN owners o ON o.id = f.author_owner_id AND o.status = 'ACTIVE'
         LEFT JOIN pets p ON p.id = f.author_pet_id
         WHERE f.deleted_at IS NULL AND f.published_at >= :since
-          AND (f.author_owner_id = :viewer
-               OR EXISTS (SELECT 1 FROM pet_follows pf WHERE pf.follower_owner_id = :viewer AND pf.pet_id = f.author_pet_id)
-               OR (:hasLocation AND f.location IS NOT NULL AND ST_DWithin(f.location, $VIEWER_POINT, :radius))
-               OR (CAST(:neighborhood AS text) IS NOT NULL AND lower(o.neighborhood) = lower(CAST(:neighborhood AS text)))
-               OR (NOT :hasLocation AND CAST(:neighborhood AS text) IS NULL))
+          AND $VISIBILITY_PREDICATE
         ORDER BY f.published_at DESC
         LIMIT :limit
         """,
@@ -171,9 +174,22 @@ class JdbcFeedRepository(private val jdbc: JdbcClient) {
         }
     }
 
-    fun feedItemExists(itemId: UUID): Boolean =
-        jdbc.sql("SELECT COUNT(*) FROM feed_items WHERE id = :id AND deleted_at IS NULL").param("id", itemId)
-            .query(Long::class.java).single() > 0
+    /** True when [itemId] is live and inside the same visibility scope used by [candidates]. */
+    fun visibleItem(viewer: Viewer, itemId: UUID): Boolean = jdbc.sql(
+        """
+        SELECT COUNT(*) FROM feed_items f
+        JOIN owners o ON o.id = f.author_owner_id AND o.status = 'ACTIVE'
+        WHERE f.id = :item AND f.deleted_at IS NULL AND $VISIBILITY_PREDICATE
+        """,
+    )
+        .param("item", itemId)
+        .param("viewer", viewer.ownerId)
+        .param("hasLocation", viewer.hasLocation)
+        .param("lat", viewer.lat)
+        .param("lng", viewer.lng)
+        .param("radius", NEARBY_RADIUS_M)
+        .param("neighborhood", viewer.neighborhood)
+        .query(Long::class.java).single() > 0
 
     fun upsertReaction(itemId: UUID, ownerId: UUID, type: ReactionType) {
         jdbc.sql(
