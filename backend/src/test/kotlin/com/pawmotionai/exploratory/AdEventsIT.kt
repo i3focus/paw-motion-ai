@@ -1,20 +1,28 @@
 package com.pawmotionai.exploratory
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneOffset
 import java.util.UUID
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Lote 5 (C22): data integrity and XP. Spec: security-audit-remediation, task 1. */
-@Exploratory
-class Lote5ExploratoryIT : ExploratoryApiTest() {
+/** PR 5c (C22): CLICK dedup and placement validation. Validates: Requirements 2.23, 3.10. */
+class AdEventsIT : ExploratoryApiTest() {
 
     // ---------------- C22 ----------------
+
+    private val campaigns = mutableListOf<UUID>()
+
+    /** The test database is shared, so remove these campaigns to keep them out of other tests' feeds. */
+    @AfterEach
+    fun cleanUp() {
+        campaigns.forEach { id ->
+            jdbc.update("DELETE FROM campaign_events WHERE campaign_id = ?", id)
+            jdbc.update("DELETE FROM partner_campaigns WHERE id = ?", id)
+        }
+    }
 
     private fun activeCampaign(partner: Session, formats: String = "{FEED_CARD}"): UUID {
         val id = UUID.randomUUID()
@@ -27,6 +35,7 @@ class Lote5ExploratoryIT : ExploratoryApiTest() {
             """.trimIndent(),
             id, partner.ownerId, formats,
         )
+        campaigns += id
         return id
     }
 
@@ -49,5 +58,20 @@ class Lote5ExploratoryIT : ExploratoryApiTest() {
         val rows = jdbc.queryForObject("SELECT COUNT(*) FROM campaign_events WHERE campaign_id = ? AND placement = 'MAP_PIN'", Long::class.java, campaign)
         assertTrue(response.status in 400..499 && rows == 0L,
             "Counterexample C22: MAP_PIN event on a FEED_CARD-only campaign -> HTTP ${response.status}, rows recorded=$rows")
+    }
+
+    @Test
+    fun `C22 simultaneous duplicate CLICKs record one row and a first click or impression is still counted`() {
+        val partner = registerOwner("Spa", role = "PARTNER")
+        val viewer = registerOwner("Bia")
+        val campaign = activeCampaign(partner)
+        val pool = Executors.newFixedThreadPool(8)
+        try {
+            pool.invokeAll(List(8) { Callable { call("POST", "/api/ads/$campaign/events", viewer.token, mapOf("type" to "CLICK", "placement" to "FEED_CARD")) } })
+        } finally { pool.shutdown() }
+        call("POST", "/api/ads/$campaign/events", viewer.token, mapOf("type" to "IMPRESSION", "placement" to "FEED_CARD"))
+        fun count(type: String) = jdbc.queryForObject("SELECT COUNT(*) FROM campaign_events WHERE campaign_id = ? AND type = ?", Long::class.java, campaign, type)
+        assertEquals(1L, count("CLICK"))
+        assertEquals(1L, count("IMPRESSION"))
     }
 }
