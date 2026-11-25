@@ -16,7 +16,7 @@ cd backend
 ./gradlew test -Pexploratory
 
 # Um lote ou classe
-./gradlew test -Pexploratory --tests '*Lote2ExploratoryTest'
+./gradlew test -Pexploratory --tests '*Lote2ExploratoryIT'
 ```
 
 Mecanismo: `backend/build.gradle.kts` aplica `excludeTags("exploratory")` por padrão e `includeTags("exploratory")` com `-Pexploratory`. A anotação `@Exploratory` (em `ExploratorySupport.kt`) carrega a tag.
@@ -31,7 +31,7 @@ Os limites numéricos usados como limiar estão em `ProvisionalLimits` e seguem 
 |---|---|---|
 | 0 | `Lote0ExploratoryTest.kt` (C20 e `.env.example`, PRs 0b/0c), `Lote0StartupValidatorTest.kt` e `Lote0FakeCompleteExploratoryIT` (C1, C2 corrigidos no PR 0a, sem a tag `@Exploratory`, rodam no `./gradlew test`) | C1, C2, C20 |
 | 1 | `Lote1ExploratoryIT.kt` (C15 corrigido no PR 1a, sem a tag `@Exploratory`, roda no `./gradlew test`) | C15, C7, C19, C4 |
-| 2 | `Lote2ExploratoryTest.kt`, `Lote2ExploratoryIT.kt` | C25, C26, C14, C16, C17, N13 |
+| 2 | `Lote2ExploratoryIT.kt` | C25, C26, C14, C16, C17 (N13 virou o teste regular `TrustedProxyTest`) |
 | 3 | `Lote3ExploratoryIT.kt` | C24, C9, C8, C18, C23 |
 | 4 | `Lote4ExploratoryIT.kt` | C5, C10, C12, C13, C16 (N1, N11, N16) |
 | 5 | `Lote5ExploratoryIT.kt` | C3, C21, C6, C22 |
@@ -95,3 +95,5 @@ Resultado da execução com `-Pexploratory`: os testes dos achados abaixo falhar
 ## Teste de controle
 
 `Lote0ExploratoryTest.control boot with a strong secret and a real provider succeeds` passa no código atual. Ele garante que as falhas de startup esperadas após a correção venham da configuração rejeitada, e não de problema de infraestrutura do teste.
+
+- **N13 (PR 2d)**: tratado como fix defensivo, sem validação em staging (tarefa 11.3 pendente). Os testes viraram `configuration/TrustedProxyTest.kt`.
