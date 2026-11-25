@@ -33,3 +33,19 @@ Campanhas `PAUSED` legadas exigem nova aprovação ao serem retomadas (hash de c
 ## 3.5 Resposta de convite (C24)
 
 Cada convite aceita uma única resposta, sem troca posterior.
+
+## 3.6 Itens fora de escopo e pendências
+
+### Fora de escopo desta spec
+
+| Item | Motivo | Destino |
+|---|---|---|
+| Check-in por proximidade (C6) | Exige decisão de produto sobre validação de localização. A remediação de C6 cobre só o XP por criação gratuita de entidades. | Ticket próprio |
+| Moderação e quota por dono de comunidades e eventos (N9) | Achado não confirmado. Só entra após validação em staging (tarefa 11.2). | Ticket próprio |
+
+### Pendências
+
+- **Fase 5 da auditoria**: a segunda revisão independente das 43 fichas não foi executada e continua pendente. Deve ser reexecutada sobre o commit corrigido antes do encerramento do programa (requisito 1.29/2.29). Até lá, a auditoria é considerada incompleta.
+- **Ajuste do design (C23)**: o design cita `app.lost-pet.max-sightings-per-reporter` (3). A decisão 3.2 define o limite por alerta (`app.lost-pet.max-sightings-per-alert`, 20). Corrigir no PR 3d.
+- **Objetos de mídia por dono**: o limite de 50 continua provisório (só bytes foram decididos).
+- **N1-N16**: não são achados confirmados. Seguem como trilhas de validação e só viram correção após confirmação.
