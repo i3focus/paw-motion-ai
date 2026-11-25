@@ -1,32 +1,12 @@
 package com.pawmotionai.exploratory
 
 import org.junit.jupiter.api.Test
-import org.springframework.test.context.TestPropertySource
-import java.util.UUID
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Lote 4 (C10, C12, C13; C5 moved to CommunitySlugIT; C16 moved to ReadLimitsIT): data and resources. Spec: security-audit-remediation, task 1. */
+/** Lote 4 (C12, C13; C10 moved to MediaQuotaIT; C5 moved to CommunitySlugIT; C16 moved to ReadLimitsIT): data and resources. Spec: security-audit-remediation, task 1. */
 @Exploratory
-@TestPropertySource(properties = ["app.media.root=build/tmp/exploratory-media"])
 class Lote4ExploratoryIT : ExploratoryApiTest() {
-
-    @Test
-    fun `C10 concurrent uploads never exceed the per-owner object quota`() {
-        val owner = registerOwner("Ana")
-        val total = ProvisionalLimits.MAX_MEDIA_OBJECTS_PER_OWNER + 10
-        val pool = Executors.newFixedThreadPool(16)
-        val statuses = try {
-            pool.invokeAll((1..total).map { i -> Callable { uploadPng(owner.token, i).status } }).map { it.get() }
-        } finally {
-            pool.shutdown()
-        }
-        val stored = jdbc.queryForObject("SELECT COUNT(*) FROM media_assets WHERE owner_id = ?", Long::class.java, owner.ownerId)!!
-        assertTrue(stored <= ProvisionalLimits.MAX_MEDIA_OBJECTS_PER_OWNER,
-            "Counterexample C10: $stored media objects stored for one owner (cap ${ProvisionalLimits.MAX_MEDIA_OBJECTS_PER_OWNER}); statuses=${statuses.groupingBy { it }.eachCount()}")
-    }
 
     @Test
     fun `C12 insight for a pet of another owner does not scan activities before the ownership check`() {
