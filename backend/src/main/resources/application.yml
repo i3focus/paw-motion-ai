@@ -39,6 +39,17 @@ management:
 app:
   media:
     root: ${MEDIA_ROOT:./data/media}
+    # enforce: 409 above the per-owner quota (atomic reservation); shadow: only records the excess; off: no cap (rollback)
+    mode: ${MEDIA_MODE:enforce}
+    max-bytes-per-owner: ${MEDIA_MAX_BYTES_PER_OWNER:5368709120}
+    # provisional (decision 3.2: only the byte cap was decided)
+    max-objects-per-owner: ${MEDIA_MAX_OBJECTS_PER_OWNER:50}
+    deletion:
+      # deletes files after the commit that removed their row (outbox); false = legacy behavior (files kept)
+      enabled: ${MEDIA_DELETION_ENABLED:true}
+    orphan-sweep:
+      # dry-run only: reports orphan files / rows without file via metric media.orphans and log; never deletes
+      enabled: ${MEDIA_ORPHAN_SWEEP_ENABLED:false}
   security:
     trusted-proxies: "${TRUSTED_PROXIES:127.0.0.1,::1,0:0:0:0:0:0:0:1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16}"
     jwt:
