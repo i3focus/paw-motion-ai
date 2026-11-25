@@ -74,3 +74,15 @@ Se mudar a sub-rede, ajuste juntos: `networks.default.ipam`, `ipv4_address` do f
 ## 4. Rollback
 
 Restaurar o `TRUSTED_PROXIES` / `TRUSTED_PROXY_CIDRS` anteriores e `docker compose up -d`. A restrição do actuator é código (`SecurityConfiguration`); reverter exige novo deploy.
+## 5. Pendências antes de publicar (fechamento da auditoria)
+- [ ] `docs/deploy-hostinger.md` (linhas ~102-103) ainda sugere `TRUSTED_PROXY_CIDRS=172.16.0.0/12` e `TRUSTED_PROXIES=172.16.0.0/12`. Use os valores da seção 1 (`172.28.0.2/32` e `172.28.0.10/32`) e corrija o guia.
+- [ ] `RATE_LIMIT_MODE=shadow` (padrão) só afeta o bucket `webhook`. Observe `ratelimit.shadow_violations` e passe para `enforce`.
+- [ ] `JWT_SECRET` exclusivo deste ambiente. Defina `JWT_LEGACY_COMPAT_UNTIL` (data passada ou `JWT_LEGACY_ISSUERS` vazio) após a janela de migração; a janela reabre a cada reinício.
+- [ ] `ADMIN_EMAILS` correto. Para revogar admins removidos da lista, ligar `ADMIN_RECONCILE=true` uma vez (e voltar a `false`).
+- [ ] Backup do banco e do volume de mídia antes de aplicar V25 e V26; mover a mídia para o volume `media-data`.
+- [ ] `MAIL_ENABLED` e `EXPO_PUSH_ENABLED` (desligados por padrão): ao ligar, aceitar envio best effort (sem outbox durável).
+- [ ] `INSIGHTS_RETENTION_ENABLED` decidido (desligado por padrão); `MEDIA_ORPHAN_SWEEP_ENABLED=false` mantém só dry-run.
+- [ ] Rodar o SQL de inventário de URLs herdadas (`validation-results.md`, 11.5) e anotar o resultado.
+- [ ] Teste de restore de backup Android com o token em `expo-secure-store`.
+- [ ] Decisões de produto abertas: gate de membership do RSVP; moderação de comunidades/eventos; quotas por pessoa (não só por conta).
+- [ ] Mergear a pilha na ordem de `remediation-summary.md` seção 4; lotes 0-2 antes de qualquer exposição pública.
