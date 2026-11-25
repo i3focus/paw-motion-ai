@@ -41,7 +41,7 @@ Cada convite aceita uma única resposta, sem troca posterior.
 | Item | Motivo | Destino |
 |---|---|---|
 | Check-in por proximidade (C6) | Exige decisão de produto sobre validação de localização. A remediação de C6 cobre só o XP por criação gratuita de entidades. | Ticket próprio |
-| Moderação e quota por dono de comunidades e eventos (N9) | Achado não confirmado. Só entra após validação em staging (tarefa 11.2). | Ticket próprio |
+| Quota por dono de comunidades e eventos (N9) | Confirmado e corrigido na tarefa 11.2 (ver `validation-results.md`). Moderação de conteúdo segue fora de escopo. | Ticket próprio (moderação) |
 
 ### Pendências
 
