@@ -11,6 +11,7 @@ import com.pawmotionai.billing.domain.exception.InvalidPaymentStateException
 import com.pawmotionai.billing.domain.exception.PaymentGatewayException
 import com.pawmotionai.billing.domain.exception.WebhookVerificationException
 import com.pawmotionai.billing.domain.model.PaymentTransaction
+import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.stereotype.Service
 import java.security.MessageDigest
 import java.time.Instant
@@ -24,6 +25,7 @@ class ProcessPaymentWebhookService(
     private val webhookEventRepository: PaymentWebhookEventRepository,
     private val transactionRepository: PaymentTransactionRepository,
     private val lifecycleService: PaymentLifecycleService,
+    private val meterRegistry: MeterRegistry,
 ) : ProcessPaymentWebhookUseCase {
 
     /**
@@ -45,12 +47,14 @@ class ProcessPaymentWebhookService(
             throw WebhookVerificationException("Webhook event id is too long")
         }
         if (webhookEventRepository.exists(gateway.provider(), providerEventId)) {
+            count(gateway.provider(), "duplicate")
             return
         }
         val transaction = findTransaction(gateway.provider(), event)
         if (transaction == null) {
             webhookEventRepository.save(gateway.provider(), providerEventId, payloadHash(request.body),
                 Instant.now())
+            count(gateway.provider(), "unmatched")
             return
         }
         val details = gateway.fetchCheckoutByExternalId(transaction.id.toString())
@@ -75,9 +79,17 @@ class ProcessPaymentWebhookService(
             }
         } catch (ignored: InvalidPaymentStateException) {
             // Out-of-order or duplicate provider events are acknowledged without changes.
+            count(gateway.provider(), "stale")
+            webhookEventRepository.save(gateway.provider(), providerEventId, payloadHash(request.body), Instant.now())
+            return
         }
+        count(gateway.provider(), "processed")
         webhookEventRepository.save(gateway.provider(), providerEventId, payloadHash(request.body),
             Instant.now())
+    }
+
+    private fun count(provider: String, result: String) {
+        meterRegistry.counter("payment.webhook.events", "provider", provider.lowercase(), "result", result).increment()
     }
 
     private companion object {
