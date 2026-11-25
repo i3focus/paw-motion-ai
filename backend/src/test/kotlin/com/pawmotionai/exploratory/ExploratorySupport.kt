@@ -56,6 +56,8 @@ abstract class ExploratoryApiTest : ApiIntegrationTest() {
     protected fun mintToken(ownerId: UUID, claimedRoles: List<String>): String {
         val now = Instant.now()
         val claims = JwtClaimsSet.builder()
+            .issuer("https://api.pawmotion.ai")
+            .audience(listOf("paw-motion-ai-api"))
             .subject(ownerId.toString())
             .issuedAt(now)
             .expiresAt(now.plusSeconds(3600))

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import type { Activity, AuthResponse, DashboardSummary, Insight, Owner, Pet } from '../types';
 
@@ -14,8 +15,38 @@ export class ApiError extends Error {
   }
 }
 
+// N10: o token fica no Keychain/Keystore (expo-secure-store). AsyncStorage so e usado onde o secure store nao existe (web)
+// e como origem da migracao unica do token gravado por versoes anteriores.
+const SECURE_OPTIONS: SecureStore.SecureStoreOptions = { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY };
+
+async function secureAvailable(): Promise<boolean> {
+  try {
+    return await SecureStore.isAvailableAsync();
+  } catch {
+    return false;
+  }
+}
+
 export async function getStoredToken(): Promise<string | null> {
-  return AsyncStorage.getItem(TOKEN_KEY);
+  if (!(await secureAvailable())) {
+    return AsyncStorage.getItem(TOKEN_KEY);
+  }
+  const secure = await SecureStore.getItemAsync(TOKEN_KEY, SECURE_OPTIONS);
+  if (secure) {
+    return secure;
+  }
+  const legacy = await AsyncStorage.getItem(TOKEN_KEY);
+  if (!legacy) {
+    return null;
+  }
+  // Migracao transparente: copia para o secure store e so entao apaga o token em texto puro.
+  try {
+    await SecureStore.setItemAsync(TOKEN_KEY, legacy, SECURE_OPTIONS);
+    await AsyncStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // Falha ao migrar: mantem o token legado para nao derrubar a sessao; nova tentativa na proxima leitura.
+  }
+  return legacy;
 }
 
 export async function getStoredOwner(): Promise<Owner | null> {
@@ -32,11 +63,19 @@ export async function getStoredOwner(): Promise<Owner | null> {
 }
 
 export async function storeSession(auth: AuthResponse): Promise<void> {
-  await AsyncStorage.setItem(TOKEN_KEY, auth.accessToken);
+  if (await secureAvailable()) {
+    await SecureStore.setItemAsync(TOKEN_KEY, auth.accessToken, SECURE_OPTIONS);
+    await AsyncStorage.removeItem(TOKEN_KEY);
+  } else {
+    await AsyncStorage.setItem(TOKEN_KEY, auth.accessToken);
+  }
   await AsyncStorage.setItem(OWNER_KEY, JSON.stringify(auth.owner));
 }
 
 export async function clearSession(): Promise<void> {
+  if (await secureAvailable()) {
+    await SecureStore.deleteItemAsync(TOKEN_KEY, SECURE_OPTIONS);
+  }
   await AsyncStorage.removeItem(TOKEN_KEY);
   await AsyncStorage.removeItem(OWNER_KEY);
 }

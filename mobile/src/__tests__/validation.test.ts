@@ -42,3 +42,14 @@ describe('isValidPhone / isPositiveInteger', () => {
     expect(isPositiveInteger('1.5')).toBe(false);
   });
 });
+
+import { safeHttpUrl } from '../validation';
+
+describe('safeHttpUrl', () => {
+  it('aceita http(s) e neutraliza os demais esquemas', () => {
+    expect(safeHttpUrl('https://petlife.app/x')).toBe('https://petlife.app/x');
+    for (const bad of ['javascript:alert(1)', 'data:text/html,x', 'intent://x#Intent;end', 'file:///etc/passwd', 'https://', 'http:///x', '', null, undefined]) {
+      expect(safeHttpUrl(bad)).toBeNull();
+    }
+  });
+});

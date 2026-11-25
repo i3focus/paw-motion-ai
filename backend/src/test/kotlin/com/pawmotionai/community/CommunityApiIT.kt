@@ -50,6 +50,12 @@ class CommunityApiIT : ApiIntegrationTest() {
     fun `community create validates input`() {
         val ana = registerOwner("Ana")
         expect(422, call("POST", "/api/communities", ana.token, mapOf("name" to "", "kind" to "BREED")))
+        expect(400, call("POST", "/api/communities", ana.token, mapOf("name" to "X", "kind" to "BREED", "coverUrl" to "javascript:alert(1)")))
+        expect(400, call("PATCH", "/api/me", ana.token, mapOf("avatarUrl" to "data:text/html,x")))
+        val partner = registerOwner("Spa", role = "PARTNER")
+        expect(400, call("PATCH", "/api/partner/profile", partner.token, mapOf("website" to "ftp://x.com")))
+        expect(400, call("PATCH", "/api/partner/profile", partner.token, mapOf("coverUrl" to "https://")))
+        expect(200, call("PATCH", "/api/partner/profile", partner.token, mapOf("website" to "https://x.com", "coverUrl" to "https://x.com/c.png")))
         expect(401, call("GET", "/api/communities"))
     }
 }

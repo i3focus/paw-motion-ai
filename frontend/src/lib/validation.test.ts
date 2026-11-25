@@ -11,6 +11,8 @@ describe('safeHref', () => {
     expect(safeHref(null)).toBeNull();
     expect(safeHref(undefined)).toBeNull();
     expect(safeHref('data:text/html,<b>x</b>')).toBeNull();
+    expect(safeHref('https://')).toBeNull();
+    expect(safeHref('http:///x')).toBeNull();
   });
 });
 

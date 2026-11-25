@@ -11,6 +11,7 @@ import com.pawmotionai.identity.domain.exception.OwnerAlreadyExistsException
 import com.pawmotionai.identity.domain.model.Owner
 import com.pawmotionai.ledger.application.port.`in`.EnsureWalletUseCase
 import com.pawmotionai.notification.SendWelcomeEmailUseCase
+import com.pawmotionai.shared.UrlValidation
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,6 +30,7 @@ class RegisterPartnerService(
 
     @Transactional
     override fun register(command: RegisterPartnerCommand): AuthResponseDto {
+        val website = UrlValidation.requireHttpUrlOrNull("website", command.website)
         val normalizedEmail = command.email.trim().lowercase()
         if (ownerRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw OwnerAlreadyExistsException(normalizedEmail)
@@ -43,7 +45,7 @@ class RegisterPartnerService(
             "INSERT INTO partner_profiles (partner_id, business_name, website, description, created_at, updated_at) VALUES (?, ?, ?, ?, now(), now())",
             saved.id,
             businessName,
-            command.website?.takeIf { it.isNotBlank() }?.trim(),
+            website,
             command.description?.takeIf { it.isNotBlank() }?.trim())
         ensureWalletUseCase.ensureWallet(saved.id)
         sendWelcomeEmail.sendPartnerWelcome(saved.email, saved.displayName, businessName)

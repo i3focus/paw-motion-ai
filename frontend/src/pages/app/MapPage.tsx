@@ -6,6 +6,7 @@ import { BookingSheet } from '../../components/BookingSheet';
 import type { Pet } from '../../types';
 import { Badge, BottomSheet, Button, Chip, EmptyState, ErrorMessage, Field, LoadingState, SelectInput, TextArea, TextInput } from '../../components/ui';
 import { Avatar } from '../../components/ui';
+import { safeHref } from '../../lib/validation';
 
 type Filter = 'ALL' | 'PARK' | 'VET' | 'CAFE' | 'LOST';
 const FILTERS: { key: Filter; label: string; emoji: string }[] = [
@@ -185,7 +186,7 @@ function PlaceSheet({ place, pets, onClose }: { place: Place | null; pets: Pet[]
         {place?.description ? <p className="text-body text-ink">{place.description}</p> : null}
         {partner?.openingHours ? <p className="text-caption text-muted">🕒 {partner.openingHours}</p> : null}
         {partner?.phone ? <p className="text-caption text-muted">📞 {partner.phone}</p> : null}
-        {partner?.website ? <a href={partner.website} target="_blank" rel="noreferrer" className="block text-label font-bold text-teal hover:underline">🌐 {partner.website.replace(/^https?:\/\//, '')}</a> : null}
+        {safeHref(partner?.website) ? <a href={safeHref(partner?.website)!} target="_blank" rel="noreferrer" className="block text-label font-bold text-teal hover:underline">🌐 {partner!.website!.replace(/^https?:\/\//, '')}</a> : null}
 
         {services.length > 0 ? (
           <div className="space-y-2">

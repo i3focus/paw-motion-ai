@@ -24,6 +24,7 @@ import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import java.nio.charset.StandardCharsets
+import java.time.Instant
 import javax.crypto.spec.SecretKeySpec
 
 @Configuration
@@ -76,9 +77,23 @@ class SecurityConfiguration {
     }
 
     @Bean
-    fun jwtDecoder(@Value("\${app.security.jwt.secret}") secret: String, startupSecurityValidator: StartupSecurityValidator): JwtDecoder {
+    fun jwtDecoder(
+        @Value("\${app.security.jwt.secret}") secret: String,
+        @Value("\${app.security.jwt.issuer}") issuer: String,
+        @Value("\${app.security.jwt.audience}") audience: String,
+        @Value("\${app.security.jwt.legacy-issuers:paw-motion-ai}") legacyIssuers: String,
+        @Value("\${app.security.jwt.legacy-compat-until:}") legacyCompatUntil: String,
+        @Value("\${app.security.jwt.ttl-seconds}") ttlSeconds: Long,
+        startupSecurityValidator: StartupSecurityValidator,
+    ): JwtDecoder {
         val key = SecretKeySpec(secret.toByteArray(StandardCharsets.UTF_8), "HmacSHA256")
-        return NimbusJwtDecoder.withSecretKey(key).build()
+        // N14: sem prazo explicito, a janela dura um TTL a partir do boot (tokens antigos expiram naturalmente nesse intervalo).
+        val deadline = legacyCompatUntil.trim().takeIf { it.isNotEmpty() }?.let { Instant.parse(it) }
+            ?: Instant.now().plusSeconds(ttlSeconds)
+        val decoder = NimbusJwtDecoder.withSecretKey(key).build()
+        decoder.setJwtValidator(JwtValidation(issuer, audience,
+            legacyIssuers.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet(), deadline))
+        return decoder
     }
 
     @Bean

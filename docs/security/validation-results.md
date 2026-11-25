@@ -118,3 +118,29 @@ Reprodução local com Postgres via Testcontainers e servidor HTTP fake local (`
 ### Mudanças aplicadas
 - `billing/adapter/out/payment/FakePaymentGatewayAdapter.kt`, `billing/application/usecase/ProcessPaymentWebhookService.kt`, `billing/adapter/out/persistence/BillingPersistence.kt`.
 - `notification/Notifier.kt` (`ExpoPushGateway`, `Notifier`), `notification/MailSender.kt`, `notification/WelcomeEmail.kt`, `notification/PostCommitDispatcher.kt` (novo), `configuration/MailProperties.kt`.
+
+## 11.5 N3, N10 e N14 (URLs, mobile e JWT)
+### Método
+Leitura do código e reprodução local por testes: `shared/UrlValidationTest`, `community/CommunityApiIT` (400 em escrita via API real com Testcontainers), `configuration/JwtValidationTest` (emissão por `JwtTokenIssuer` + validação pelo mesmo conjunto de validadores), `mobile/src/__tests__/secureToken.test.ts` e `validation.test.ts`, `frontend/src/lib/validation.test.ts`. Nenhum serviço real foi contatado.
+### Veredito por item
+| Item | Situação encontrada | Veredito | Correção |
+|---|---|---|---|
+| N3 URLs persistidas | Só `cta_url` tinha checagem de esquema; `partner_profiles.website/cover_url` (cadastro anônimo e PATCH), `owners.avatar_url` e `communities.cover_url` aceitavam qualquer esquema. Consumidores do repositório já neutralizavam, exceto o `href` cru de `website` em `MapPage.tsx`. | **Confirmado e corrigido** | `UrlValidation` (esquema `http`/`https` e host não vazio, via `java.net.URI`) aplicado na escrita de `website`, `coverUrl`, `avatarUrl`, `ctaUrl` (update e submit) e `coverUrl` de comunidade: 400 com mensagem do campo; vazio/nulo continua significando "limpar". Frontend: `safeHref` agora exige host e `MapPage` passou a usar `safeHref`. Mobile: `safeHttpUrl` antes de `Linking.openURL`. `pets.avatar_url` não tem caminho de escrita no backend. |
+| N10 token mobile | Token JWT em AsyncStorage em texto puro; `allowBackup` seria `true` por padrão no Android (iOS já excluído do backup pelo async-storage 2.2.0). | **Confirmado (Android) e corrigido** | Token em `expo-secure-store` (Keychain/Keystore, `WHEN_UNLOCKED_THIS_DEVICE_ONLY`). Migração transparente na primeira leitura: copia o token legado para o secure store e remove o texto puro; se a cópia falhar, mantém a sessão e tenta de novo. Fallback para AsyncStorage só onde o secure store não existe (web). `android.allowBackup=false` em `mobile/app.json` e plugin `expo-secure-store`. `OWNER_KEY` (perfil público) segue no AsyncStorage, agora fora do backup. |
+| N14 JWT | Decoder só validava assinatura, tipo e `exp` opcional: `iss`/`aud` estranhos e token sem `exp` eram aceitos. O default `paw-motion-ai` não era rejeitado (hipótese de "fail-closed" do relatório não procede em Spring Security 7.1.2). | **Confirmado e corrigido** | Tokens novos levam `iss` (URL, default `https://api.pawmotion.ai`) e `aud` (`paw-motion-ai-api`). `JwtValidation` exige `exp`, `iss` igual ao configurado e `aud` contendo o público esperado. Janela de compatibilidade: token sem `aud` e com `iss` igual ao atual ou a `JWT_LEGACY_ISSUERS` (default `paw-motion-ai`) é aceito até `JWT_LEGACY_COMPAT_UNTIL` (ISO-8601); sem valor, até boot + `JWT_TTL_SECONDS` (3600 s), tempo em que todo token antigo já expirou. Depois disso `aud` é obrigatória. Token com `aud` errada ou `iss` desconhecido é sempre rejeitado. Default de `JWT_ISSUER` em `application.yml`, `docker-compose.yml`, `.env.example` e deploy trocado por URL. |
+### Consulta de inventário (dados herdados, N3)
+Dados antigos não foram reescritos; só são neutralizados no consumo. Para inventariar (somente leitura):
+```sql
+SELECT 'partner_campaigns.cta_url' AS campo, id::text, cta_url AS valor FROM partner_campaigns WHERE cta_url IS NOT NULL AND cta_url !~* '^https?://[^/\s]+'
+UNION ALL SELECT 'partner_profiles.website', partner_id::text, website FROM partner_profiles WHERE website IS NOT NULL AND website !~* '^https?://[^/\s]+'
+UNION ALL SELECT 'partner_profiles.cover_url', partner_id::text, cover_url FROM partner_profiles WHERE cover_url IS NOT NULL AND cover_url !~* '^https?://[^/\s]+'
+UNION ALL SELECT 'owners.avatar_url', id::text, avatar_url FROM owners WHERE avatar_url IS NOT NULL AND avatar_url !~* '^https?://[^/\s]+'
+UNION ALL SELECT 'communities.cover_url', id::text, cover_url FROM communities WHERE cover_url IS NOT NULL AND cover_url !~* '^https?://[^/\s]+';
+```
+### Observações
+- A janela de compatibilidade é por processo: reiniciar o backend reabre-a por mais um TTL. Para encerrá-la de vez, defina `JWT_LEGACY_COMPAT_UNTIL` com uma data passada ou `JWT_LEGACY_ISSUERS` vazio e remova após o primeiro TTL do deploy.
+- Clientes mobile antigos (AsyncStorage) migram sozinhos; sem mudança de contrato OpenAPI (nenhum campo novo), então não houve regeneração.
+- Pendente no deploy: confirmar que `JWT_SECRET` é exclusivo por ambiente (o binding de `iss`/`aud` mitiga, mas não substitui). Backup/restore real do Android não foi exercitado em dispositivo.
+### Mudanças aplicadas
+- Backend: `shared/UrlValidation.kt` (novo), `ads/AdsService.kt`, `community/CommunityService.kt`, `identity/application/usecase/RegisterPartnerService.kt` e `UpdateProfileService.kt`, `configuration/JwtValidation.kt` (novo), `SecurityConfiguration.kt`, `JwtTokenIssuer.kt`, `application.yml`.
+- Frontend: `lib/validation.ts`, `pages/app/MapPage.tsx`. Mobile: `api/client.ts`, `validation.ts`, `petlife-ui.tsx`, `app.json`, `package.json`.

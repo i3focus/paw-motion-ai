@@ -75,7 +75,12 @@ app:
     # N13: so loopback por padrao (bootRun local). Em Docker/Hostinger use o IP fixo do nginx do frontend (docker-compose.yml).
     trusted-proxies: "${TRUSTED_PROXIES:127.0.0.1,::1}"
     jwt:
-      issuer: ${JWT_ISSUER:paw-motion-ai}
+      # N14: iss em formato URL; aud validada. legacy-* = janela para tokens emitidos antes (sem aud, iss antigo).
+      issuer: ${JWT_ISSUER:https://api.pawmotion.ai}
+      audience: ${JWT_AUDIENCE:paw-motion-ai-api}
+      legacy-issuers: ${JWT_LEGACY_ISSUERS:paw-motion-ai}
+      # ISO-8601 (ex.: 2026-01-01T00:00:00Z). Vazio = boot + ttl-seconds (tokens antigos expiram nesse intervalo).
+      legacy-compat-until: ${JWT_LEGACY_COMPAT_UNTIL:}
       secret: ${JWT_SECRET}
       ttl-seconds: ${JWT_TTL_SECONDS:3600}
   rate-limit:

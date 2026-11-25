@@ -40,7 +40,14 @@ export function isValidHttpUrl(value: string): boolean {
 
 export function safeHref(value: string | null | undefined): string | null {
   const trimmed = (value ?? '').trim();
-  return /^https?:\/\//i.test(trimmed) ? trimmed : null;
+  if (!/^https?:\/\/[^/\s?#]/i.test(trimmed)) {
+    return null;
+  }
+  try {
+    return new URL(trimmed).hostname ? trimmed : null;
+  } catch {
+    return null;
+  }
 }
 
 export function normalizeUrl(value: string): string {
