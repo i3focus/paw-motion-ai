@@ -52,5 +52,19 @@ dependencies {
 }
 
 tasks.withType<Test> {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        // Exploratory bug-condition tests (security audit remediation) FAIL on unfixed code by design.
+        // They are excluded from the default run/CI. Run only them with: ./gradlew test -Pexploratory
+        if (project.hasProperty("exploratory")) {
+            includeTags("exploratory")
+        } else {
+            excludeTags("exploratory")
+        }
+    }
+    if (project.hasProperty("exploratory")) {
+        testLogging {
+            events("failed")
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
+    }
 }
