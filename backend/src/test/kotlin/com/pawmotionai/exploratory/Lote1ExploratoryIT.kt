@@ -57,7 +57,6 @@ class Lote1ExploratoryIT : ExploratoryApiTest() {
     }
 
     /** C19: a third party must not see notes or counts of activities that were not shared. */
-    @Exploratory
     @Test
     fun `C19 adventures and profile of another owner hide non-shared activities`() {
         val a = registerOwner("Ana")
@@ -75,7 +74,6 @@ class Lote1ExploratoryIT : ExploratoryApiTest() {
     }
 
     /** C4: approve, pause, edit ctaUrl, resume must not leave the campaign ACTIVE without a new review. */
-    @Exploratory
     @Test
     fun `C4 campaign edited while paused is not ACTIVE after resume`() {
         val partner = registerOwner("Spa", role = "PARTNER")

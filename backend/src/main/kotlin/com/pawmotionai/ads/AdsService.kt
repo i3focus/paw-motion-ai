@@ -127,6 +127,7 @@ class AdsService(
             statement.update()
         }
         if (changed == 0) throw ConflictException("Campaign status changed while editing — reload and try again")
+        if (status == "PAUSED") revokeApprovalIfChanged(campaignId)
         log.info("campaign updated campaign={} partner={} fields={}", campaignId, partnerId, params.keys)
         return campaign(partnerId, campaignId)
     }
@@ -169,11 +170,43 @@ class AdsService(
     @Transactional
     fun pause(partnerId: UUID, campaignId: UUID): CampaignV2Dto = transition(partnerId, campaignId, "ACTIVE", "PAUSED")
 
+    /**
+     * Resume serves the campaign again only if its moderated content is unchanged (hash recomputed in this
+     * transaction). A changed or missing approval (legacy PAUSED, decision 3.4) sends it back to IN_REVIEW.
+     */
     @Transactional
-    fun resume(partnerId: UUID, campaignId: UUID): CampaignV2Dto = transition(partnerId, campaignId, "PAUSED", "ACTIVE") {
+    fun resume(partnerId: UUID, campaignId: UUID): CampaignV2Dto {
+        val owner = jdbc.sql("SELECT partner_id FROM partner_campaigns WHERE id = :id FOR UPDATE").param("id", campaignId)
+            .query(UUID::class.java).optional().orElseThrow { NotFoundException("Campaign not found") }
+        if (owner != partnerId) throw ForbiddenException("Campaign belongs to another partner")
         val expired = !jdbc.sql("SELECT ends_at > now() FROM partner_campaigns WHERE id = :id").param("id", campaignId)
             .query(Boolean::class.java).single()
         if (expired) throw BadRequestException("Campaign end date has passed — update the schedule while it is paused")
+        val approved = jdbc.sql(
+            """
+            SELECT approved_content_hash IS NOT NULL AND approved_content_hash = campaign_content_hash(id)
+                   AND approved_ends_at IS NOT NULL AND ends_at <= approved_ends_at
+            FROM partner_campaigns WHERE id = :id
+            """,
+        ).param("id", campaignId).query(Boolean::class.java).single()
+        if (approved) return transition(partnerId, campaignId, "PAUSED", "ACTIVE")
+        return transition(partnerId, campaignId, "PAUSED", "IN_REVIEW", ", submitted_at = now()")
+    }
+
+    /** A paused campaign whose moderated content or end date changed after approval goes back to DRAFT. */
+    private fun revokeApprovalIfChanged(campaignId: UUID) {
+        val changed = jdbc.sql(
+            """
+            SELECT approved_content_hash IS NOT NULL AND (approved_content_hash <> campaign_content_hash(id)
+                   OR approved_ends_at IS NULL OR ends_at > approved_ends_at)
+            FROM partner_campaigns WHERE id = :id
+            """,
+        ).param("id", campaignId).query(Boolean::class.java).single()
+        if (!changed) return
+        jdbc.sql(
+            "UPDATE partner_campaigns SET status = 'DRAFT', approved_content_hash = NULL, approved_ends_at = NULL, updated_at = now() WHERE id = :id AND status = 'PAUSED'",
+        ).param("id", campaignId).update()
+        log.info("campaign content changed while paused, back to draft campaign={}", campaignId)
     }
 
     @Transactional
@@ -360,7 +393,7 @@ class AdsService(
     @Transactional
     fun approve(adminId: UUID, campaignId: UUID): AdminCampaignDto {
         val updated = jdbc.sql(
-            "UPDATE partner_campaigns SET status = 'ACTIVE', reviewed_by = :admin, reviewed_at = now(), rejection_reason = NULL, updated_at = now() WHERE id = :id AND status = 'IN_REVIEW' AND ends_at > now()",
+            "UPDATE partner_campaigns SET status = 'ACTIVE', reviewed_by = :admin, reviewed_at = now(), rejection_reason = NULL, approved_content_hash = campaign_content_hash(id), approved_ends_at = ends_at, updated_at = now() WHERE id = :id AND status = 'IN_REVIEW' AND ends_at > now()",
         ).param("admin", adminId).param("id", campaignId).update()
         if (updated == 0) throw ConflictException("Campaign is not in review or has already ended")
         log.info("campaign approved campaign={} by={}", campaignId, adminId)

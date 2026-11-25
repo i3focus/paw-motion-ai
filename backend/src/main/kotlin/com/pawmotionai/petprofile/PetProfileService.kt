@@ -29,10 +29,10 @@ class PetProfileService(private val jdbc: JdbcClient, private val engagement: En
         val stats = jdbc.sql(
             """
             SELECT (SELECT COUNT(*) FROM pet_follows WHERE pet_id = :pet) AS followers,
-                   (SELECT COUNT(*) FROM activities WHERE pet_id = :pet) AS adventures,
+                   (SELECT COUNT(*) FROM activities a WHERE a.pet_id = :pet AND (:owner = :viewer OR a.share_to_paw_city)) AS adventures,
                    (SELECT COUNT(*) FROM posts WHERE pet_id = :pet) AS posts
             """,
-        ).param("pet", petId).query { rs, _ ->
+        ).param("pet", petId).param("owner", owner.id).param("viewer", viewerId).query { rs, _ ->
             ProfileStatsDto(rs.getLong("followers"), rs.getLong("adventures"), rs.getLong("posts") + rs.getLong("adventures"))
         }.single()
         val following = jdbc.sql("SELECT COUNT(*) FROM pet_follows WHERE follower_owner_id = :viewer AND pet_id = :pet")
@@ -40,7 +40,7 @@ class PetProfileService(private val jdbc: JdbcClient, private val engagement: En
         return PetProfileDto(
             pet, owner, engagement.engagement(petId), stats,
             engagement.badges(petId).sortedByDescending { it.awardedAt ?: Instant.EPOCH }.take(6),
-            weeklyActivity(petId), following, owner.id == viewerId,
+            weeklyActivity(petId, viewerId, owner.id), following, owner.id == viewerId,
         )
     }
 
@@ -64,15 +64,17 @@ class PetProfileService(private val jdbc: JdbcClient, private val engagement: En
     }
 
     @Transactional(readOnly = true)
-    fun adventures(petId: UUID, page: PageRequest): PageResponse<AdventureDto> {
+    fun adventures(viewerId: UUID, petId: UUID, page: PageRequest): PageResponse<AdventureDto> {
         pet(petId)
+        val ownerId = ownerOf(petId)
         val rows = jdbc.sql(
             """
             SELECT a.id, a.type, a.started_at, a.duration_seconds, a.distance_meters, a.notes, f.id AS feed_item_id
             FROM activities a LEFT JOIN feed_items f ON f.type = 'ACTIVITY' AND f.ref_id = a.id AND f.deleted_at IS NULL
-            WHERE a.pet_id = :pet ORDER BY a.started_at DESC LIMIT :limit OFFSET :offset
+            WHERE a.pet_id = :pet AND (:owner = :viewer OR a.share_to_paw_city)
+            ORDER BY a.started_at DESC LIMIT :limit OFFSET :offset
             """,
-        ).param("pet", petId).param("limit", page.limit).param("offset", page.offset).query { rs, _ ->
+        ).param("pet", petId).param("owner", ownerId).param("viewer", viewerId).param("limit", page.limit).param("offset", page.offset).query { rs, _ ->
             AdventureDto(rs.getObject("id", UUID::class.java), rs.getObject("feed_item_id", UUID::class.java), rs.getString("type"),
                 rs.getTimestamp("started_at").toInstant(), rs.getLong("duration_seconds"),
                 (rs.getObject("distance_meters") as Number?)?.toDouble(), rs.getString("notes"))
@@ -104,15 +106,16 @@ class PetProfileService(private val jdbc: JdbcClient, private val engagement: En
     }
 
     /** Minutes of activity per weekday for the current ISO week (Mon–Sun), used by the profile chart. */
-    private fun weeklyActivity(petId: UUID): List<WeeklyBarDto> {
+    private fun weeklyActivity(petId: UUID, viewerId: UUID, ownerId: UUID): List<WeeklyBarDto> {
         val weekStart = LocalDate.now(ZoneOffset.UTC).with(java.time.DayOfWeek.MONDAY)
         val rows = jdbc.sql(
             """
             SELECT started_at::date AS day, COALESCE(SUM(duration_seconds), 0) AS seconds
             FROM activities WHERE pet_id = :pet AND started_at::date BETWEEN :start AND :start + 6
+              AND (:owner = :viewer OR share_to_paw_city)
             GROUP BY started_at::date
             """,
-        ).param("pet", petId).param("start", weekStart).query { rs, _ ->
+        ).param("pet", petId).param("start", weekStart).param("owner", ownerId).param("viewer", viewerId).query { rs, _ ->
             rs.getDate(1).toLocalDate() to rs.getLong(2)
         }.list().toMap()
         return (0L..6L).map { offset ->
@@ -120,6 +123,9 @@ class PetProfileService(private val jdbc: JdbcClient, private val engagement: En
             WeeklyBarDto(day.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).uppercase(), (rows[day] ?: 0L) / 60)
         }
     }
+
+    private fun ownerOf(petId: UUID): UUID =
+        jdbc.sql("SELECT owner_id FROM pets WHERE id = :pet").param("pet", petId).query(UUID::class.java).single()
 
     private fun postMedia(postId: UUID): List<String> = jdbc.sql(
         "SELECT m.id FROM post_media pm JOIN media_assets m ON m.id = pm.media_id WHERE pm.post_id = :post ORDER BY pm.position",
