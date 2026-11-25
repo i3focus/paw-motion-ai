@@ -14,7 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder
 
 /**
- * Lote 2 (C16, C17, N13; C25, C26 and C14 moved to configuration/EdgeLimitsTest): edge limits, exercised directly against the filters (follows the model of
+ * Lote 2 (C17, N13; C16, C25, C26 and C14 moved to configuration/EdgeLimitsTest): edge limits, exercised directly against the filters (follows the model of
  * AuthRateLimitFilterTest). The filters receive the RAW request URI, like a servlet container delivers it.
  */
 @Exploratory
@@ -39,17 +39,6 @@ class Lote2ExploratoryTest {
     }
 
     // ---------------- C16 / C17 ----------------
-
-    @Test
-    fun `C16 abusive GET volume by one account on a costly route is eventually throttled`() {
-        val filter = WriteRateLimitFilter()
-        authenticateAs("owner-c16")
-        val statuses = (1..ProvisionalLimits.READ_BURST_PER_MINUTE + 100).map { send(filter, "GET", "/api/feed?page=$it") }
-        assertTrue(
-            statuses.any { it == 429 },
-            "Counterexample C16: ${statuses.size} GET /api/feed in one minute by one account, no 429 (statuses=${statuses.toSet()})",
-        )
-    }
 
     @Test
     fun `C17 insights share the 30 per minute AI bucket`() {
