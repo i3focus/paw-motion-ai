@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Rate limit on mutating API routes (plan §6). Routes are classified by the normalized path (C25, C26).
- * - Authenticated: `w:<account>` (120/min) plus `ai:<account>` (30/min) for assistant messages.
+ * - Authenticated: `w:<account>` (120/min) plus `ai:<account>` (30/min) for assistant messages and insights (C17).
  * - Anonymous: `w:ip:<client IP>` (120/min), so one IP never throttles another (C14).
  * - `/api/webhooks/payments` and below: own bucket `wh:<ip>`, independent of login and write buckets. Governed by
  *   [RateLimitSettings.mode] (starts in shadow).
@@ -47,7 +47,7 @@ class WriteRateLimitFilter(
                 return
             }
             if (isAiMessage(request, path) && exceeds("ai:$subject", now, MAX_AI_MESSAGES_PER_WINDOW)
-                && reject("ai", "assistant", response)) {
+                && reject("ai", if (RequestPaths.hasSegmentPrefix(path, "/api/insights")) "insights" else "assistant", response)) {
                 return
             }
         }
@@ -81,7 +81,7 @@ class WriteRateLimitFilter(
     }
 
     private fun isAiMessage(request: HttpServletRequest, path: String): Boolean =
-        request.method == "POST" && RequestPaths.hasSegmentPrefix(path, "/api/assistant")
+        request.method == "POST" && (RequestPaths.hasSegmentPrefix(path, "/api/assistant") || RequestPaths.hasSegmentPrefix(path, "/api/insights"))
 
     private fun subject(ip: String): String {
         val authentication = SecurityContextHolder.getContext().authentication

@@ -11,6 +11,7 @@ import com.pawmotionai.aiinsights.application.port.out.InsightRepository
 import com.pawmotionai.aiinsights.domain.model.Insight
 import com.pawmotionai.aiinsights.domain.service.InsightValidator
 import com.pawmotionai.pet.application.port.`in`.GetPetUseCase
+import com.pawmotionai.shared.AiQuota
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -24,10 +25,12 @@ class GenerateInsightService(
     private val getPetUseCase: GetPetUseCase,
     private val insightProvider: AiInsightProviderPort,
     private val insightRepository: InsightRepository,
+    private val aiQuota: AiQuota,
 ) : GenerateInsightUseCase {
 
     @Transactional
     override fun generateInsight(command: GenerateInsightCommand): InsightResponseDto {
+        aiQuota.consume(command.ownerId)
         val periodDays = command.periodDays
         val from = Instant.now().minus(periodDays.toLong(), ChronoUnit.DAYS)
         val activities = listActivitiesUseCase.listActivities(command.ownerId, command.petId, from, null)

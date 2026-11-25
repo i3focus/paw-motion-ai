@@ -155,4 +155,22 @@ class EdgeLimitsTest {
         )
     }
 
+
+    @Test
+    fun `C17 insights share the 30 per minute AI bucket`() {
+        val filter = WriteRateLimitFilter()
+        authenticateAs("owner-c17")
+        val statuses = (1..40).map { send(filter, "POST", "/api/insights") }
+        assertEquals(429, statuses.last(), "40 POST /api/insights in one minute -> ${statuses.groupingBy { it }.eachCount()}")
+        assertEquals(30, statuses.count { it != 429 })
+    }
+
+    @Test
+    fun `C17 assistant and insights draw from the same AI bucket`() {
+        val filter = WriteRateLimitFilter()
+        authenticateAs("owner-c17-shared")
+        repeat(15) { send(filter, "POST", "/api/assistant/conversations/x/messages") }
+        val insights = (1..20).map { send(filter, "POST", "/api/insights") }
+        assertEquals(15, insights.count { it != 429 })
+    }
 }
