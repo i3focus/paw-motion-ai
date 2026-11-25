@@ -104,6 +104,7 @@ class FeedService(private val repository: JdbcFeedRepository, private val notifi
     @Transactional
     fun recordAdEvent(viewerId: UUID, campaignId: UUID, type: AdEventType, placement: AdPlacement) {
         if (!repository.campaignServable(campaignId)) throw NotFoundException("Campaign not found")
+        if (!repository.placementAllowed(campaignId, placement)) throw BadRequestException("Placement not enabled for this campaign")
         val recorded = repository.recordAdEvent(campaignId, type, placement, viewerHash(viewerId))
         log.info("ad event campaign={} type={} placement={} recorded={}", campaignId, type, placement, recorded)
     }

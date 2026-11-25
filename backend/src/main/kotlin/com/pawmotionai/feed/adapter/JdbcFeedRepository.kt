@@ -282,18 +282,29 @@ class JdbcFeedRepository(private val jdbc: JdbcClient) {
         jdbc.sql("SELECT COUNT(*) FROM partner_campaigns WHERE id = :id AND status = 'ACTIVE' AND starts_at <= now() AND ends_at > now()")
             .param("id", campaignId).query(Long::class.java).single() > 0
 
-    /** Records an ad event; impressions from the same viewer and placement are counted once per 30 minutes. */
-    fun recordAdEvent(campaignId: UUID, type: AdEventType, placement: AdPlacement, viewerHash: String): Boolean = jdbc.sql(
-        """
-        INSERT INTO campaign_events (id, campaign_id, type, placement, viewer_hash, occurred_at)
-        SELECT :id, :campaign, :type, :placement, :viewer, now()
-        WHERE :type <> 'IMPRESSION' OR NOT EXISTS (
-            SELECT 1 FROM campaign_events e
-            WHERE e.campaign_id = :campaign AND e.type = 'IMPRESSION' AND e.placement = :placement
-              AND e.viewer_hash = :viewer AND e.occurred_at > now() - interval '30 minutes')
-        """,
-    ).param("id", UUID.randomUUID()).param("campaign", campaignId).param("type", type.name)
-        .param("placement", placement.name).param("viewer", viewerHash).update() > 0
+    fun placementAllowed(campaignId: UUID, placement: AdPlacement): Boolean =
+        jdbc.sql("SELECT COUNT(*) FROM partner_campaigns WHERE id = :id AND :placement = ANY(formats)")
+            .param("id", campaignId).param("placement", placement.name).query(Long::class.java).single() > 0
+
+    /**
+     * Records an ad event. IMPRESSION and CLICK from the same viewer, campaign and placement are counted once per
+     * 30 minutes; a transaction-scoped advisory lock serializes concurrent duplicates so only one row is inserted.
+     */
+    fun recordAdEvent(campaignId: UUID, type: AdEventType, placement: AdPlacement, viewerHash: String): Boolean {
+        jdbc.sql("SELECT pg_advisory_xact_lock(hashtext(:key))::text")
+            .param("key", "$campaignId|$viewerHash|${type.name}|${placement.name}").query(String::class.java).single()
+        return jdbc.sql(
+            """
+            INSERT INTO campaign_events (id, campaign_id, type, placement, viewer_hash, occurred_at)
+            SELECT :id, :campaign, :type, :placement, :viewer, now()
+            WHERE NOT EXISTS (
+                SELECT 1 FROM campaign_events e
+                WHERE e.campaign_id = :campaign AND e.type = :type AND e.placement = :placement
+                  AND e.viewer_hash = :viewer AND e.occurred_at > now() - interval '30 minutes')
+            """,
+        ).param("id", UUID.randomUUID()).param("campaign", campaignId).param("type", type.name)
+            .param("placement", placement.name).param("viewer", viewerHash).update() > 0
+    }
 
     private fun comment(rs: ResultSet) = CommentDto(
         rs.uuid("id"), rs.uuid("feed_item_id"), rs.uuid("owner_id"), rs.getString("display_name"),
