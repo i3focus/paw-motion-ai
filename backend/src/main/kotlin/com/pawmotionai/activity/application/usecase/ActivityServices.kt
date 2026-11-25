@@ -13,8 +13,10 @@ import com.pawmotionai.activity.domain.model.ActivityType
 import com.pawmotionai.activity.domain.service.ActivityStatisticsCalculator
 import com.pawmotionai.pet.application.port.`in`.GetPetUseCase
 import com.pawmotionai.pet.application.port.`in`.ListPetsUseCase
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
@@ -23,6 +25,7 @@ import java.util.UUID
 class RecordActivityService(
     private val activityRepository: ActivityRepository,
     private val getPetUseCase: GetPetUseCase,
+    @Value("\${app.activity.max-backdate:P14D}") private val maxBackdate: Duration = Activity.DEFAULT_MAX_BACKDATE,
 ) : RecordActivityUseCase {
 
     @Transactional
@@ -44,7 +47,8 @@ class RecordActivityService(
             Instant.now(),
             command.latitude,
             command.longitude,
-            command.shareToPawCity == true)
+            command.shareToPawCity == true,
+            maxBackdate)
         return ActivityResponseDto.from(activityRepository.save(activity))
     }
 
