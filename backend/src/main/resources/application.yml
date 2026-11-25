@@ -54,6 +54,11 @@ app:
       mode: ${RATE_LIMIT_READ_MODE:enforce}
       per-minute: ${RATE_LIMIT_READ_PER_MINUTE:600}
       costly-per-minute: ${RATE_LIMIT_READ_COSTLY_PER_MINUTE:240}
+  playdate:
+    # enforce: deduplica convites e aplica o teto diario (409); shadow: so registra o excesso; off: comportamento legado (rollback)
+    invite-mode: ${PLAYDATE_INVITE_MODE:enforce}
+    invite-dedup-window: ${PLAYDATE_INVITE_DEDUP_WINDOW:24h}
+    max-invite-notifications-per-day: ${PLAYDATE_MAX_INVITE_NOTIFICATIONS_PER_DAY:50}
   pagination:
     max-page: ${PAGINATION_MAX_PAGE:10000}
   cors:
