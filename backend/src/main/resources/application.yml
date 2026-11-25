@@ -92,6 +92,12 @@ app:
     # enforce: 409 acima do teto de pets ativos por dono; shadow: so registra; off: sem teto (rollback)
     mode: ${LIMITS_MODE:enforce}
     max-pets-per-owner: ${LIMITS_MAX_PETS_PER_OWNER:10}
+    # N9/N2: quotas por dono (mesmo modo acima); comunidades, eventos ativos (starts_at futuro) e tetos diarios (janela de 24h)
+    max-communities-per-owner: ${LIMITS_MAX_COMMUNITIES_PER_OWNER:5}
+    max-communities-per-day: ${LIMITS_MAX_COMMUNITIES_PER_DAY:3}
+    max-active-events-per-owner: ${LIMITS_MAX_ACTIVE_EVENTS_PER_OWNER:20}
+    max-events-per-day: ${LIMITS_MAX_EVENTS_PER_DAY:10}
+    max-activities-per-day: ${LIMITS_MAX_ACTIVITIES_PER_DAY:200}
   lost-pet:
     # enforce: cooldown de fan-out, teto diario e de alertas ativos (409); shadow: so registra; off: comportamento legado (rollback)
     mode: ${LOST_PET_MODE:enforce}

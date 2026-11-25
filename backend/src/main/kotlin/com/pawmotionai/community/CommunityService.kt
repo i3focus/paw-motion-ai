@@ -7,6 +7,7 @@ import com.pawmotionai.shared.ForbiddenException
 import com.pawmotionai.shared.MediaUrls
 import com.pawmotionai.shared.NotFoundException
 import com.pawmotionai.shared.PageRequest
+import com.pawmotionai.shared.OwnerQuotas
 import com.pawmotionai.shared.PageResponse
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
@@ -20,7 +21,7 @@ import java.util.UUID
 
 /** Communities by breed, neighborhood and cause, with member-created events and RSVPs. */
 @Service
-class CommunityService(private val jdbc: JdbcClient) {
+class CommunityService(private val jdbc: JdbcClient, private val quotas: OwnerQuotas) {
 
     private val log = LoggerFactory.getLogger(CommunityService::class.java)
 
@@ -64,6 +65,7 @@ class CommunityService(private val jdbc: JdbcClient) {
     @Transactional
     fun create(viewerId: UUID, request: CreateCommunityRequest): CommunityDto {
         if ((request.latitude == null) != (request.longitude == null)) throw BadRequestException("latitude and longitude must be provided together")
+        quotas.beforeCreateCommunity(viewerId)
         val id = UUID.randomUUID()
         val name = request.name!!.trim()
         val insert = jdbc.sql(
@@ -141,6 +143,7 @@ class CommunityService(private val jdbc: JdbcClient) {
         if ((request.latitude == null) != (request.longitude == null)) throw BadRequestException("latitude and longitude must be provided together")
         if (request.startsAt!!.isBefore(java.time.Instant.now().minusSeconds(300))) throw BadRequestException("startsAt must be in the future")
         if (request.endsAt != null && request.endsAt.isBefore(request.startsAt)) throw BadRequestException("endsAt must be after startsAt")
+        quotas.beforeCreateEvent(viewerId)
         val id = UUID.randomUUID()
         jdbc.sql(
             """
@@ -162,11 +165,14 @@ class CommunityService(private val jdbc: JdbcClient) {
 
     @Transactional
     fun rsvp(viewerId: UUID, eventId: UUID, status: RsvpStatus?): CommunityEventDto {
+        // status == null withdraws the caller's RSVP (N8); idempotent when there is none.
         val event = eventOrThrow(eventId)
         if (status == null) {
             jdbc.sql("DELETE FROM event_rsvps WHERE event_id = :event AND owner_id = :owner").param("event", eventId).param("owner", viewerId).update()
         } else {
             if (status == RsvpStatus.GOING && event.capacity != null) {
+                // N7: the event row lock serializes concurrent GOING requests, so the count below cannot be stale.
+                jdbc.sql("SELECT id FROM community_events WHERE id = :event FOR UPDATE").param("event", eventId).query(UUID::class.java).optional()
                 val going = jdbc.sql("SELECT COUNT(*) FROM event_rsvps WHERE event_id = :event AND status = 'GOING'")
                     .param("event", eventId).query(Long::class.java).single()
                 val already = jdbc.sql("SELECT COUNT(*) FROM event_rsvps WHERE event_id = :event AND owner_id = :owner AND status = 'GOING'")

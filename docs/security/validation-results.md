@@ -49,3 +49,34 @@ Os lotes anteriores já entregam: bucket de leitura (`ReadRateLimitFilter`), tet
 
 ### Observação sobre o índice V29
 O índice adiciona custo de escrita em `xp_events` (ledger append-only). O ganho é proporcional ao crescimento da tabela. Em tabela pequena ou com mais de 60% das linhas na janela de 7 dias o ganho é pequeno (144 para 137 ms sem sort em disco). Em `CREATE INDEX` numa tabela grande de produção, preferir janela de baixo tráfego.
+## 11.2 N7, N8, N9, N12 e N2 (concorrência, produto e quotas)
+### Método
+Testes de integração em Postgres real (Testcontainers `postgis`), com sessões concorrentes via HTTP (`CountDownLatch` liberando 10 a 16 threads ao mesmo tempo). Cada teste foi escrito primeiro e rodou contra o código do PR #52 (antes) para confirmar a reprodução; depois da correção rodou de novo. Arquivo: `backend/src/test/kotlin/com/pawmotionai/exploratory/ConcurrencyQuotasIT.kt`. Suíte completa (`./gradlew test`) verde ao final.
+### Veredito por item
+| Item | Antes (reprodução) | Veredito | Correção |
+|---|---|---|---|
+| N7 capacidade de RSVP | 16 `GOING` concorrentes em evento de capacidade 3 gravaram 8 linhas (statuses 200 em 8 requisições) | **Confirmado e corrigido** | `CommunityService.rsvp` trava a linha do evento (`SELECT ... FOR UPDATE`) antes de contar `GOING`. Depois: exatamente 3 aceitos e 13 com 409, também na troca `INTERESTED` para `GOING` no último assento. |
+| N8 retirada de RSVP | `DELETE /api/events/{id}/rsvp` não existia (500 genérico); `status` nulo no `POST` dá 422, então a linha era irremovível | **Confirmado e corrigido** | Nova rota `DELETE /api/events/{eventId}/rsvp` (200 com o evento atualizado, idempotente, 404 para evento inexistente, 401 sem token). Só remove a linha do próprio chamador e libera o assento. |
+| N9 quotas de comunidades e eventos | 10 criações concorrentes de comunidade: 10 criadas; 16 eventos: 16 criados; 5 comunidades antigas não impediam a 6ª | **Confirmado e corrigido** | `OwnerQuotas` (novo): serializa por dono (`FOR NO KEY UPDATE` na linha de `owners`) e aplica tetos. Depois: 10 concorrentes geram exatamente 3 comunidades e 7 com 409; 16 eventos geram 10 e 6 com 409. |
+| N12 quota de IA | Já corrigido no PR 2c (upsert atômico `INSERT ... ON CONFLICT ... WHERE messages < limite`) | **Confirmado como corrigido, sem mudança** | `InsightsQuotaIT` (`N12 concurrent consumption never exceeds the free limit` com 32 threads e `N12 two sessions at the last slot grant exactly one`) segue verde. |
+| N2 crescimento de `activities` | 195 linhas semeadas mais 12 gravações concorrentes: todas aceitas (sem teto) | **Confirmado (crescimento ilimitado) e mitigado** | `OwnerQuotas.beforeRecordActivity`: teto de 200 por dono em 24h, serializado. Depois: exatamente 5 aceitas e 7 com 409. Retenção (expurgo) continua fora de escopo. |
+### Limites (configuráveis, `app.limits.*`)
+| Limite | Valor | Chave / variável |
+|---|---|---|
+| Comunidades por dono | 5 | `max-communities-per-owner` / `LIMITS_MAX_COMMUNITIES_PER_OWNER` |
+| Comunidades criadas em 24h | 3 | `max-communities-per-day` / `LIMITS_MAX_COMMUNITIES_PER_DAY` |
+| Eventos ativos por dono (`starts_at` futuro) | 20 | `max-active-events-per-owner` / `LIMITS_MAX_ACTIVE_EVENTS_PER_OWNER` |
+| Eventos criados em 24h | 10 | `max-events-per-day` / `LIMITS_MAX_EVENTS_PER_DAY` |
+| Atividades criadas em 24h | 200 | `max-activities-per-day` / `LIMITS_MAX_ACTIVITIES_PER_DAY` |
+O modo é o mesmo dos pets: `app.limits.mode` (`LIMITS_MODE`): `enforce` (padrão, 409), `shadow` (só registra) ou `off` (rollback). A janela diária é deslizante de 24h sobre `created_at`. Os valores são provisórios: o 3 e o 10 diários foram escolhidos abaixo do total para que o teto diário seja alcançável e testável. Reajustar com dados reais.
+### Decisões e pendências
+- **N8, gate de membership (decisão de produto pendente):** `POST /api/events/{id}/rsvp` continua sem exigir ser membro da comunidade, enquanto criar evento exige. O comportamento atual foi mantido e está coberto por teste (RSVP de não membro retorna 200). Se o produto decidir exigir membership, é uma checagem em `CommunityService.rsvp` e quebra clientes que fazem RSVP a partir do Discover sem entrar na comunidade.
+- **N9, moderação de conteúdo segue fora de escopo.** As quotas limitam volume por dono, não conteúdo. Não há revisão, denúncia nem remoção de comunidades ou eventos por admin. Isso exige ticket próprio.
+- Contas descartáveis ainda multiplicam as quotas (o teto é por dono, não por pessoa); o freio nesse caso é o limite de taxa e o cadastro.
+- O lock de linha em `owners` serializa por dono qualquer fluxo que use `OwnerQuotas` (criar comunidade, evento e atividade). Em um mesmo dono as três operações disputam o mesmo lock por poucos ms; sem impacto entre donos diferentes. Atividades mantêm o lock até o commit, que inclui o registro de XP.
+### Mudanças aplicadas
+- `backend/src/main/kotlin/com/pawmotionai/shared/OwnerQuotas.kt` (novo), usado por `CommunityService.create/createEvent` e `RecordActivityService`.
+- `CommunityService.rsvp` (lock do evento) e `CommunityController` (`DELETE /api/events/{eventId}/rsvp`).
+- `backend/src/main/resources/application.yml` (chaves `app.limits.*`).
+- `V30__owner_quota_indexes.sql` (aditiva, `IF NOT EXISTS`): índices `communities(created_by, created_at)`, `community_events(created_by, created_at)` e `activities(owner_id, created_at)`. Em tabela grande de produção, criar em janela de baixo tráfego.
+- `docs/api/openapi.yaml` e `packages/api-client/src/schema.d.ts` regenerados com `generate.sh` (nova rota).
