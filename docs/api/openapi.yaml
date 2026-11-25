@@ -776,6 +776,24 @@ paths:
       tags:
       - Gamification
   /api/events/{eventId}/rsvp:
+    delete:
+      operationId: withdrawRsvp
+      parameters:
+      - in: path
+        name: eventId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommunityEventDto"
+          description: OK
+      tags:
+      - Communities and events
     post:
       operationId: rsvp
       parameters:

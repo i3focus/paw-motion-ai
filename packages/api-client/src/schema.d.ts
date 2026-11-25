@@ -480,7 +480,7 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["rsvp"];
-        delete?: never;
+        delete: operations["withdrawRsvp"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3831,6 +3831,28 @@ export interface operations {
                 "application/json": components["schemas"]["RsvpRequest"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CommunityEventDto"];
+                };
+            };
+        };
+    };
+    withdrawRsvp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

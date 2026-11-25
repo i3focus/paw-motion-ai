@@ -65,6 +65,10 @@ class CommunityController(private val service: CommunityService) {
     fun rsvp(@AuthenticationPrincipal jwt: Jwt, @PathVariable eventId: UUID, @Valid @RequestBody request: RsvpRequest): CommunityEventDto =
         service.rsvp(jwt.ownerId, eventId, request.status)
 
+    @DeleteMapping("/events/{eventId}/rsvp")
+    fun withdrawRsvp(@AuthenticationPrincipal jwt: Jwt, @PathVariable eventId: UUID): CommunityEventDto =
+        service.rsvp(jwt.ownerId, eventId, null)
+
     @GetMapping("/discover")
     fun discover(@AuthenticationPrincipal jwt: Jwt, @RequestParam(required = false) lat: Double?, @RequestParam(required = false) lng: Double?): DiscoverDto =
         service.discover(jwt.ownerId, lat, lng)
