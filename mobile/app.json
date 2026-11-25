@@ -11,7 +11,8 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.pawmotionai.mobile"
+      "package": "com.pawmotionai.mobile",
+      "allowBackup": false
     },
     "web": {
       "bundler": "metro"
@@ -19,7 +20,8 @@
     "plugins": [
       "expo-font",
       "expo-router",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-secure-store"
     ]
   }
 }

@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import type { ReactionType } from '@petlife/design-tokens';
 import { addComment, getComments, react, recordAdEvent, unreact, type Comment, type FeedCard } from './api/petlife';
 import { colors, fonts, fontSize, radius, shadow } from './theme';
+import { safeHttpUrl } from './validation';
 import { Badge, Button, Input, ReactionBar, SponsoredLabel } from './components';
 
 export function Avatar({ name, imageUrl, size = 44 }: { name: string; imageUrl?: string | null; size?: number }) {
@@ -179,7 +180,8 @@ export function FeedItemCard({ card }: { card: FeedCard }) {
             {sp?.ctaLabel ? (
               <Pressable style={s.cta} onPress={() => {
                 if (sp.campaignId) recordAdEvent(sp.campaignId, 'CLICK').catch(() => {});
-                if (sp.ctaUrl && /^https?:\/\//i.test(sp.ctaUrl)) Linking.openURL(sp.ctaUrl).catch(() => {});
+                const href = safeHttpUrl(sp.ctaUrl);
+                if (href) Linking.openURL(href).catch(() => {});
               }}><Text style={s.ctaText}>{sp.ctaLabel}</Text></Pressable>
             ) : null}
           </View>
