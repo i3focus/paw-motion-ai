@@ -50,6 +50,12 @@ app:
     orphan-sweep:
       # dry-run only: reports orphan files / rows without file via metric media.orphans and log; never deletes
       enabled: ${MEDIA_ORPHAN_SWEEP_ENABLED:false}
+  insights:
+    retention:
+      # TTL off by default (rollback = false). When true, deletes insights older than `days` in bounded batches (daily cron)
+      enabled: ${INSIGHTS_RETENTION_ENABLED:false}
+      days: ${INSIGHTS_RETENTION_DAYS:365}
+      batch-size: ${INSIGHTS_RETENTION_BATCH_SIZE:1000}
   security:
     trusted-proxies: "${TRUSTED_PROXIES:127.0.0.1,::1,0:0:0:0:0:0:0:1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16}"
     jwt:
