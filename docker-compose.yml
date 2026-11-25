@@ -2,6 +2,8 @@ services:
   postgres:
     image: postgis/postgis:17-3.5
     container_name: pawmotion-postgres
+    # N11 (11.1): custo estimado alto de ST_DWithin dispara JIT (~0,5 s extra por consulta geográfica); sem ganho neste perfil de consultas curtas.
+    command: ["postgres", "-c", "jit=off"]
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-pawmotion}
       POSTGRES_USER: ${POSTGRES_USER:-pawmotion}

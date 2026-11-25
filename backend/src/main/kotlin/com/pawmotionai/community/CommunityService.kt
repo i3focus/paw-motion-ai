@@ -46,10 +46,12 @@ class CommunityService(private val jdbc: JdbcClient) {
     fun communities(viewerId: UUID, kind: CommunityKind?, query: String?, page: PageRequest): PageResponse<CommunityDto> {
         val rows = jdbc.sql(
             """
-            SELECT c.*, (SELECT COUNT(*) FROM community_members m WHERE m.community_id = c.id) AS members,
+            SELECT c.*, COALESCE(mc.members, 0) AS members,
                    (SELECT COUNT(*) FROM community_events e WHERE e.community_id = c.id AND e.starts_at > now()) AS upcoming,
                    m.role AS my_role
-            FROM communities c LEFT JOIN community_members m ON m.community_id = c.id AND m.owner_id = :viewer
+            FROM communities c
+            LEFT JOIN (SELECT community_id, COUNT(*) AS members FROM community_members GROUP BY community_id) mc ON mc.community_id = c.id
+            LEFT JOIN community_members m ON m.community_id = c.id AND m.owner_id = :viewer
             WHERE (CAST(:kind AS text) IS NULL OR c.kind = :kind)
               AND (CAST(:q AS text) IS NULL OR c.name ILIKE '%' || CAST(:q AS text) || '%' OR c.description ILIKE '%' || CAST(:q AS text) || '%')
             ORDER BY members DESC, c.name LIMIT :limit OFFSET :offset
