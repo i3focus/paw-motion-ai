@@ -99,10 +99,11 @@ PARTNER_PORTAL_BASE_URL=https://app.example.com/partner
 APP_BASE_URL=https://app.example.com
 
 # --- Proxy trust: use fixed /32 IPs, never wide ranges (see
-#     docs/security/hostinger-deploy-checklist.md). nginx trusts only Caddy;
-#     backend trusts only the frontend nginx. ---
-TRUSTED_PROXY_CIDRS=172.28.0.2/32
-TRUSTED_PROXIES=172.28.0.10/32
+#     docs/security/hostinger-deploy-checklist.md). Gateway nginx trusts only Caddy;
+#     frontend nginx trusts only the gateway; backend trusts only the backend nginx. ---
+GATEWAY_TRUSTED_PROXY_CIDR=172.28.0.2/32
+TRUSTED_PROXY_CIDRS=172.28.0.3/32
+TRUSTED_PROXIES=172.28.0.11/32
 
 # --- Payments: REAL provider for production ---
 PAYMENT_PROVIDER=abacatepay
@@ -163,13 +164,15 @@ services:
     restart: unless-stopped
     volumes:
       - media-data:/app/data/media        # MEDIA_ROOT default ./data/media under WORKDIR /app
-    # ports stay unpublished — reachable only via frontend nginx
+    # ports stay unpublished — reachable only via backend nginx
 
   frontend:
     restart: unless-stopped
-    expose:
-      - "80"                             # internal only; Caddy is the public edge
-    ports: !reset []                     # drop the dev 5173:80 publish
+  backend-proxy:
+    restart: unless-stopped
+  gateway:
+    restart: unless-stopped
+    ports: !reset []                     # drop the dev 5173:80 publish; Caddy is the public edge
 
   caddy:
     image: caddy:2-alpine
@@ -182,8 +185,11 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
+    networks:
+      default:
+        ipv4_address: 172.28.0.2         # fixed IP, used in GATEWAY_TRUSTED_PROXY_CIDR
     depends_on:
-      frontend:
+      gateway:
         condition: service_started
 
 volumes:
@@ -197,7 +203,7 @@ volumes:
 ```caddy
 app.example.com {
     encode zstd gzip
-    reverse_proxy frontend:80
+    reverse_proxy gateway:80
     header {
         X-Content-Type-Options nosniff
         X-Frame-Options DENY
@@ -210,10 +216,12 @@ app.example.com {
 Caddy obtains and renews the Let's Encrypt certificate automatically once DNS
 points at the VPS. HTTP→HTTPS redirect is automatic.
 
-Chain of trust: `Internet → Caddy (TLS) → frontend nginx → /api → backend:8080 → postgres:5432`.
-Only Caddy is published. nginx sets `X-Forwarded-For=$remote_addr` (the Caddy hop);
-`TRUSTED_PROXY_CIDRS`/`TRUSTED_PROXIES` covering `172.16.0.0/12` let both layers
-recover the real client IP for rate limiting.
+Chain of trust: `Internet → Caddy (TLS) → gateway nginx → frontend nginx → /api → backend nginx → backend:8080 → postgres:5432`.
+The AbacatePay webhook takes a shortcut: `Caddy → gateway nginx → backend nginx → backend:8080`.
+Only Caddy is published. Each nginx sets `X-Forwarded-For=$remote_addr` after `real_ip`
+resolved the client from the previous trusted hop. Use fixed `/32` IPs (never wide ranges)
+in `GATEWAY_TRUSTED_PROXY_CIDR` (Caddy), `TRUSTED_PROXY_CIDRS` (gateway) and
+`TRUSTED_PROXIES` (backend nginx) so every layer recovers the real client IP for rate limiting.
 
 ---
 
@@ -237,13 +245,13 @@ curl -fsS  https://app.example.com/actuator/health     # backend health via prox
 ```
 
 Wait — `/actuator/health` is on the backend, so it must be fetched through
-`https://app.example.com/actuator/health` (nginx proxies only `/api/`!). If you
+`https://app.example.com/actuator/health` (the nginx layers proxy only `/api/`!). If you
 want public health checks, prefer `https://app.example.com/api/...` or restrict:
 actually the compose healthcheck already runs **inside** the backend container, so
 the canonical external check is simply that the site loads and logins work. For
 external uptime monitoring, use `https://app.example.com/` (200) — that's enough.
 
-> Note: the frontend nginx only proxies `location /api/` to the backend.
+> Note: the frontend nginx only proxies `location /api/` to the backend nginx, which in turn only accepts `/api/`.
 > `/actuator/*` and `/v3/api-docs` are NOT reachable publicly — good. Keep it that
 > way; do not add public proxy rules for actuator endpoints.
 
@@ -358,8 +366,10 @@ in `app.json` (currently absent) plus `EXPO_PUSH_ENABLED=true` on the backend.
 ```
                  ┌──────────────────────── Hostinger KVM VPS ────────────────────────┐
 Internet 80/443─▶│  ufw → caddy (TLS, auto-cert)                                      │
-                 │        └─▶ frontend nginx :80 (SPA + /api proxy)                   │
-                 │                     └─▶ backend Spring Boot :8080 ──▶ postgres:5432 │
+                 │        └─▶ gateway nginx :80 (main proxy)                          │
+                 │              ├─▶ frontend nginx :80 (SPA + /api proxy)             │
+                 │              │         └─▶ backend nginx :80 (/api only)           │
+                 │              └─▶ (webhook only) backend nginx ─▶ Spring Boot :8080 ─▶ postgres:5432 │
                  │  volumes: postgres-data, media-data, caddy-data                    │
                  └────────────────────────────────────────────────────────────────────┘
 Outbound only:  api.abacatepay.com · api.resend.com · exp.host (push) · registry/docker pulls

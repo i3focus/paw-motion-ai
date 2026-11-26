@@ -7,7 +7,8 @@ This guide runs the full local platform: PostgreSQL/PostGIS, Spring Boot backend
 | Project | URL / port | Notes |
 |---|---:|---|
 | PostgreSQL | `localhost:5432` | Compose-only by default |
-| Backend API | `http://localhost:8080` | `/actuator/health` should return `UP` |
+| Backend API | `http://localhost:8080` | `/actuator/health` should return `UP` (direct, loopback only) |
+| Gateway nginx | `http://localhost:5173` | Only public entry point: SPA, `/api/**` and the payment webhook |
 | Pet owner web | `http://localhost:5173` | Owner portal |
 | Partner web portal | `http://localhost:5173/partner` | Same frontend build, separate auth/session |
 | Expo Metro | `http://localhost:8081` | Mobile dev server / QR code |
@@ -28,7 +29,9 @@ Edit `.env` and set local-only values for `POSTGRES_PASSWORD` and `JWT_SECRET`. 
 ./scripts/dev-up.sh
 ```
 
-This is equivalent to building and starting the Compose services for `postgres`, `backend`, and `frontend`.
+This is equivalent to building and starting the Compose services for `postgres`, `backend`, `backend-proxy`, `frontend`, and `gateway`.
+
+Traffic flow: `gateway` (nginx, port 5173) → `frontend` (nginx, SPA) → `/api/` → `backend-proxy` (nginx) → `backend`. Only `POST /api/webhooks/payments/` (AbacatePay) goes from `gateway` straight to `backend-proxy`.
 
 Verify:
 
