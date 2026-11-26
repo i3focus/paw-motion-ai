@@ -24,12 +24,14 @@
 - Campaign creation and its credit debit, and payment confirmation and its credit, are the only cross-context writes allowed inside one local transaction (ADR-0014).
 - Owner routes and locations never leave the Activity context except to the owner and opt-in Strava publication.
 
-## As-built additions (post-refactor, 2026-11)
+## As-built additions (post-refactor, 2026-11, updated 2026-11-26)
 
 The baseline contexts were extended during the refactor. Current bounded contexts
-(code packages in `com.pawmotionai`): identity, pet, activity, ai-insights, partner,
-billing, ledger (Java baseline) plus ads, assistant, booking, community, content,
-engagement, feed, health, map, media, notification, pet-profile (Kotlin).
+(code packages in `com.pawmotionai`, all Kotlin since PR #23): the hexagonal
+baseline identity, pet, activity, aiinsights, partner, billing, ledger, plus the
+flat service modules ads, assistant, booking, community, content, engagement,
+feed, health, map, media, notification, petprofile.
 The legacy `social` context was deleted (V19). See `software-architecture.md` for
 the module inventory and ADR-0021/0022 for the two structural boundary changes
-(partner-profile split, campaign moderation).
+(partner-profile split, campaign moderation). The interactive context map is
+`docs/architecture/backend-modules.html` (archify).

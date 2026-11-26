@@ -41,7 +41,7 @@ The regulations explicitly include physical activity and wellness projects. PawM
 - `frontend/`: React web app — landing `/`, owner app `/app/*`, partner portal `/partner/*`, admin review `/app/admin`.
 - `mobile/`: Expo app for pet owners.
 - `packages/`: shared design tokens and generated API client.
-- `docker-compose.yml`: local PostgreSQL/PostGIS (published on `127.0.0.1:5432`), backend, and frontend.
+- `docker-compose.yml`: local PostgreSQL/PostGIS (published on `127.0.0.1:5432`), backend, frontend, and the nginx edge chain (`gateway` → `frontend` → `backend-proxy`); only the gateway publishes a port (`5173`). See [run-all-projects](docs/run-all-projects.md) and [edge proxies](docs/architecture/edge-proxies.md).
 
 ## Run
 

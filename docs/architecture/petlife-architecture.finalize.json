@@ -5,16 +5,16 @@
   "status": "pass",
   "type": "architecture",
   "quality": "showcase",
-  "startedAt": "2026-11-25T01:34:28.222Z",
+  "startedAt": "2026-11-26T15:12:43.610Z",
   "specification": {
     "path": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-overview.json",
-    "sha256": "794f46c9bf2aecc98c2ae142cfb46a422320b2a54b76e29bbf353c6252d621cf",
-    "bytes": 6806
+    "sha256": "6966bcfb4b6cf4190b57d9af426911f4f2295149d2247017dcb546a909f45aed",
+    "bytes": 10477
   },
   "artifact": {
     "path": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.html",
-    "sha256": "ffafe5af72566cf5fd744749f6c250bf87cc3c9aac108f9f4652d848dc94b719",
-    "bytes": 951175
+    "sha256": "cdaf6ab09a5094383c8d955f414a93334693b2886f220b104dfdcc46b50045be",
+    "bytes": 959864
   },
   "stages": {
     "validate": {
@@ -40,8 +40,8 @@
         "ok": true,
         "command": "validate",
         "specification": {
-          "sha256": "794f46c9bf2aecc98c2ae142cfb46a422320b2a54b76e29bbf353c6252d621cf",
-          "bytes": 6806
+          "sha256": "6966bcfb4b6cf4190b57d9af426911f4f2295149d2247017dcb546a909f45aed",
+          "bytes": 10477
         },
         "validation": {
           "checksPassed": 9,
@@ -56,7 +56,7 @@
     "deliver": {
       "status": "pass",
       "exitCode": 0,
-      "durationMs": 1198,
+      "durationMs": 1589,
       "command": [
         "/Users/jetherrodrigues/.nvm/versions/node/v22.18.0/bin/node",
         "/Users/jetherrodrigues/.agents/skills/archify/bin/archify.mjs",
@@ -72,19 +72,19 @@
       ],
       "receipt": {
         "schemaVersion": 1,
-        "receiptId": "7fc17f8d-d1d2-4e55-ac81-9387dc447d74",
+        "receiptId": "a8ad2ed7-b6ec-454d-8865-e10a66ea6845",
         "ok": true,
         "command": "deliver",
         "type": "architecture",
         "input": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-overview.json",
         "output": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.html",
         "specification": {
-          "sha256": "794f46c9bf2aecc98c2ae142cfb46a422320b2a54b76e29bbf353c6252d621cf",
-          "bytes": 6806
+          "sha256": "6966bcfb4b6cf4190b57d9af426911f4f2295149d2247017dcb546a909f45aed",
+          "bytes": 10477
         },
         "artifact": {
-          "sha256": "ffafe5af72566cf5fd744749f6c250bf87cc3c9aac108f9f4652d848dc94b719",
-          "bytes": 951175
+          "sha256": "cdaf6ab09a5094383c8d955f414a93334693b2886f220b104dfdcc46b50045be",
+          "bytes": 959864
         },
         "validation": {
           "checksPassed": 9,
@@ -97,8 +97,8 @@
         "evidence": {
           "verified": true,
           "repository": "https://github.com/i3focus/paw-motion-ai",
-          "revision": "03626d5ddaa34aaacbc5cdb8c3f304cc4a0bd73b",
-          "references": 15
+          "revision": "09295043f3455af2fabf7400da3c0c766bd7b095",
+          "references": 20
         },
         "update": {
           "status": "unavailable",
@@ -116,7 +116,7 @@
     "check": {
       "status": "pass",
       "exitCode": 0,
-      "durationMs": 199,
+      "durationMs": 110,
       "command": [
         "/Users/jetherrodrigues/.nvm/versions/node/v22.18.0/bin/node",
         "/Users/jetherrodrigues/.agents/skills/archify/bin/archify.mjs",
@@ -128,8 +128,8 @@
         "ok": true,
         "file": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.html",
         "artifact": {
-          "sha256": "ffafe5af72566cf5fd744749f6c250bf87cc3c9aac108f9f4652d848dc94b719",
-          "bytes": 951175
+          "sha256": "cdaf6ab09a5094383c8d955f414a93334693b2886f220b104dfdcc46b50045be",
+          "bytes": 959864
         },
         "checks": [
           {
@@ -190,22 +190,22 @@
           },
           "metrics": {
             "properCrossings": 0,
-            "resolvedCrossovers": 0,
+            "resolvedCrossovers": 1,
             "ambiguousCorridors": 0,
             "arrowheadCollisions": 0,
             "containerBorderRuns": 0,
             "labelRouteClearanceIssues": 0,
             "labelCanvasOverflowIssues": 0,
-            "minLabelRouteClearance": 9,
+            "minLabelRouteClearance": 4.3,
             "desktopReadabilityIssues": 0,
             "viewportHeightIssues": 0,
-            "minProjectedNodeTextPx": 6.471649484536083,
-            "maxBends": 2,
-            "routesOverSuggestedBends": 0,
-            "maxStretch": 1,
+            "minProjectedNodeTextPx": 6.8,
+            "maxBends": 3,
+            "routesOverSuggestedBends": 2,
+            "maxStretch": 1.19,
             "routesOverSuggestedStretch": 0,
-            "minSegmentPx": 38,
-            "minInteriorSegmentPx": 141,
+            "minSegmentPx": 24,
+            "minInteriorSegmentPx": 109,
             "shortSegmentCount": 0,
             "shortEndpointSegmentCount": 0,
             "shortInteriorSegmentCount": 0,
@@ -218,8 +218,57 @@
             "microSegmentPx": 8
           },
           "routeReview": {
-            "crossings": [],
-            "detours": []
+            "crossings": [
+              {
+                "left": {
+                  "id": "api-abacatepay",
+                  "from": "api",
+                  "to": "abacatepay",
+                  "label": "POST /checkouts",
+                  "collectionIndex": 9,
+                  "artifactIndex": 10
+                },
+                "right": {
+                  "id": "abacatepay-webhook",
+                  "from": "abacatepay",
+                  "to": "gateway",
+                  "label": "POST /api/webhooks/payments/abacatepay (signed)",
+                  "collectionIndex": 10,
+                  "artifactIndex": 11
+                },
+                "point": [
+                  34,
+                  921
+                ],
+                "sharedNode": "abacatepay"
+              }
+            ],
+            "detours": [
+              {
+                "relationship": {
+                  "id": "abacatepay-webhook",
+                  "from": "abacatepay",
+                  "to": "gateway",
+                  "label": "POST /api/webhooks/payments/abacatepay (signed)",
+                  "collectionIndex": 10,
+                  "artifactIndex": 11
+                },
+                "bends": 3,
+                "stretch": 1.143
+              },
+              {
+                "relationship": {
+                  "id": "api-expo",
+                  "from": "api",
+                  "to": "expo",
+                  "label": "POST /push/send · opt-in",
+                  "collectionIndex": 12,
+                  "artifactIndex": 13
+                },
+                "bends": 3,
+                "stretch": 1
+              }
+            ]
           },
           "leadingSpace": {
             "measured": false,
@@ -236,32 +285,32 @@
             "hardFloorPx": 6,
             "hardFloorMet": true,
             "minimumOwner": {
-              "kind": "edge",
-              "id": "web-api",
-              "from": "web",
-              "to": "api"
+              "kind": "node",
+              "id": "web"
             },
-            "minimumSourceTextPx": 8.1,
-            "minimumProjectedTextPx": 6.471649484536083,
-            "semanticTextCount": 29
+            "minimumSourceTextPx": 6.8,
+            "minimumProjectedTextPx": 6.8,
+            "semanticTextCount": 36
           },
           "issues": []
         },
         "provenance": "current",
-        "deliveryReceiptId": "7fc17f8d-d1d2-4e55-ac81-9387dc447d74"
+        "deliveryReceiptId": "a8ad2ed7-b6ec-454d-8865-e10a66ea6845"
       }
     },
     "browser-check": {
       "status": "pass",
       "exitCode": 0,
-      "durationMs": 4254,
+      "durationMs": 3927,
       "command": [
         "/Users/jetherrodrigues/.nvm/versions/node/v22.18.0/bin/node",
         "/Users/jetherrodrigues/.agents/skills/archify/bin/archify.mjs",
         "browser-check",
         "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.html",
         "--json",
-        "--require-provenance"
+        "--require-provenance",
+        "--out-dir",
+        "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/review-9"
       ],
       "execution": "in-process",
       "receipt": {
@@ -272,11 +321,11 @@
         "status": "pass",
         "visualReview": "not-requested",
         "provenance": "current",
-        "deliveryReceiptId": "7fc17f8d-d1d2-4e55-ac81-9387dc447d74",
+        "deliveryReceiptId": "a8ad2ed7-b6ec-454d-8865-e10a66ea6845",
         "artifact": {
           "path": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.html",
-          "sha256": "ffafe5af72566cf5fd744749f6c250bf87cc3c9aac108f9f4652d848dc94b719",
-          "bytes": 951175
+          "sha256": "cdaf6ab09a5094383c8d955f414a93334693b2886f220b104dfdcc46b50045be",
+          "bytes": 959864
         },
         "state": {
           "detail": "read",
@@ -298,36 +347,34 @@
               "innerWidth": 1440,
               "innerHeight": 900,
               "scrollWidth": 1440,
-              "scrollHeight": 900,
+              "scrollHeight": 1306,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1113,
-              "diagramWidth": 1083,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 12,
                 "headerPx": 52,
                 "diagramChromePx": 78,
-                "svgPx": 746,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 7.536340206185567,
-              "minimumProjectedNonEdgeTextPx": 8.094587628865979,
-              "minimumProjectedEdgeTextPx": 7.536340206185567,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
+              "minimumProjectedEdgeTextPx": 8.1,
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -350,36 +397,34 @@
               "innerWidth": 1600,
               "innerHeight": 1000,
               "scrollWidth": 1600,
-              "scrollHeight": 1000,
+              "scrollHeight": 1372,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1162,
-              "diagramWidth": 1132,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 64,
                 "headerPx": 60,
                 "diagramChromePx": 84,
-                "svgPx": 780,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 7.8773195876288655,
-              "minimumProjectedNonEdgeTextPx": 8.46082474226804,
-              "minimumProjectedEdgeTextPx": 7.8773195876288655,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
+              "minimumProjectedEdgeTextPx": 8.1,
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -402,36 +447,34 @@
               "innerWidth": 1920,
               "innerHeight": 1080,
               "scrollWidth": 1920,
-              "scrollHeight": 1080,
+              "scrollHeight": 1372,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1278,
-              "diagramWidth": 1248,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 64,
                 "headerPx": 60,
                 "diagramChromePx": 84,
-                "svgPx": 860,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 8.1,
-              "minimumProjectedNonEdgeTextPx": 8.7,
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
               "minimumProjectedEdgeTextPx": 8.1,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -454,36 +497,34 @@
               "innerWidth": 2048,
               "innerHeight": 1320,
               "scrollWidth": 2048,
-              "scrollHeight": 1320,
+              "scrollHeight": 1391,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1620,
-              "diagramWidth": 1570,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 64,
                 "headerPx": 68,
                 "diagramChromePx": 94,
-                "svgPx": 1082,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 8.1,
-              "minimumProjectedNonEdgeTextPx": 8.7,
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
               "minimumProjectedEdgeTextPx": 8.1,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -559,36 +600,34 @@
               "innerWidth": 1440,
               "innerHeight": 900,
               "scrollWidth": 1440,
-              "scrollHeight": 900,
+              "scrollHeight": 1306,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1113,
-              "diagramWidth": 1083,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 12,
                 "headerPx": 52,
                 "diagramChromePx": 78,
-                "svgPx": 746,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 7.536340206185567,
-              "minimumProjectedNonEdgeTextPx": 8.094587628865979,
-              "minimumProjectedEdgeTextPx": 7.536340206185567,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
+              "minimumProjectedEdgeTextPx": 8.1,
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -611,36 +650,34 @@
               "innerWidth": 1600,
               "innerHeight": 1000,
               "scrollWidth": 1600,
-              "scrollHeight": 1000,
+              "scrollHeight": 1372,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1162,
-              "diagramWidth": 1132,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 64,
                 "headerPx": 60,
                 "diagramChromePx": 84,
-                "svgPx": 780,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 7.8773195876288655,
-              "minimumProjectedNonEdgeTextPx": 8.46082474226804,
-              "minimumProjectedEdgeTextPx": 7.8773195876288655,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
+              "minimumProjectedEdgeTextPx": 8.1,
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -663,36 +700,34 @@
               "innerWidth": 1920,
               "innerHeight": 1080,
               "scrollWidth": 1920,
-              "scrollHeight": 1080,
+              "scrollHeight": 1372,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1278,
-              "diagramWidth": 1248,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 64,
                 "headerPx": 60,
                 "diagramChromePx": 84,
-                "svgPx": 860,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 8.1,
-              "minimumProjectedNonEdgeTextPx": 8.7,
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
               "minimumProjectedEdgeTextPx": 8.1,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -715,36 +750,34 @@
               "innerWidth": 2048,
               "innerHeight": 1320,
               "scrollWidth": 2048,
-              "scrollHeight": 1320,
+              "scrollHeight": 1391,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1620,
-              "diagramWidth": 1570,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 64,
                 "headerPx": 68,
                 "diagramChromePx": 94,
-                "svgPx": 1082,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 8.1,
-              "minimumProjectedNonEdgeTextPx": 8.7,
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
               "minimumProjectedEdgeTextPx": 8.1,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -772,36 +805,34 @@
               "innerWidth": 1440,
               "innerHeight": 900,
               "scrollWidth": 1440,
-              "scrollHeight": 900,
+              "scrollHeight": 1306,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1113,
-              "diagramWidth": 1083,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 12,
                 "headerPx": 52,
                 "diagramChromePx": 78,
-                "svgPx": 746,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 7.536340206185567,
-              "minimumProjectedNonEdgeTextPx": 8.094587628865979,
-              "minimumProjectedEdgeTextPx": 7.536340206185567,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
+              "minimumProjectedEdgeTextPx": 8.1,
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -824,36 +855,34 @@
               "innerWidth": 1600,
               "innerHeight": 1000,
               "scrollWidth": 1600,
-              "scrollHeight": 1000,
+              "scrollHeight": 1372,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1162,
-              "diagramWidth": 1132,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 64,
                 "headerPx": 60,
                 "diagramChromePx": 84,
-                "svgPx": 780,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 7.8773195876288655,
-              "minimumProjectedNonEdgeTextPx": 8.46082474226804,
-              "minimumProjectedEdgeTextPx": 7.8773195876288655,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
+              "minimumProjectedEdgeTextPx": 8.1,
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -876,36 +905,34 @@
               "innerWidth": 1920,
               "innerHeight": 1080,
               "scrollWidth": 1920,
-              "scrollHeight": 1080,
+              "scrollHeight": 1372,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1278,
-              "diagramWidth": 1248,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 64,
                 "headerPx": 60,
                 "diagramChromePx": 84,
-                "svgPx": 860,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 8.1,
-              "minimumProjectedNonEdgeTextPx": 8.7,
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
               "minimumProjectedEdgeTextPx": 8.1,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -928,36 +955,34 @@
               "innerWidth": 2048,
               "innerHeight": 1320,
               "scrollWidth": 2048,
-              "scrollHeight": 1320,
+              "scrollHeight": 1391,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1620,
-              "diagramWidth": 1570,
+              "readerWidth": 960,
+              "diagramWidth": 692,
               "pageComposition": {
                 "bodyPaddingPx": 64,
                 "headerPx": 68,
                 "diagramChromePx": 94,
-                "svgPx": 1082,
+                "svgPx": 1164,
                 "cardsPx": 0,
-                "viewBoxHeight": 802
+                "viewBoxHeight": 1164
               },
-              "viewBoxWidth": 1164,
-              "minimumProjectedNodeTextPx": 8.1,
-              "minimumProjectedNonEdgeTextPx": 8.7,
+              "viewBoxWidth": 692,
+              "minimumProjectedNodeTextPx": 6.8,
+              "minimumProjectedNonEdgeTextPx": 6.8,
               "minimumProjectedEdgeTextPx": 8.1,
-              "minimumProjectedNodeText": "proxy /api/ → :8080",
-              "minimumProjectedNodeTextDetail": "edge",
+              "minimumProjectedNodeText": "React 19 · Vite 8 · Tailwind · Nginx (frontend) :80 internal",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "edge",
-                "id": "web-api",
-                "from": "web",
-                "to": "api"
+                "kind": "node",
+                "id": "web"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -981,6 +1006,7 @@
           "contactSheet": null
         },
         "sidecars": {
+          "directory": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/review-9",
           "receipt": "petlife-architecture.browser-check.json",
           "files": []
         }
@@ -993,15 +1019,15 @@
   },
   "diagnostics": [],
   "evidence": {
-    "receipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.finalize.json",
-    "summaryReceipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.finalize-summary.json",
-    "browserCheckReceipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/petlife-architecture.browser-check.json"
+    "receipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/review-9/petlife-architecture.finalize.json",
+    "summaryReceipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/review-9/petlife-architecture.finalize-summary.json",
+    "browserCheckReceipt": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/review-9/petlife-architecture.browser-check.json"
   },
   "visualReview": "not-requested",
   "repositoryReferences": {
     "status": "verified",
-    "revision": "03626d5ddaa34aaacbc5cdb8c3f304cc4a0bd73b",
-    "count": 15
+    "revision": "09295043f3455af2fabf7400da3c0c766bd7b095",
+    "count": 20
   },
   "codeAnalysisOffer": {
     "action": "offer-code-analysis",
@@ -1025,16 +1051,19 @@
     "linkedDiagrams": true,
     "reference": "references/delivery-contract.md#architecture-diagnosis-offer"
   },
-  "finishedAt": "2026-11-25T01:34:34.519Z",
-  "durationMs": 6296,
+  "finishedAt": "2026-11-26T15:12:49.751Z",
+  "durationMs": 6141,
   "update": {
-    "status": "current",
+    "status": "update_available",
     "installedVersion": "3.3.0",
-    "availableVersion": "3.3.0",
-    "releaseNotes": null,
-    "checkedAt": "2026-11-24T01:33:27.192Z",
-    "source": "cache",
-    "noticeRequired": false,
-    "noticeText": null
+    "availableVersion": "3.3.2",
+    "releaseNotes": "https://github.com/tt-a1i/archify/releases/tag/v3.3.2",
+    "severity": "normal",
+    "summary": "Includes archify-pr in default installs, adds offline in-page update notices with Agent prompts, speeds slow update checks, and polishes PR diagrams.",
+    "checkedAt": "2026-11-26T15:12:43.730Z",
+    "source": "network",
+    "noticeRequired": true,
+    "noticeText": "Archify update: 3.3.0 → 3.3.2. A newer release is available. Release notes: https://github.com/tt-a1i/archify/releases/tag/v3.3.2. Would you like me to update Archify?",
+    "eventKey": "archify@sha256:932d915f83fdbf44796cc6b20b085455a763491306e1b8dee92047e11dddc0ea"
   }
 }

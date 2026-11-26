@@ -67,9 +67,9 @@ Migrations are added per slice (`V4__ledger_and_billing.sql`, `V5__partner_publi
 | `campaign_clicks` raw | 13 months, then aggregates only |
 | Backups | Rotated within 35 days |
 
-## As-built schema (post-refactor, 2026-11)
+## As-built schema (post-refactor, 2026-11, updated for the security remediation)
 
-Flyway V1–V19 own all DDL (`ddl-auto: validate`). Notable tables by context:
+Flyway V1–V30 own all DDL (`ddl-auto: validate`). Notable tables by context:
 
 - **identity**: `owners` (identity only — partner columns dropped in V19), `partner_profiles` (business profile + PostGIS location + verified)
 - **pet/health**: `pets`, health passport + reminder tables (V9)
@@ -86,3 +86,28 @@ Flyway V1–V19 own all DDL (`ddl-auto: validate`). Notable tables by context:
 Dropped in V19: `activity_reactions`, `activity_comments`,
 `owners.business_name/website/partner_description/latitude/longitude` — all
 backfilled into canonical tables first (see ADR-0023).
+
+Security remediation migrations (V20–V30, all additive/non-destructive):
+
+- **V20** `owners.role_source` (`MANUAL`/`CONFIG`) — database is the origin of roles;
+  `ADMIN_EMAILS` bootstrap writes `CONFIG` rows.
+- **V21** `partner_campaigns.approved_content_hash`/`approved_ends_at` — SHA-256 of the
+  moderated content freezes what may serve after approval (C4).
+- **V22** playdate invite notification dedup — records which invites already produced a
+  notification, deduplicating per organizer/owner window and capping per day.
+- **V23** lost-pet fanout cooldown columns — per-pet cooldown and per-owner daily cap
+  on nearby alert fan-out.
+- **V24** lost-pet sighting reporter index — supports the per-(alert, reporter)
+  sighting cap.
+- **V25** `owner_media_usage` (atomic per-owner media bytes/objects reservation) and
+  `media_deletions` (post-commit file deletion outbox, filled by trigger).
+- **V26** `insights.bucket_date` + partial unique index — one insight per
+  owner/pet/day for new rows; legacy rows keep `NULL` and are untouched.
+- **V27** activity plausibility `CHECK`s (duration/distance/start window) added
+  `NOT VALID` — backstop for new rows only; legacy rows are reported, not rewritten.
+- **V28** campaign events dedup index — 30-minute dedup of ad events per
+  (campaign, type, placement, viewer).
+- **V29** `xp_events(occurred_at)` covering index — the weekly leaderboard query
+  becomes an index-only scan proportional to the 7-day window instead of a full
+  table scan.
+- **V30** per-owner quota indexes for communities/events/activities counts.

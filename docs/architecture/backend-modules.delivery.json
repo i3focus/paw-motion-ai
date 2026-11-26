@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "receiptId": "88179505-19f7-4ad8-9138-81b5b45c3046",
+  "receiptId": "b9218851-3b84-492e-8cb9-72f9a9f84979",
   "status": "current",
   "command": "deliver",
   "type": "architecture",
   "input": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/.archify/architecture-petlife-20261124-223400/candidate-backend-modules.json",
   "output": "/Users/jetherrodrigues/Desktop/DEV/i3focus/paw-motion-ai/docs/architecture/backend-modules.html",
   "specification": {
-    "sha256": "8602d5c1a1cf50dc5e68aa898806102f3e1950c8a0b04feb1375dcb721fbd2a4",
-    "bytes": 15726
+    "sha256": "1d28117295c52a340f65ccb847a1c5f7565521b4eca021e8c89974b22771da82",
+    "bytes": 18477
   },
   "artifact": {
-    "sha256": "9d2e93e7584d6ec2b6d26b8362b9ba68c31801d7d953bc198f2b42aae1ff5860",
-    "bytes": 978837
+    "sha256": "a8a8b6683199694f822188acdc4705339483ff703723ae1808595e7898e3b96a",
+    "bytes": 982156
   }
 }
