@@ -31,8 +31,8 @@ services:
       JWT_ISSUER: ${JWT_ISSUER:-https://api.pawmotion.ai}
       JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-3600}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
-      # N13: confia so no nginx do frontend (IP fixo abaixo). Nunca use faixas amplas (10/8, 172.16/12, 192.168/16).
-      TRUSTED_PROXIES: "${TRUSTED_PROXIES:-172.28.0.10/32}"
+      # N13: confia so no nginx do backend (IP fixo abaixo). Nunca use faixas amplas (10/8, 172.16/12, 192.168/16).
+      TRUSTED_PROXIES: "${TRUSTED_PROXIES:-172.28.0.11/32}"
       BILLING_CURRENCY: ${BILLING_CURRENCY:-BRL}
       BILLING_CREDITS_PER_CURRENCY_UNIT: ${BILLING_CREDITS_PER_CURRENCY_UNIT:-10}
       BILLING_MIN_PURCHASE_AMOUNT: ${BILLING_MIN_PURCHASE_AMOUNT:-10.00}
@@ -75,22 +75,56 @@ services:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
     container_name: pawmotion-frontend
     environment:
-      TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-}
-    ports:
-      - "5173:80"
+      # Frontend nginx confia apenas no gateway.
+      TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-172.28.0.3/32}
+    expose:
+      - "80"
     networks:
       default:
         ipv4_address: 172.28.0.10
     depends_on:
+      backend-proxy:
+        condition: service_started
+  # Nginx na frente do backend: recebe /api/ do frontend nginx e do gateway (webhook).
+  backend-proxy:
+    image: nginx:1.28-alpine
+    container_name: pawmotion-backend-proxy
+    volumes:
+      - ./nginx/backend/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    expose:
+      - "80"
+    networks:
+      default:
+        ipv4_address: 172.28.0.11
+    depends_on:
       backend:
         condition: service_healthy
+  # Nginx principal: unico servico publicado. Tudo vai ao frontend; so o webhook vai ao backend-proxy.
+  gateway:
+    image: nginx:1.28-alpine
+    container_name: pawmotion-gateway
+    environment:
+      # Proxy TLS externo (ex.: Caddy 172.28.0.2/32 em producao). Padrao: nenhum upstream confiavel.
+      GATEWAY_TRUSTED_PROXY_CIDR: ${GATEWAY_TRUSTED_PROXY_CIDR:-127.0.0.1/32}
+    volumes:
+      - ./nginx/gateway/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "5173:80"
+    networks:
+      default:
+        ipv4_address: 172.28.0.3
+    depends_on:
+      - frontend
+      - backend-proxy
 
 networks:
-  # Sub-rede fixa: permite confiar em IPs exatos (nginx 172.28.0.10, Caddy 172.28.0.2 no override de producao).
+  # Sub-rede fixa: permite confiar em IPs exatos (Caddy .2 no override de producao, gateway .3, frontend nginx .10, backend nginx .11).
   default:
     ipam:
       config:
         - subnet: 172.28.0.0/24
+          # IPs dinamicos (postgres, backend) ficam fora da faixa dos IPs fixos acima.
+          ip_range: 172.28.0.128/25
 volumes:
   postgres-data:
   media-data:

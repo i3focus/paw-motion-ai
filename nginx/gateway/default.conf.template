@@ -1,0 +1,31 @@
+# Gateway nginx: unico ponto de entrada (porta publicada). Encaminha tudo para o nginx do frontend;
+# a unica rota que vai direto para o nginx do backend e o webhook de pagamentos (AbacatePay).
+set_real_ip_from ${GATEWAY_TRUSTED_PROXY_CIDR};
+real_ip_header X-Forwarded-For;
+real_ip_recursive on;
+
+server {
+  listen 80;
+  server_name _;
+
+  # Webhook de pagamentos: POST apenas, direto ao nginx do backend.
+  location /api/webhooks/payments/ {
+    limit_except POST { deny all; }
+    proxy_pass http://backend-proxy:80;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # SPA e /api/** (o nginx do frontend faz o proxy interno para o backend).
+  location / {
+    proxy_pass http://frontend:80;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+}
